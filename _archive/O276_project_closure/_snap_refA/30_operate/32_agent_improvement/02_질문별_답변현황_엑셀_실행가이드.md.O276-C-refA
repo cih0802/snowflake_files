@@ -1,0 +1,137 @@
+<!-- LLM-METADATA
+doc_id: AGENT_ANSWER_REPORT_GUIDE
+doc_role: ML 예측 프롬프트 전체 질문 × Agent 답변 현황 Excel 생성 — 실행 가이드 + CoCo 프롬프트(운영계)
+project: GN_DW (굿네이버스)
+created: 2026-10-06
+created_by: 2026-10-06 init_ihcho 세션(사용자 지시 · O 라벨 미선점)
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+# 02. 질문별 Agent 답변 현황 Excel — 실행 가이드
+
+## 1. 구성
+
+| 파일 | 역할 |
+|---|---|
+| `tools/agent_answer_report.py` | CSV 전체 질문 → Agent 호출 → Excel 생성(본체) |
+| `output/질문별_답변현황_<계정>_<일시>.xlsx` | 결과(실행 시 생성) |
+| `output/raw/<태그>.json` | 응답 원문 캐시(재실행 시 재사용 · 과금 방지) |
+
+- 입력 = `90_provided_definition/데이터플랫폼 ML예측프롬프트_sample.csv`
+  - CSV 36행 = 질문 33개 + 기획실 B안 3행 ⇒ **질문 단위 36개**
+  - 요청부서·구분은 첫 행에만 적혀 있어 아래로 채운다
+- 부서 → Agent 배정(지난 실행 `부서별agent답변.md` 와 같음)
+  - 회원실·기획실 → `AGENT_MEMBER`
+  - 나눔마케팅본부 → `AGENT_MARKETING`
+  - LTV 채널(32행)·캠페인(34행)은 `AGENT_EXECUTIVE` 에도 호출
+  - ⇒ **호출 38회**
+- 전송 질문 = 프롬프트 + `[필수 조건값]` + `[세부 조건값]` (+ 기획실은 `[산출 방식]` = A안·B안 수식)
+- 자리표시 = `--ym` 기준으로 채운다
+
+| 자리표시 | `--ym 202609` 일 때 |
+|---|---|
+| `{기준년월}` · `{YYYY-MM}` · `{기준월}` | 2026-09 |
+| `{YYYY-MM-DD}` | 2026-09-30 |
+| `{기준연도}` · `{연도}` | 2026 |
+| `{차년도}` | 2027 |
+| 그 밖(`{10월~12월}` 등) | 괄호만 벗긴다 |
+
+## 2. Excel 구성
+
+| 시트 | 내용 |
+|---|---|
+| `답변현황` | 질문 1행 = 호출 1회. 열 목록은 아래 |
+| `부서요약` | 부서 × Agent 별 호출·성공·자동판정 후보 건수·평균 소요 |
+| `실행정보` | 계정·역할·웨어하우스·Agent 기본 버전·기준년월·배정 규칙 |
+
+`답변현황` 열 목록:
+
+- 식별: No · 태그 · 요청부서 · 구분 · 세부구분 · 안(A/B)
+- 질문: 원 프롬프트 · 전송 질문 · Agent
+- 실행: 호출성공 · 소요(초) · 사용 도구 · 사용 SV · SQL 수 · 실행 SQL(최대 3개) · 표 수
+- 답변: Agent 최종 텍스트. Agent 가 만든 표는 `[표 제목]` 아래 최대 30행 텍스트로 넣는다
+- 판정: 자동판정(후보) · **판정(확정)**(⭕/△/✕ 드롭다운) · 검토 의견
+- 추적: 오류 · 토큰 · query_id · 호출시각
+
+🔴 **자동판정은 후보일 뿐이다.** 규칙은 아래와 같다.
+
+| 조건 | 후보 |
+|---|---|
+| SQL 실행 없음 | ✕ |
+| 「대체·참고치·불가」 문구 있음 | △ |
+| 그 외 | ⭕ |
+
+확정 판정은 사람이 `판정(확정)` 열에 입력한다. 지난 `부서별agent답변.md` 의 판정 기준과 같다.
+
+## 3. 실행 방법 (운영계)
+
+### 3-A. CoCo 에서 (권장)
+
+아래 프롬프트를 운영계 CoCo 에 그대로 붙여 넣는다.
+
+```text
+12_agent개선과제/tools/agent_answer_report.py 로 질문별 Agent 답변 현황 Excel 을 만들어줘.
+
+1. 먼저 드라이런으로 질문 수와 호출 수를 확인해줘:
+   python3 "12_agent개선과제/tools/agent_answer_report.py" --ym <기준년월 YYYYMM>
+2. 결과가 질문 36개 · 호출 38회이면, 내가 승인한 뒤 백그라운드로 실행해줘(오래 걸린다):
+   python3 "12_agent개선과제/tools/agent_answer_report.py" --apply --ym <기준년월 YYYYMM> --role GN_DW_ANALYST --warehouse GN_DW_ANALYTICS_WH
+3. 끝나면 「부서요약」 시트 내용만 표로 보여주고, 생성된 xlsx 파일을 다운로드할 수 있게 해줘.
+   답변 원문은 화면에 출력하지 마.
+4. 호출 실패 행이 있으면 그 태그만 --only 로 다시 실행하고 --report-only 로 Excel 을 다시 만들어줘.
+```
+
+- 소요 = 질문당 30초~5분 · 병렬 4 기준 전체 약 20~40분(개발계 지난 실행 실측 기준 추정)
+- 역할은 **실사용자 역할**(`GN_DW_ANALYST`)을 권한다 — 현업이 받는 답과 같아진다
+- 운영계 역할·웨어하우스 이름이 다르면 `--role` · `--warehouse` 를 바꾼다
+
+### 3-B. 터미널(bash)에서
+
+```bash
+cd /workspace
+# 드라이런(과금 0)
+python3 "12_agent개선과제/tools/agent_answer_report.py" --ym 202609
+# 실행
+python3 "12_agent개선과제/tools/agent_answer_report.py" --apply --ym 202609 \
+  --role GN_DW_ANALYST --warehouse GN_DW_ANALYTICS_WH
+# 일부만 다시(실패 건 · B안은 10B 처럼)
+python3 "12_agent개선과제/tools/agent_answer_report.py" --apply --only 10B,32 --force
+# 호출 없이 Excel 만 다시
+python3 "12_agent개선과제/tools/agent_answer_report.py" --report-only --ym 202609
+```
+
+- 접속 = 환경변수 `SNOWFLAKE_ACCOUNT` · `SNOWFLAKE_HOST` · `SNOWFLAKE_TOKEN_FILE_PATH`(CoCo 샌드박스 기본 제공)
+- 필요 패키지 = `snowflake-connector-python` · `openpyxl`
+
+### 3-C. Workspace Python 파일로 실행할 때
+
+- Snowpark 활성 세션이 있으면 자동으로 그것을 쓴다(병렬 1 고정 · 시간이 더 걸린다).
+- 인자를 넘길 수 없으면 환경변수 `AGENT_REPORT_ARGS` 에 넣는다.
+  예) `os.environ['AGENT_REPORT_ARGS'] = '--apply --ym 202609'`
+- 🔴 실행 위치의 파일 시스템이 워크스페이스와 다를 수 있다 — 생성된 xlsx 경로를 출력 마지막 줄에서 확인한다.
+
+### 3-D. SQL 만으로 한 문항 확인할 때
+
+```sql
+SELECT SNOWFLAKE.CORTEX.DATA_AGENT_RUN(
+  'GN_DW.SERVING.AGENT_MARKETING',
+  '{"messages":[{"role":"user","content":[{"type":"text","text":"다음 달 신규 회원개발은 몇건으로 예상되는가?"}]}]}'
+);
+```
+
+🔴 질문 문자열만 넘기면 malformed 오류가 난다 — 요청 JSON 형식이어야 한다(`scripts/nl_routing_smoke.py` 주석).
+
+## 4. 주의
+
+- 🔴 **LLM 대량 호출(크레딧 과금)** — `--apply` 없이는 호출하지 않는다. 실행 전 승인을 받는다(`R4-4-3`).
+- 캐시가 있으면 다시 호출하지 않는다. Agent 를 버전업한 뒤 새로 받으려면 `--force` 를 쓰거나 `output/raw/` 를 비운다.
+- 결과는 **그 계정·그 시점·그 Agent 버전의 답**이다. 다른 계정 결과와 섞어 비교하지 않는다(`실행정보` 시트로 구분).
+- 부서 배정·추가 호출 행을 바꾸려면 스크립트 상단 `DEPT_AGENT` · `EXTRA_AGENTS` 를 고친다.
+
+## 5. 검증 기록 (개발계 JU93656 · 2026-10-06)
+
+- 드라이런 = 질문 36 · 호출 38(태그 Q01~Q36 · 기획실 Q10A/B · Q12A/B · Q14A/B · Q32·Q34 EXEC 추가).
+- 캐시 재현 = 지난 실행 응답 38건을 캐시로 넣고 `--report-only` 실행 → 3시트 생성 · 38행 · 부서요약 정상.
+- 실호출 1건 = 16번(AGENT_MARKETING) · 35.8초 · SV_ML_DVLP_FORECAST · SQL 1 · 표 1 · Excel 생성 확인.
+
+_Co-authored with CoCo_

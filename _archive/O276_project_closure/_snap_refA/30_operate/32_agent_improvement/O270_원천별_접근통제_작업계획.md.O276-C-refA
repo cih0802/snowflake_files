@@ -1,0 +1,74 @@
+<!-- LLM-METADATA
+doc_id: O270_SOURCE_ACCESS_RBAC_PLAN
+doc_role: 작업계획(LLM 소비용) — 원천(BRONZE_AGENCY·BRONZE_ERP)별 Agent·역할 접근통제 · O270-D 계획의 비판적 재평가 반영본
+project: GN_DW (굿네이버스)
+created: 2026-10-29
+created_by: O270-E
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+# O270 — 원천별 접근통제(Agent 배선 + 역할 권한) 작업계획
+
+> 🔴 이 문서는 **LLM 이 읽고 집행하는 계획서**다. 수치는 착수 세션이 실측해 이력·원장에 쓴다(`R2-6`).
+> 🔴 REVOKE·역할 삭제·Agent 재배포·운영계 실행은 **각각 별도 승인**(`R4-4-3`).
+> 🟢 사용자 결정(2026-10-29) = 「배선 + SV 권한」 방식 · 마스킹은 보조.
+
+## 0. 입력(사용자 요건 · 2026-10-29)
+
+| 원천 | 허용 Agent | 비고 |
+|---|---|---|
+| BRONZE_AGENCY 유래 | 마케팅만 | 광고 리포트 3종 |
+| BRONZE_ERP 유래 | 마케팅 · 경영(전사) | 예산·지출결의 |
+| 그 밖(CRM·GA·MSTR·ML) | 3종 모두 | — |
+
+- 역할 구상 = 마케팅 분석가 · 회원 분석가 · 기획실(경영·전사) 분석가 · 팀장급(Streamlit 전부 · Agent 사용 불가 VIEWER).
+
+## 1. 착수 시점 실측(개발계 ZS83821 · 2026-10-29 · 재측정 대상)
+
+- 배선 = 마케팅 Agent: AGENCY SV 3 · ERP SV 4(SV_MKTG_CAMPAIGN_COST 는 양쪽) / 경영 Agent: **SV_AD(AGENCY) 🔴 위반** + ERP SV 3 / 회원 Agent: 0.
+- 권한 = GN_DW_ANALYST(BRONZE 포함 테이블 229 · SV 45 · Agent 3) · GN_DW_VIEWER(GOLD·ML·MSTR·SERVING 테이블 91 · 뷰 52 · SV 45 · Agent 3) ⇒ **현재 누구나 전부 본다**.
+- SERVING 스키마 FUTURE GRANT 0 · 개발계 Streamlit 0 · 개발계 GN_DW 역할 배정 사용자 0.
+- 문서 확인(Snowflake docs · Cortex Agents 접근통제) = Agent 는 **요청의 역할 문맥**(Snowsight 선택 역할 + 활성 보조 역할)으로 실행 · USAGE on AGENT 필요 · SV 직접 조회는 SV SELECT 만 필요.
+
+## 2. 이전 계획(O270-D)의 비판적 평가
+
+| # | 이전 계획의 가정·내용 | 문제 | 처방(이 계획에 반영) |
+|---|---|---|---|
+| C1 | 역할을 나누면 통제가 된다 | 🔴 **보조 역할(DEFAULT_SECONDARY_ROLES = ALL)** 이면 사용자에게 준 역할 전부가 합쳐져 분리가 무력화된다 · 한 사람이 두 기능 역할을 받으면 합집합 | ㉠ 사용자 1명 = 기능 역할 1개 원칙 · ㉡ 대상 사용자 `DEFAULT_SECONDARY_ROLES` 실측·정책 결정 · ㉢ 검증은 보조 역할 활성 상태에서도 한다 |
+| C2 | 「원천이 섞이면 가장 제한적 등급」 | 🔴 리니지 하류 전파(taint)가 과도할 수 있다 — 공용 차원(DIM_MARKETING_CAMPAIGN 등)·ML 피처가 광고비를 한 컬럼이라도 쓰면 회원 Agent 의 ML 도구가 통째로 막힌다(업무 영향 큼) | ㉠ 분류를 **객체 단위 + 컬럼 단위 2층**으로 산출 · ㉡ 「소수 컬럼만 오염」 객체는 사용자에게 처리안(컬럼 제거 · 마스킹 · 허용) 결정 요청 · ㉢ 결정 전 일괄 차단 금지 |
+| C3 | Agent 가 SV 를 쓰니 SV 권한이 핵심 | Agent(Analyst 도구)는 SQL 을 **물리 테이블에 직접 실행**한다 ⇒ SV 만 나누면 부족 · 반대로 테이블만 나누면 SV 직접 조회가 열린다 | SV · GOLD 테이블/뷰 · SILVER 를 **같은 분류표**로 한꺼번에 GRANT(접근 역할) |
+| C4 | 기존 ANALYST·VIEWER 회수 | 개발계는 사용자 0 이지만 **운영계 사용자·서비스 계정(GN_DW_SERVICE = Streamlit·API)** 은 미측정 · 회수 순서가 틀리면 운영 장애 | 운영계 회수 전 `SHOW GRANTS OF ROLE` · 사용자 목록 · 서비스 의존 실측 쿼리(R97) 선행 · 신 역할 배정 → 검증 → 회수 순 · 롤백 블록 |
+| C5 | 팀장급 = Streamlit 만 | Streamlit 이 **소유자 권한**이면 팀장은 AGENCY 까지 전부 본다(요건 「다 보지만」과 일치) · **호출자 권한**이면 아무것도 못 본다 · 또 CORTEX_USER 가 PUBLIC 기본 부여라 SV 권한이 남으면 Analyst 직접 호출 가능 | 운영계 Streamlit 권한 방식 실측 · 팀장 역할에는 SV·테이블 GRANT 0 · CORTEX_USER/AGENT_USER 처리 방침 결정 |
+| C6 | GRANT 를 한 번 주면 유지된다 | 🔴 dbt 재빌드(뷰 CREATE OR REPLACE · SV CREATE OR REPLACE)에서 **권한이 사라진다** · 현재 FUTURE GRANT 0 | dbt `grants` config 또는 스키마 FUTURE GRANT 로 접근 역할 배선 · SV DDL 파일의 GRANT 줄도 접근 역할로 교체(SV 45 파일) · 재빌드 후 게이트로 확인 |
+| C7 | 분류는 리니지로 | 리니지에 **Agent 설명·검색 코퍼스(CORTEX_SEARCH_SERVICE)·VQR 문안** 속 원천 수치는 잡히지 않는다 | 검색 코퍼스·Agent 설명에서 AGENCY·ERP 수치·용어 노출 점검(회원·경영 Agent) |
+| C8 | 경영 Agent 에서 SV_AD 제거 | 경영 보고에 광고비 질문이 있었는지 미확인 — 제거 시 「광고비 조회 불가」 응답 규칙 필요 | 제거 + 경영 Agent 문안에 「광고 지표는 마케팅 Agent 소관」 1줄 · 경영 현업 공지 |
+| C9 | 게이트 1종 신설 | 범위 과다 위험 | 게이트는 3축(배선 ↔ 분류표 ↔ GRANT) 대조 1개로 한정 · 음성 테스트 동반(`R3-2`) |
+
+## 3. 작업 단위(순서 = 의존)
+
+| ID | 작업 | 산출 | 의존 · 정지점 |
+|---|---|---|---|
+| W1 | 원천 분류표 = dbt manifest(`target/manifest.json` 또는 `ref`/`source` 파싱)로 SILVER·GOLD·SERVING 객체 + 컬럼 2층 · SV 는 base table 로 귀속 · ML 뷰는 피처 원천 실측 | `12_agent개선과제/output/O270_source_class.csv` | 없음 |
+| W2 | 분류 결정 요청 = 「소수 컬럼 오염」 객체 목록 + 처리안 3택 | 질문 1회 | 🔴 사용자 결정 |
+| W3 | 경영 Agent `analyst_ad` 제거 + 소관 안내 1줄 · YAML·line_len·agent 게이트 | spec 수정 | 개발계 재배포 = 승인 |
+| W4 | `05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS.sql` = 접근 역할 3(COMMON·AGENCY·ERP) · 기능 역할 4 · GRANT(SV·테이블·뷰·SCHEMA·WAREHOUSE·AGENT USAGE) · FUTURE GRANT · CORTEX DB 역할 · 회수 블록 분리 · 롤백 블록 | SQL | W1·W2 |
+| W5 | dbt 권한 유지 = `dbt_project.yml` grants 또는 FUTURE GRANT 결정 · SV DDL GRANT 줄 교체 계획 | 설계 1안 | 🔴 사용자 결정(방식) |
+| W6 | 개발계 적용 → 역할별 검증(USE ROLE + 허용/차단 조회 · 보조 역할 활성 시나리오 · Agent 질문 = 차단 원천 질문 시 거부) | 증거 파일 | 승인 · `R4-4-3` |
+| W7 | `scripts/rbac_source_gate.py`(new_tool.py 로 생성) + 음성 테스트 | 게이트 | W4 |
+| W8 | 운영계 사전 실측 R97(역할 사용자·서비스 의존·Streamlit 권한 방식·DEFAULT_SECONDARY_ROLES) → 실행카드 | R97 · 실행카드 | W6 후 |
+| W9 | 권한 매트릭스 문서(객체 × 역할 · 자동 생성) · 현업 공지(경영 Agent 광고 질문) | 문서 | W6 |
+
+## 4. 하지 마라
+
+- 🔴 분류 결정(W2) 전에 일괄 REVOKE 하지 마라(회원 Agent ML 도구가 조용히 깨진다).
+- 🔴 기존 GN_DW_ANALYST·GN_DW_VIEWER 를 운영계 실측(W8) 전에 회수·삭제하지 마라.
+- 🔴 이름 매칭으로 원천을 분류하지 마라(`AD_`·`BUDGET` 포함 여부는 후보일 뿐 · 리니지가 정본).
+- 🔴 GRANT 를 SQL 로만 주고 dbt·SV 재배포 경로를 고치지 않은 채 「완료」라 하지 마라(C6).
+
+## 5. 완료 판정
+
+- 게이트 = 배선·분류·GRANT 3축 불일치 0 · 위반 주입 시 FAIL(음성 테스트).
+- 역할별 실측 = 허용 객체 조회 OK · 차단 객체 조회 「권한 없음」 · 보조 역할 활성 시에도 동일.
+- dbt 전체 build 후 재실측해도 GRANT 유지.
+
+_Co-authored with CoCo_

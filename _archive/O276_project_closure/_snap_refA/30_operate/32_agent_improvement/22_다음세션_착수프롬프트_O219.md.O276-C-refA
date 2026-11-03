@@ -1,0 +1,33 @@
+<!-- METADATA
+doc_id: PROMPT_O219
+doc_role: 다음 세션 착수 프롬프트 — 세션 O218 이 남기는 것
+project: GN_DW (굿네이버스)
+created: 2026-10-13
+created_by: O218-A
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+# 22_다음세션_착수프롬프트_O219
+
+> 작성 = O218-A (2026-10-13 · 개발계 ua91864).
+> 아래 블록을 새 세션 첫 메시지로 붙여 넣는다.
+
+```
+/init_ihcho
+개발계 = ua91864. 직전 인수인계 = 99_NEXT_SESSION_조각/99_NEXT_SESSION-O0218-A.md.
+이번 세션은 12차 Agent 개선 및 거버넌스/품질 보강이다. 승인이 필요한 작업은 단계마다 나에게 묻고 진행해라.
+
+0. 착수 점검(읽기 전용):
+   · 05_SV-Agent_ai/09_2_AGENT_버전업.sql [0] 사전점검이 0행인가
+   · cortex_project/agents/*/agent_spec.yaml 3종 ↔ 라이브 기본 버전 diff 0 인가
+   · BIZ_DEFINITION_CORPUS 테이블 2,154행 및 SEARCH_BIZ_DEFINITION 정상 작동 확인
+1. NULL 사유 등록부 및 COMMENT 보강 (백로그 #7·#20):
+   · 전건 NULL 컬럼 검출 → OPS_컬럼NULL사유_등록부 및 DDL/SV COMMENT 반영
+2. 종료 게이트 보강 (백로그 #10·#11):
+   · 종료 게이트 묶음에 Agent·Eval·SV 게이트 5종 편입 및 음성 테스트
+3. 운영계 배포 런북 점검 (백로그 #9):
+   · 12_agent개선과제/18_O217_운영계_재현_런북.md 최신화 (10·11차 통합본 확인)
+4. 끝나면 세션을 정리하고(인수인계 라벨 파일 · 세션이력 · 원장 행) 다음 세션 프롬프트를 만들어라.
+```
+
+_Co-authored with CoCo_

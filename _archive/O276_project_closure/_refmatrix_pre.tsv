@@ -1,0 +1,546 @@
+target	source_file	count
+80_인수인계_프로젝트완료	00_WORKSPACE_MAP.md	4
+20_issue/	00_WORKSPACE_MAP.md	5
+99_NEXT_SESSION	00_WORKSPACE_MAP.md	5
+40_worklog	00_WORKSPACE_MAP.md	11
+tmp/	00_WORKSPACE_MAP.md	19
+999_temp	00_WORKSPACE_MAP.md	1
+MOVE_MAP	00_WORKSPACE_MAP.md	2
+20_issue/	00_guides/00_작업지침_세션운영규칙.md	10
+99_NEXT_SESSION	00_guides/00_작업지침_세션운영규칙.md	5
+tmp/	00_guides/00_작업지침_세션운영규칙.md	1
+20_issue/	00_guides/02_파일쓰기_안전규약.md	2
+20_issue/	00_guides/03_init_ihcho_스킬_개발이력.md	2
+99_NEXT_SESSION	00_guides/03_init_ihcho_스킬_개발이력.md	4
+20_issue/	00_guides/03_init_ihcho_스킬_본문.md	14
+99_NEXT_SESSION	00_guides/03_init_ihcho_스킬_본문.md	5
+tmp/	00_guides/03_init_ihcho_스킬_본문.md	3
+20_issue/	00_guides/03_init_ihcho_스킬_정본.md	2
+20_issue/	00_guides/03_init_ihcho_스킬_참조_세션종료.md	3
+99_NEXT_SESSION	00_guides/03_init_ihcho_스킬_참조_세션종료.md	4
+tmp/	00_guides/03_init_ihcho_스킬_참조_세션종료.md	1
+20_issue/	00_guides/04_단계종료_게이트.md	4
+20_issue/	00_guides/01_문서분할_규약_조각/01_문서분할_규약-001.md	1
+20_issue/	00_guides/01_문서분할_규약_조각/01_문서분할_규약-002.md	4
+20_issue/	00_guides/01_문서분할_규약_조각/01_문서분할_규약-003.md	4
+99_NEXT_SESSION	00_guides/01_문서분할_규약_조각/01_문서분할_규약-003.md	8
+MOVE_MAP	10_design/00_README.md	3
+00_WORKSPACE_RESTRUCTURE_PLAN	10_design/11_gold_topdown/00_README.md	1
+20_issue/	10_design/11_gold_topdown/03_테이블_설계.md	8
+20_issue/	10_design/11_gold_topdown/05_필드_인벤토리.md	2
+20_issue/	10_design/11_gold_topdown/06_DDL.sql	1
+20_issue/	10_design/11_gold_topdown/06_DDL_설계이력_부록.md	2
+20_issue/	10_design/11_gold_topdown/08_silver의존.md	1
+20_issue/	10_design/11_gold_topdown/_archive/DEC30_STRUCTURE_ALTER.sql	1
+20_issue/	10_design/11_gold_topdown/_archive/O28_O29_COMMENT_GUARD.sql	1
+99_NEXT_SESSION	10_design/11_gold_topdown/_archive/O28_O29_COMMENT_GUARD.sql	2
+20_issue/	10_design/11_gold_topdown/_archive/O39_COMMENT_GUARD.sql	1
+20_issue/	10_design/11_gold_topdown/_archive/O40_PAYMENT_SCOPE_FIX.sql	1
+20_issue/	10_design/11_gold_topdown/_archive/O45_202608/00_README_O45이관안내.md	1
+20_issue/	10_design/11_gold_topdown/_archive/O45_202608/O45_ASSEMBLY_AXES.sql	1
+20_issue/	10_design/12_silver_design/00_README.md	1
+00_WORKSPACE_RESTRUCTURE_PLAN	10_design/12_silver_design/00_README.md	1
+20_issue/	10_design/12_silver_design/02_SILVER_작업계획_BRONZE-GOLD연결_20260714.md	1
+20_issue/	10_design/12_silver_design/03_SILVER_작업계획_CRM전용_20260714.md	2
+20_issue/	10_design/12_silver_design/04_SILVER_작업계획_GA4전용_20260714.md	2
+20_issue/	10_design/12_silver_design/06_SILVER_작업계획_AGENCY전용_20260714.md	2
+20_issue/	10_design/12_silver_design/07_GA4_SILVER_샤드통합_설계결정.md	2
+20_issue/	10_design/12_silver_design/08_SILVER_DDL_설계이력_부록.md	12
+20_issue/	10_design/12_silver_design/08_SILVER_테이블DDL_20260714.sql	1
+20_issue/	10_design/12_silver_design/14_GA4_작업지시_프롬프트_20260714.md	1
+20_issue/	10_design/12_silver_design/15_dbt파이프라인_작업지시_프롬프트_20260714.md	1
+20_issue/	10_design/12_silver_design/22_GA4_파이프라인_dbt로_작업전_주의사항.md	3
+20_issue/	10_design/12_silver_design/23_GA4_파이프라인_SP로_작업전_주의사항.md	2
+20_issue/	10_design/12_silver_design/S1_CRM_entity_design_legacy/04_CRM_PAYMENT_BILLING.md	1
+00_WORKSPACE_RESTRUCTURE_PLAN	10_design/12_silver_design/_archive/README.md	1
+20_issue/	10_design/13_snapshot_design/01_스냅샷_아키텍처_및_네이밍룰.md	1
+20_issue/	10_design/13_snapshot_design/02_스냅샷_파이프라인_구축_작업계획.md	1
+20_issue/	10_design/13_snapshot_design/03_스냅샷_환경구축_및_검증쿼리.sql	1
+20_issue/	10_dbt_pipeline/00_배포운영_통합_20260715.md	10
+20_issue/	10_dbt_pipeline/01_deploy_dbt_project.sql	1
+20_issue/	10_dbt_pipeline/10_성능검토_정적코드분석_20260716.md	2
+20_issue/	10_dbt_pipeline/11_성능검토_운영리스크_20260716.md	3
+20_issue/	10_dbt_pipeline/README.md	13
+20_issue/	10_dbt_pipeline/dbt_project.yml	1
+20_issue/	10_dbt_pipeline/_archive/90_NEXT_SESSION_순서9-D_20260715.md	2
+tmp/	10_dbt_pipeline/_archive/MIGRATION_GUIDE.md	1
+20_issue/	10_dbt_pipeline/macros/bigquery_range_predicate.sql	1
+tmp/	10_dbt_pipeline/models/gold/dim/DIM_ORG_SUCCESSION.sql	1
+20_issue/	10_dbt_pipeline/models/gold/dim/DIM_SEND_TYPE.sql	1
+99_NEXT_SESSION	10_dbt_pipeline/models/gold/fact/FACT_BIGQUERY_BEHAVIOR.sql	2
+20_issue/	10_dbt_pipeline/models/gold/fact/FACT_MEMBER_MONTHLY.sql	4
+20_issue/	10_dbt_pipeline/models/silver/_sources.yml	1
+tmp/	10_dbt_pipeline/models/silver/agency/AGENCY_AD_PERFORMANCE.sql	1
+20_issue/	10_dbt_pipeline/models/silver/bigquery/BIGQUERY_BASIC.sql	3
+20_issue/	10_dbt_pipeline/models/silver/bigquery/BIGQUERY_IDENTITY.sql	2
+20_issue/	10_dbt_pipeline/models/silver/crm/CRM_MEMBER_DEV.sql	1
+20_issue/	10_dbt_pipeline/models/silver/crm/CRM_MEMBER_SPONSOR_SPAN.sql	1
+tmp/	10_dbt_pipeline/models/silver/crm/CRM_ORG_SUCCESSION.sql	1
+20_issue/	10_dbt_pipeline/models/silver/crm/_crm_schema.yml	1
+tmp/	10_dbt_pipeline/models/silver/crm/_crm_schema.yml	1
+tmp/	10_dbt_pipeline/tests/assert_aap_upper_cmpgn_split.sql	1
+MOVE_MAP	20_build/00_README.md	3
+00_WORKSPACE_RESTRUCTURE_PLAN	20_build/21_env_rbac/00_INDEX.md	1
+20_issue/	20_build/21_env_rbac/02_DB_BRONZE_SILVER.md	1
+20_issue/	20_build/21_env_rbac/03_GOLD_SERVING.md	1
+20_issue/	20_build/21_env_rbac/06_RUNBOOK.md	1
+20_issue/	20_build/21_env_rbac/07_ENVIRONMENT_RBAC_setup.sql	1
+99_NEXT_SESSION	20_build/21_env_rbac/08_After_Deploy_DBT.sql	2
+20_issue/	20_build/21_env_rbac/_archive/20_일배치테스트용.sql	14
+20_issue/	20_build/23_sv_agent/00_README.md	1
+00_WORKSPACE_RESTRUCTURE_PLAN	20_build/23_sv_agent/00_README.md	1
+20_issue/	20_build/23_sv_agent/00_SV_공통지시문.md	1
+tmp/	20_build/23_sv_agent/00_SV_공통지시문.md	2
+20_issue/	20_build/23_sv_agent/01_SV-Agent_작업계획.md	4
+20_issue/	20_build/23_sv_agent/03_SV_metric_배속.md	1
+20_issue/	20_build/23_sv_agent/04_SV_설계.md	1
+20_issue/	20_build/23_sv_agent/05_SV_DDL_설계이력_부록.md	3
+99_NEXT_SESSION	20_build/23_sv_agent/05_SV_DDL_설계이력_부록.md	1
+20_issue/	20_build/23_sv_agent/06_검증쿼리_VQR.md	1
+20_issue/	20_build/23_sv_agent/07_평가셋_eval.md	1
+20_issue/	20_build/23_sv_agent/09_0_AGENT_정의서.md	2
+99_NEXT_SESSION	20_build/23_sv_agent/09_0_AGENT_정의서.md	2
+20_issue/	20_build/23_sv_agent/09_1_AGENT_생성.sql	1
+tmp/	20_build/23_sv_agent/09_2_AGENT_버전업.sql	1
+20_issue/	20_build/23_sv_agent/20_ML_SV_설계.md	1
+tmp/	20_build/23_sv_agent/27_DEPLOY_FORMULA_ALIGN.sql	4
+tmp/	20_build/23_sv_agent/28_DEPLOY_G1_RESOLVE.sql	2
+tmp/	20_build/23_sv_agent/29_DEPLOY_G1_REMAINDER.sql	1
+20_issue/	20_build/23_sv_agent/30_마케팅_AGENT_설계.md	2
+99_NEXT_SESSION	20_build/23_sv_agent/30_마케팅_AGENT_설계.md	1
+tmp/	20_build/23_sv_agent/30_마케팅_AGENT_설계.md	1
+20_issue/	20_build/23_sv_agent/31_O241_AB병기_SV배선_작업계획.md	1
+tmp/	20_build/23_sv_agent/32_DEPLOY_AB_DUAL_SV_WIRING.sql	2
+99_NEXT_SESSION	20_build/23_sv_agent/33_DEPLOY_PROD_ROUNDING_VQR.sql	2
+20_issue/	20_build/23_sv_agent/99_next_prompt.md	4
+99_NEXT_SESSION	20_build/23_sv_agent/99_next_prompt.md	2
+20_issue/	20_build/23_sv_agent/_archive/09_AGENT_spec_구현_원본_20260722.sql	1
+20_issue/	20_build/23_sv_agent/_archive/15_O183_GOLD공란채움_배포.sql	1
+20_issue/	20_build/23_sv_agent/_archive/24_MSTR_AGENT_배포.sql	2
+99_NEXT_SESSION	20_build/23_sv_agent/_archive/24_MSTR_AGENT_배포.sql	2
+00_WORKSPACE_RESTRUCTURE_PLAN	20_build/25_mstr_migration/tools/README.md	1
+20_issue/	20_build/26_mstr_medallion/00_작업계획.md	1
+20_issue/	20_build/26_mstr_medallion/03_규칙카드_A1.md	1
+20_issue/	20_build/28_cortex_project/_archive/00_README.md	1
+00_WORKSPACE_RESTRUCTURE_PLAN	20_build/28_cortex_project/_archive/00_README.md	1
+tmp/	20_build/28_cortex_project/agents/AGENT_MARKETING/agent_spec.yaml	1
+MOVE_MAP	30_operate/00_README.md	3
+00_WORKSPACE_RESTRUCTURE_PLAN	30_operate/31_monitoring/00_README.md	1
+00_WORKSPACE_RESTRUCTURE_PLAN	30_operate/32_agent_improvement/00_README.md	1
+20_issue/	30_operate/32_agent_improvement/00_작업계획.md	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/00_작업계획.md	3
+tmp/	30_operate/32_agent_improvement/00_작업계획.md	73
+20_issue/	30_operate/32_agent_improvement/02_질문별_답변현황_엑셀_실행가이드.md	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/05_운영계_후속작업_프롬프트_O207.md	4
+tmp/	30_operate/32_agent_improvement/05_운영계_후속작업_프롬프트_O207.md	3
+99_NEXT_SESSION	30_operate/32_agent_improvement/07_5차개선_착수프롬프트_O208.md	1
+tmp/	30_operate/32_agent_improvement/07_5차개선_착수프롬프트_O208.md	4
+99_NEXT_SESSION	30_operate/32_agent_improvement/13_6차_4차상태롤백_착수프롬프트.md	2
+tmp/	30_operate/32_agent_improvement/13_6차_4차상태롤백_착수프롬프트.md	4
+99_NEXT_SESSION	30_operate/32_agent_improvement/14_O217_작업계획.md	1
+20_issue/	30_operate/32_agent_improvement/18_O217_운영계_재현_런북.md	1
+tmp/	30_operate/32_agent_improvement/18_O217_운영계_재현_런북.md	4
+20_issue/	30_operate/32_agent_improvement/20_O21X_잔여작업_정리.md	2
+99_NEXT_SESSION	30_operate/32_agent_improvement/20_O21X_잔여작업_정리.md	2
+99_NEXT_SESSION	30_operate/32_agent_improvement/21_다음세션_착수프롬프트_O218.md	4
+20_issue/	30_operate/32_agent_improvement/22_다음세션_착수프롬프트_O219.md	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/22_다음세션_착수프롬프트_O219.md	2
+20_issue/	30_operate/32_agent_improvement/24_다음세션_착수프롬프트_O220.md	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/24_다음세션_착수프롬프트_O220.md	2
+20_issue/	30_operate/32_agent_improvement/25_실시간_경량ML_시뮬레이터_설계계획.md	1
+20_issue/	30_operate/32_agent_improvement/26_다음세션_착수프롬프트_O221.md	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/26_다음세션_착수프롬프트_O221.md	2
+20_issue/	30_operate/32_agent_improvement/27_다음세션_착수프롬프트_O222.md	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/27_다음세션_착수프롬프트_O222.md	2
+20_issue/	30_operate/32_agent_improvement/28_다음세션_착수프롬프트_O223.md	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/28_다음세션_착수프롬프트_O223.md	2
+20_issue/	30_operate/32_agent_improvement/O238_원천연결키_작업계획.md	1
+tmp/	30_operate/32_agent_improvement/O238_원천연결키_작업계획.md	1
+20_issue/	30_operate/32_agent_improvement/O239_운영계_작업프롬프트.md	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/O239_운영계_작업프롬프트.md	2
+tmp/	30_operate/32_agent_improvement/O239_운영계_작업프롬프트.md	1
+tmp/	30_operate/32_agent_improvement/O246_운영계_작업프롬프트.md	1
+20_issue/	30_operate/32_agent_improvement/O270_W5_권한유지_설계안.md	1
+20_issue/	30_operate/32_agent_improvement/O270_W8_운영계_실행카드.md	1
+tmp/	30_operate/32_agent_improvement/O270_W8_운영계_실행카드.md	1
+20_issue/	30_operate/32_agent_improvement/O270_W9_현업공지_Agent조회범위.md	1
+20_issue/	30_operate/32_agent_improvement/O270_다음세션_착수프롬프트_운영계0-1단계결과.md	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/O270_다음세션_착수프롬프트_운영계0-1단계결과.md	2
+20_issue/	30_operate/32_agent_improvement/O270_운영계_LLM_프롬프트.md	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/O270_운영계_LLM_프롬프트.md	2
+tmp/	30_operate/32_agent_improvement/O270_운영계_LLM_프롬프트.md	2
+20_issue/	30_operate/32_agent_improvement/O270_운영계_사용자배정표.md	1
+20_issue/	30_operate/32_agent_improvement/O270_원천별_접근통제_작업계획.md	1
+20_issue/	30_operate/32_agent_improvement/O271_운영계_LLM_프롬프트_새세션_잔여단계.md	1
+tmp/	30_operate/32_agent_improvement/O271_운영계_LLM_프롬프트_새세션_잔여단계.md	1
+20_issue/	30_operate/32_agent_improvement/O271_운영계_LLM_프롬프트_잔존뷰_소유자.md	1
+20_issue/	30_operate/32_agent_improvement/O272_운영계_LLM_프롬프트_MA해제.md	1
+tmp/	30_operate/32_agent_improvement/O272_운영계_LLM_프롬프트_MA해제.md	1
+20_issue/	30_operate/32_agent_improvement/O273_롤설계_추가역할.md	1
+20_issue/	30_operate/32_agent_improvement/O273_롤전환_작업순서.md	1
+20_issue/	30_operate/32_agent_improvement/O273_지표사전_현업지표추가_작업계획.md	1
+20_issue/	30_operate/32_agent_improvement/O273_현업회신_마케팅Agent_3차피드백.md	1
+20_issue/	30_operate/32_agent_improvement/output/O270_gen_rbac_matrix.py	1
+20_issue/	30_operate/32_agent_improvement/output/O270_권한매트릭스.md	1
+tmp/	30_operate/32_agent_improvement/output/o217_eval/after2_QM4.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217_eval/after_MEMBER_def.txt	1
+tmp/	30_operate/32_agent_improvement/output/o217_eval/after_Q19.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217_eval/after_Q24.txt	1
+tmp/	30_operate/32_agent_improvement/output/o217_eval/after_Q25.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217_eval/after_QC8.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217_eval/after_QM4.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217_eval/before_Q19.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217_eval/before_Q24.txt	1
+tmp/	30_operate/32_agent_improvement/output/o217_eval/before_Q25.txt	1
+tmp/	30_operate/32_agent_improvement/output/o217_eval/before_QC8.txt	1
+tmp/	30_operate/32_agent_improvement/output/o217_eval/before_QM4.txt	3
+20_issue/	30_operate/32_agent_improvement/output/o217b/00_O217B_전후비교.md	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/output/o217b/_history_entry_O217B.md	1
+tmp/	30_operate/32_agent_improvement/output/o217b/after_F01.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217b/after_F02.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217b/after_F04.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217b/after_F06.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217b/after_F16.txt	1
+tmp/	30_operate/32_agent_improvement/output/o217b/after_F17.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217b/after_F23.txt	1
+tmp/	30_operate/32_agent_improvement/output/o217b/after_Q19.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217b/after_Q24.txt	1
+tmp/	30_operate/32_agent_improvement/output/o217b/after_Q25.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217b/after_QC8.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217b/after_QINC.txt	7
+tmp/	30_operate/32_agent_improvement/output/o217b/after_QM4.txt	3
+tmp/	30_operate/32_agent_improvement/output/o217b/before_QINC.txt	5
+tmp/	30_operate/32_agent_improvement/output/o218/after2_F01.txt	3
+tmp/	30_operate/32_agent_improvement/output/o218/after2_F06.txt	3
+tmp/	30_operate/32_agent_improvement/output/o218/after2_F16.txt	3
+tmp/	30_operate/32_agent_improvement/output/o218/after2_F17.txt	3
+tmp/	30_operate/32_agent_improvement/output/o218/after2_F22.txt	1
+tmp/	30_operate/32_agent_improvement/output/o218/after2_M1.txt	3
+tmp/	30_operate/32_agent_improvement/output/o218/after2_M2.txt	3
+tmp/	30_operate/32_agent_improvement/output/o218/after2_M7.txt	5
+tmp/	30_operate/32_agent_improvement/output/o218/after2_M8.txt	3
+tmp/	30_operate/32_agent_improvement/output/o218/after2_QM4.txt	3
+tmp/	30_operate/32_agent_improvement/output/o218/before_F01.txt	3
+tmp/	30_operate/32_agent_improvement/output/o218/before_F02.txt	3
+tmp/	30_operate/32_agent_improvement/output/o218/before_QM4.txt	3
+tmp/	30_operate/32_agent_improvement/tools/agent_answer_report.py	1
+tmp/	30_operate/32_agent_improvement/tools/o234_dump_live_cols.py	1
+99_NEXT_SESSION	30_operate/32_agent_improvement/tools/o234_runorder_note.py	1
+tmp/	30_operate/32_agent_improvement/tools/o266_patch_marketing_spec.py	2
+20_issue/	30_operate/33_account_bootstrap/10_NL스모크_재실행_절차.md	1
+99_NEXT_SESSION	30_operate/33_account_bootstrap/10_NL스모크_재실행_절차.md	4
+tmp/	30_operate/33_account_bootstrap/10_NL스모크_재실행_절차.md	6
+20_issue/	30_operate/33_account_bootstrap/12_GN_DW_재구축_실행순서.md	1
+99_NEXT_SESSION	30_operate/33_account_bootstrap/12_GN_DW_재구축_실행순서.md	2
+tmp/	30_operate/33_account_bootstrap/12_GN_DW_재구축_실행순서.md	4
+20_issue/	30_operate/33_account_bootstrap/13_운영계_반영_20261005이후.md	1
+99_NEXT_SESSION	30_operate/33_account_bootstrap/13_운영계_반영_20261005이후.md	3
+tmp/	30_operate/33_account_bootstrap/13_운영계_반영_20261005이후.md	3
+20_issue/	30_operate/33_account_bootstrap/readme.md	1
+99_NEXT_SESSION	30_operate/33_account_bootstrap/readme.md	1
+40_worklog	30_operate/33_account_bootstrap/readme.md	1
+00_WORKSPACE_RESTRUCTURE_PLAN	30_operate/33_account_bootstrap/readme.md	1
+20_issue/	30_operate/33_account_bootstrap/11_O누적작업_점검_재현_절차_조각/11_O누적작업_점검_재현_절차-001.md	4
+99_NEXT_SESSION	30_operate/33_account_bootstrap/11_O누적작업_점검_재현_절차_조각/11_O누적작업_점검_재현_절차-001.md	2
+tmp/	30_operate/33_account_bootstrap/11_O누적작업_점검_재현_절차_조각/11_O누적작업_점검_재현_절차-001.md	2
+20_issue/	30_operate/33_account_bootstrap/11_O누적작업_점검_재현_절차_조각/11_O누적작업_점검_재현_절차-002.md	4
+tmp/	30_operate/33_account_bootstrap/11_O누적작업_점검_재현_절차_조각/11_O누적작업_점검_재현_절차-002.md	2
+80_인수인계_프로젝트완료	50_handover/00_README.md	1
+MOVE_MAP	50_handover/00_README.md	3
+80_인수인계_프로젝트완료	50_handover/50_execution_order/00_README.md	1
+tmp/	50_handover/50_execution_order/00_README.md	1
+MOVE_MAP	50_handover/50_execution_order/00_README.md	1
+20_issue/	50_handover/50_execution_order/문서실행순서.md	1
+40_worklog	50_handover/50_execution_order/문서실행순서.md	4
+tmp/	50_handover/50_execution_order/문서실행순서.md	1
+40_worklog	50_handover/50_execution_order/문서실행순서_llm실행.md	4
+tmp/	50_handover/50_execution_order/문서실행순서_llm실행.md	18
+20_issue/	50_handover/50_execution_order/문서실행순서_보조주석.md	1
+99_NEXT_SESSION	50_handover/50_execution_order/문서실행순서_보조주석.md	8
+tmp/	50_handover/50_execution_order/문서실행순서_보조주석.md	1
+00_WORKSPACE_RESTRUCTURE_PLAN	50_handover/53_followup_project/00_README_N07.md	1
+80_인수인계_프로젝트완료	50_handover/54_handover_requests/인계요청.md	1
+99_NEXT_SESSION	50_handover/54_handover_requests/인계요청.md	1
+tmp/	50_handover/54_handover_requests/인계요청.md	1
+20_issue/	50_handover/54_handover_requests/05_SV-Agent_ai/07_평가셋_eval.md	1
+80_인수인계_프로젝트완료	50_handover/55_business_req_handover/현업요청인수인계목록.md	4
+MOVE_MAP	60_share/00_README.md	3
+20_issue/	60_share/61_output_share/00_생성기-문서명_매핑.md	1
+tmp/	60_share/61_output_share/00_생성기-문서명_매핑.md	2
+20_issue/	60_share/61_output_share/06_BRONZE노출감사.md	1
+20_issue/	60_share/61_output_share/11_미해결이슈_요약.md	68
+99_NEXT_SESSION	60_share/61_output_share/11_미해결이슈_요약.md	1
+20_issue/	60_share/61_output_share/16_파이프라인_배선_수정.md	3
+20_issue/	60_share/61_output_share/18_목표데이터_요건_및_해결이슈_정의서.md	7
+20_issue/	60_share/61_output_share/19_원천입고_및_항목신설_대기.md	8
+20_issue/	60_share/61_output_share/21_원천입고_대기_주니어_해설서.md	5
+20_issue/	60_share/61_output_share/30_공8및미회신29건_질문요약.md	1
+20_issue/	60_share/61_output_share/40_현업회신요청_O190.md	1
+20_issue/	60_share/61_output_share/41_현업회신_F-1_본부지부.md	1
+20_issue/	60_share/61_output_share/42_현업회신_E-1_모금성비용.md	1
+20_issue/	60_share/61_output_share/43_현업회신_F-2_후원사업11개.md	1
+20_issue/	60_share/61_output_share/44_현업회신_F-3_문자오픈.md	1
+20_issue/	60_share/61_output_share/45_현업회신_ML_일시후원전환_grain.md	1
+20_issue/	60_share/61_output_share/46_현업회신_DGT_이전분.md	1
+20_issue/	60_share/61_output_share/47_신규19종_파생컬럼_COMMENT초안.md	1
+20_issue/	60_share/61_output_share/_archive/15_문서 통합.md	10
+20_issue/	60_share/61_output_share/_archive/20_현업의사결정_요청_주니어_해설서.md	2
+20_issue/	60_share/61_output_share/_archive/22_요청서 통합 및 매핑.md	2
+tmp/	60_share/61_output_share/_archive/20260716/00_README_이관안내.md	2
+20_issue/	60_share/61_output_share/_archive/20260716/02_원천결손_Gap분석.md	3
+20_issue/	60_share/61_output_share/_archive/20260716/06_BRONZE노출감사.md	1
+20_issue/	60_share/61_output_share/_archive/20260716/07_코드체계_관문측정.md	1
+99_NEXT_SESSION	60_share/61_output_share/_archive/20260716/07_코드체계_관문측정.md	1
+tmp/	60_share/61_output_share/_archive/20260806/00_README_이관안내.md	2
+20_issue/	60_share/61_output_share/_archive/20260806/02_원천결손_Gap분석.md	3
+20_issue/	60_share/61_output_share/_archive/20260806/06_BRONZE노출감사.md	1
+20_issue/	60_share/61_output_share/_archive/20260812/06_BRONZE노출감사.md	1
+20_issue/	60_share/61_output_share/_archive/20260812/미해결이슈_요약_O102.md	1
+99_NEXT_SESSION	60_share/61_output_share/_archive/20260812/미해결이슈_요약_O102.md	1
+20_issue/	60_share/61_output_share/_archive/20260830/06_BRONZE노출감사.md	1
+20_issue/	60_share/61_output_share/_archive/20260830/11_미해결이슈_요약.md	65
+99_NEXT_SESSION	60_share/61_output_share/_archive/20260830/11_미해결이슈_요약.md	17
+20_issue/	60_share/61_output_share/_archive/20260830/14_현업의사결정_DB실측근거.md	1
+20_issue/	60_share/61_output_share/_archive/20260830/미해결이슈_요약_O102.md	2
+99_NEXT_SESSION	60_share/61_output_share/_archive/20260830/미해결이슈_요약_O102.md	1
+20_issue/	60_share/61_output_share/_archive/20261002/00_생성기-문서명 매핑.md	1
+tmp/	60_share/61_output_share/_archive/20261002/00_생성기-문서명 매핑.md	2
+20_issue/	60_share/61_output_share/_archive/20261002/06_BRONZE노출감사.md	1
+20_issue/	60_share/61_output_share/_archive/20261002/11_미해결이슈_요약.md	68
+99_NEXT_SESSION	60_share/61_output_share/_archive/20261002/11_미해결이슈_요약.md	5
+20_issue/	60_share/61_output_share/_archive/20261002/16_파이프라인 배선 수정.md	3
+20_issue/	60_share/61_output_share/_archive/20261002/18_목표데이터_요건_및_해결이슈_정의서.md	7
+20_issue/	60_share/61_output_share/_archive/20261002/19_원천입고_및_항목신설_대기.md	8
+20_issue/	60_share/61_output_share/_archive/20261002/21_원천입고_대기_주니어_해설서.md	5
+20_issue/	60_share/61_output_share/_archive/20261002/30_공8및미회신29건_질문요약.md	1
+20_issue/	60_share/61_output_share/_archive/20261002/40_현업회신요청_O190.md	1
+20_issue/	60_share/61_output_share/_archive/20261002/41_현업회신_F-1_본부지부.md	1
+20_issue/	60_share/61_output_share/_archive/20261002/42_현업회신_E-1_모금성비용.md	1
+20_issue/	60_share/61_output_share/_archive/20261002/43_현업회신_F-2_후원사업11개.md	1
+20_issue/	60_share/61_output_share/_archive/20261002/44_현업회신_F-3_문자오픈.md	1
+20_issue/	60_share/61_output_share/_archive/20261002/45_현업회신_ML_일시후원전환_grain.md	1
+20_issue/	60_share/61_output_share/_archive/20261002/46_현업회신_DGT_이전분.md	1
+20_issue/	60_share/61_output_share/_archive/20261002/47_신규19종_파생컬럼_COMMENT초안.md	1
+MOVE_MAP	70_reference/00_README.md	3
+00_WORKSPACE_RESTRUCTURE_PLAN	70_reference/72_sample_legacy/README.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/00_INDEX_산출물목록.md	1
+tmp/	85_실제 인수인계 문서/00_INDEX_산출물목록.md	2
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/00_작업계획서.md	2
+20_issue/	85_실제 인수인계 문서/00_작업계획서.md	2
+99_NEXT_SESSION	85_실제 인수인계 문서/00_작업계획서.md	1
+40_worklog	85_실제 인수인계 문서/00_작업계획서.md	1
+99_NEXT_SESSION	85_실제 인수인계 문서/10_실무자_인수인계/00_README.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/10_실무자_인수인계/A0_환경실사_baseline.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/10_실무자_인수인계/A1_운영자가이드.md	6
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/10_실무자_인수인계/A2_롤별_접근권한_매트릭스.md	4
+tmp/	85_실제 인수인계 문서/10_실무자_인수인계/A2_롤별_접근권한_매트릭스.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/10_실무자_인수인계/A4_dbt_파이프라인_개발자가이드.md	6
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/10_실무자_인수인계/A5_Agent_SV_개발자가이드.md	5
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/10_실무자_인수인계/A6_일배치_장애대응_런북.md	7
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/10_실무자_인수인계/A7_정기점검_체크리스트.md	1
+99_NEXT_SESSION	85_실제 인수인계 문서/10_실무자_인수인계/A8_미결이슈_인계목록.csv	1
+20_issue/	85_실제 인수인계 문서/10_실무자_인수인계/A8_미결이슈_인계목록.md	4
+99_NEXT_SESSION	85_실제 인수인계 문서/10_실무자_인수인계/A8_미결이슈_인계목록.md	5
+tmp/	85_실제 인수인계 문서/20_정식산출물/00_README.md	2
+20_issue/	85_실제 인수인계 문서/20_정식산출물/D01_요구사항_지표정의서.md	1
+99_NEXT_SESSION	85_실제 인수인계 문서/20_정식산출물/D01_요구사항_지표정의서.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/20_정식산출물/D02_아키텍처정의서.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/20_정식산출물/D03_환경구성서_RBAC매트릭스.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/20_정식산출물/D10_운영매뉴얼.md	1
+40_worklog	85_실제 인수인계 문서/20_정식산출물/D11_모니터링_비용관리정의서.md	1
+20_issue/	85_실제 인수인계 문서/20_정식산출물/D13_의사결정_이슈대장.md	4
+99_NEXT_SESSION	85_실제 인수인계 문서/20_정식산출물/D13_의사결정_이슈대장.md	1
+tmp/	85_실제 인수인계 문서/20_정식산출물/D13_의사결정_이슈대장.md	1
+tmp/	85_실제 인수인계 문서/20_정식산출물/D13_의사결정대장.csv	1
+tmp/	85_실제 인수인계 문서/20_정식산출물/D14_실행순서_대조.csv	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/20_정식산출물/D14_인수인계서.md	4
+40_worklog	85_실제 인수인계 문서/20_정식산출물/D14_인수인계서.md	1
+tmp/	85_실제 인수인계 문서/20_정식산출물/D14_인수인계서.md	2
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/20_정식산출물/N04_배치SLA_스케줄정의서.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/20_정식산출물/N05_테스트결과서.md	1
+40_worklog	85_실제 인수인계 문서/20_정식산출물/N06_비용산정_용량계획서.md	2
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/30_현업요청대응/R04_dbt프로젝트.md	2
+20_issue/	85_실제 인수인계 문서/30_현업요청대응/R05_dbt실행배포.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/30_현업요청대응/R06_Agent설정운영.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/30_현업요청대응/R07_계정권한보안.md	2
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/30_현업요청대응/R08_운영비용관리.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/30_현업요청대응/R09_장애대응복구.md	1
+20_issue/	85_실제 인수인계 문서/30_현업요청대응/R09_장애대응복구.md	2
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/30_현업요청대응/R10_데이터검증.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/30_현업요청대응/R11_소스관리권한이관.md	2
+20_issue/	85_실제 인수인계 문서/30_현업요청대응/_목차추출.txt	1
+99_NEXT_SESSION	85_실제 인수인계 문서/30_현업요청대응/_근거쿼리/R95_O269_운영계_수치회수.sql	2
+tmp/	85_실제 인수인계 문서/30_현업요청대응/_근거쿼리/R95_O269_운영계_수치회수.sql	1
+99_NEXT_SESSION	85_실제 인수인계 문서/30_현업요청대응/_근거쿼리/R96_O270_에이전트_피드백3차_질문답변.sql	2
+20_issue/	85_실제 인수인계 문서/_ENV/운영계_반영_체크리스트.md	1
+tmp/	85_실제 인수인계 문서/_ENV/ZL50263/A6_Q01_1.csv	2
+tmp/	85_실제 인수인계 문서/_ENV/ZL50263/N05_Q01_1.csv	8
+20_issue/	85_실제 인수인계 문서/_archive/99_다음세션_프롬프트.md	1
+99_NEXT_SESSION	85_실제 인수인계 문서/_archive/99_다음세션_프롬프트.md	3
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/_ENV/ZL50263_20261027/A6_Q01_1.csv	1
+tmp/	85_실제 인수인계 문서/_archive/_ENV/ZL50263_20261027/A6_Q01_1.csv	2
+tmp/	85_실제 인수인계 문서/_archive/_ENV/ZL50263_20261027/N05_Q01_1.csv	2
+tmp/	85_실제 인수인계 문서/_archive/_드리프트/자기검토_보고서.md	2
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/00_INDEX_산출물목록.md	1
+tmp/	85_실제 인수인계 문서/_archive/원본/00_INDEX_산출물목록.md	2
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/00_작업계획서.md	2
+20_issue/	85_실제 인수인계 문서/_archive/원본/00_작업계획서.md	2
+99_NEXT_SESSION	85_실제 인수인계 문서/_archive/원본/00_작업계획서.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/10_실무자_인수인계/A0_환경실사_baseline.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/10_실무자_인수인계/A1_운영자가이드.md	6
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/10_실무자_인수인계/A2_롤별_접근권한_매트릭스.md	4
+tmp/	85_실제 인수인계 문서/_archive/원본/10_실무자_인수인계/A2_롤별_접근권한_매트릭스.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/10_실무자_인수인계/A4_dbt_파이프라인_개발자가이드.md	6
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/10_실무자_인수인계/A5_Agent_SV_개발자가이드.md	5
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/10_실무자_인수인계/A6_일배치_장애대응_런북.md	7
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/10_실무자_인수인계/A7_정기점검_체크리스트.md	1
+99_NEXT_SESSION	85_실제 인수인계 문서/_archive/원본/10_실무자_인수인계/A8_미결이슈_인계목록.csv	1
+20_issue/	85_실제 인수인계 문서/_archive/원본/10_실무자_인수인계/A8_미결이슈_인계목록.md	4
+99_NEXT_SESSION	85_실제 인수인계 문서/_archive/원본/10_실무자_인수인계/A8_미결이슈_인계목록.md	3
+20_issue/	85_실제 인수인계 문서/_archive/원본/20_정식산출물/D01_요구사항_지표정의서.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/20_정식산출물/D02_아키텍처정의서.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/20_정식산출물/D03_환경구성서_RBAC매트릭스.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/20_정식산출물/D10_운영매뉴얼.md	1
+tmp/	85_실제 인수인계 문서/_archive/원본/20_정식산출물/D14_실행순서_대조.csv	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/20_정식산출물/D14_인수인계서.md	4
+tmp/	85_실제 인수인계 문서/_archive/원본/20_정식산출물/D14_인수인계서.md	2
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/20_정식산출물/N04_배치SLA_스케줄정의서.md	1
+80_인수인계_프로젝트완료	85_실제 인수인계 문서/_archive/원본/20_정식산출물/N05_테스트결과서.md	1
+20_issue/	85_실제 인수인계 문서/_archive/원본/_ENV/운영계_반영_체크리스트.md	1
+20_issue/	90_provided_definition/00_README.md	1
+00_WORKSPACE_RESTRUCTURE_PLAN	90_provided_definition/00_README.md	1
+20_issue/	90_provided_definition/07_추가_지표사전_20260813기준.md	1
+20_issue/	scripts/_o155_rename_scan.py	3
+99_NEXT_SESSION	scripts/_o155_rename_scan.py	2
+20_issue/	scripts/_o169_axis1_biwi.py	2
+tmp/	scripts/_o170_gold_unfilled.py	4
+99_NEXT_SESSION	scripts/_o170_handoff_append.py	2
+tmp/	scripts/_o170_handoff_append.py	1
+20_issue/	scripts/_o170_reserve.py	1
+20_issue/	scripts/_o170_retire_driver.py	1
+99_NEXT_SESSION	scripts/_o170_retire_driver.py	2
+99_NEXT_SESSION	scripts/_o170_superseded_census.py	2
+tmp/	scripts/_o170_unassigned_probe.py	3
+tmp/	scripts/_o170_unfilled_diff.py	1
+40_worklog	scripts/add_column_comments.py	1
+tmp/	scripts/agent_answer_judge.py	2
+tmp/	scripts/census_columns.py	1
+20_issue/	scripts/classify_doc_type.py	1
+tmp/	scripts/cortex_analyst_30_exec.py	1
+tmp/	scripts/cortex_analyst_30_runner.py	1
+20_issue/	scripts/decision_closure_gate.py	6
+tmp/	scripts/deploy_sv.py	1
+20_issue/	scripts/doc_census.py	24
+99_NEXT_SESSION	scripts/doc_census.py	3
+20_issue/	scripts/doc_coord_gate.py	9
+99_NEXT_SESSION	scripts/doc_coord_gate.py	6
+20_issue/	scripts/doc_heading_gate.py	17
+99_NEXT_SESSION	scripts/doc_heading_gate.py	4
+20_issue/	scripts/doc_headings.json	38
+99_NEXT_SESSION	scripts/doc_headings.json	72
+40_worklog	scripts/doc_headings.json	1
+20_issue/	scripts/doc_line_length_gate.py	20
+99_NEXT_SESSION	scripts/doc_line_length_gate.py	5
+20_issue/	scripts/doc_type_gate.py	6
+99_NEXT_SESSION	scripts/doc_type_gate.py	3
+tmp/	scripts/dump_schema.py	1
+20_issue/	scripts/fix_stale_counts.py	3
+tmp/	scripts/gate_census.py	3
+tmp/	scripts/gen_bronze_exposure_audit.py	2
+tmp/	scripts/gen_column_mapping.py	2
+tmp/	scripts/gen_concept_diagram.py	5
+20_issue/	scripts/gen_measure_backlog.py	4
+99_NEXT_SESSION	scripts/gen_measure_backlog.py	1
+tmp/	scripts/gen_metric_gold_mapping.py	2
+tmp/	scripts/gen_o53_ad_combined.py	1
+tmp/	scripts/gen_o53_gold_ddl.py	2
+tmp/	scripts/gen_s30_census_sql.py	1
+tmp/	scripts/gen_section_assembly.py	4
+tmp/	scripts/gen_silver_gold_retention.py	1
+20_issue/	scripts/gen_unresolved_issue_summary.py	4
+99_NEXT_SESSION	scripts/gen_unresolved_issue_summary.py	1
+40_worklog	scripts/handoff_ddl_gate.py	9
+20_issue/	scripts/handoff_write.py	1
+99_NEXT_SESSION	scripts/handoff_write.py	1
+tmp/	scripts/handoff_write.py	1
+20_issue/	scripts/id_collision_gate.py	1
+99_NEXT_SESSION	scripts/id_collision_gate.py	1
+20_issue/	scripts/index_row_gate.py	3
+99_NEXT_SESSION	scripts/index_row_gate.py	1
+20_issue/	scripts/index_rows.json	14
+99_NEXT_SESSION	scripts/index_rows.json	63
+20_issue/	scripts/live_change_gate.py	1
+99_NEXT_SESSION	scripts/merge_check.py	1
+tmp/	scripts/mirror_from_stage.sh	9
+20_issue/	scripts/move_o63_history_entry.py	1
+tmp/	scripts/n01_dmf_apply.py	2
+tmp/	scripts/nl_routing_judge.py	2
+tmp/	scripts/nl_routing_smoke.py	1
+20_issue/	scripts/o122_name_drift.sql	1
+tmp/	scripts/o145_transcript_audit.py	2
+tmp/	scripts/o163_ddl_live_drift.py	1
+20_issue/	scripts/o192_ddl_compact.py	2
+tmp/	scripts/o192_ddl_compact.py	6
+tmp/	scripts/o192_ml_serving_compact.py	4
+tmp/	scripts/o192_sv_compact.py	4
+tmp/	scripts/o59d_snapshot.py	2
+tmp/	scripts/optional_gates.sh	2
+tmp/	scripts/outputs.json	1
+20_issue/	scripts/rename_stale_gate.py	3
+99_NEXT_SESSION	scripts/rename_stale_gate.py	2
+tmp/	scripts/rename_stale_gate.py	1
+20_issue/	scripts/retire_rows.py	4
+20_issue/	scripts/retire_sections.py	5
+20_issue/	scripts/run_bronze_audit_host.py	2
+20_issue/	scripts/session_brief.py	6
+99_NEXT_SESSION	scripts/session_brief.py	12
+tmp/	scripts/snapshot_cli.py	1
+99_NEXT_SESSION	scripts/snapshot_util.py	1
+20_issue/	scripts/split_doc.py	5
+99_NEXT_SESSION	scripts/split_doc.py	5
+20_issue/	scripts/split_issue_index.py	2
+20_issue/	scripts/split_narrative.py	2
+tmp/	scripts/stage_mount_size_gate.py	2
+tmp/	scripts/sv_enum_newvalue_gate.py	1
+20_issue/	scripts/test_doc_census.py	5
+99_NEXT_SESSION	scripts/test_doc_census.py	2
+20_issue/	scripts/test_doc_coord_gate.py	25
+99_NEXT_SESSION	scripts/test_doc_coord_gate.py	5
+99_NEXT_SESSION	scripts/test_doc_type_gate_denominator.py	6
+20_issue/	scripts/test_gen_unresolved_issue_summary.py	1
+99_NEXT_SESSION	scripts/test_generators.py	2
+tmp/	scripts/test_generators.py	6
+99_NEXT_SESSION	scripts/test_handoff_write.py	3
+tmp/	scripts/test_o145_tools.py	3
+20_issue/	scripts/test_rename_stale_gate.py	4
+99_NEXT_SESSION	scripts/test_rename_stale_gate.py	2
+99_NEXT_SESSION	scripts/test_session_brief.py	8
+tmp/	scripts/test_session_brief.py	1
+99_NEXT_SESSION	scripts/test_split_doc_truncated_table.py	1
+20_issue/	scripts/ws_stage_verify.py	2
+99_NEXT_SESSION	scripts/ws_stage_verify.py	1
+20_issue/	scripts/_archive/_o144f_rowlen.py	1
+20_issue/	scripts/golden/doc_headings.json	57
+99_NEXT_SESSION	scripts/golden/doc_headings.json	125
+20_issue/	scripts/golden/index_rows.json	5
+99_NEXT_SESSION	scripts/golden/index_rows.json	76
+tmp/	scripts/golden/outputs.json	2
+tmp/	scripts/o51d_view_comments/build_ad_yml.py	2
+tmp/	scripts/o51d_view_comments/build_yml.py	2
+20_issue/	scripts/o51d_view_comments/desc_ad.py	1
+20_issue/	scripts/o51d_view_comments/desc_emptyaxis.py	1
+tmp/	scripts/o51d_view_comments/gate.py	1
+tmp/	scripts/o51d_view_comments/nullscan.py	1
+tmp/	scripts/o51d_view_comments/patch_ad_yml.py	1
+tmp/	scripts/o51d_view_comments/patch_yml.py	1
+tmp/	scripts/o51d_view_comments/reapply_cols.py	1
+20_issue/	.snowflake/cortex/skills/init_ihcho/SKILL.md	7
+99_NEXT_SESSION	.snowflake/cortex/skills/init_ihcho/SKILL.md	3
+tmp/	.snowflake/cortex/skills/init_ihcho/SKILL.md	3
+20_issue/	.snowflake/cortex/skills/init_ihcho/references/doc-map.md	6
+99_NEXT_SESSION	.snowflake/cortex/skills/init_ihcho/references/doc-map.md	2
+20_issue/	.snowflake/cortex/skills/init_ihcho/references/session-end.md	2
+99_NEXT_SESSION	.snowflake/cortex/skills/init_ihcho/references/session-end.md	4
+tmp/	.snowflake/cortex/skills/init_ihcho/references/session-end.md	1
+20_issue/	.snowflake/cortex/skills/mstr-migration/SKILL.md	1
+tmp/	.snowflake/cortex/skills/mstr-migration/SKILL.md	1

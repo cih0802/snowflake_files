@@ -4,7 +4,7 @@ doc_role: 현업(마케팅팀) 회신문 — 마케팅 분석 Agent 3차 피드�
 project: GN_DW (굿네이버스)
 created: 2026-10-30
 created_by: O273-A
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 근거: SV 한글 지표명·설명 = 05_SV-Agent_ai/05_31_SV_DDL_MKTG_CAMPAIGN_COST.sql · 지표사전 = GN_DW.SERVING.BIZ_DEFINITION_CORPUS(MET_CMN-4·7 · RT-01·14·15·28) · Agent 화면 이름 = SHOW AGENTS profile.display_name · 운영 대조 = O270 [D2]
 END-METADATA -->
 

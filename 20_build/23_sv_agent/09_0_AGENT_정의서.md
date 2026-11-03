@@ -5,7 +5,7 @@ project: GN_DW (굿네이버스)
 created: 2026-10-03
 created_by: O200-D
 depends_on: cortex_project/agents/*/agent_spec.yaml(도구·지시문 정본) · 08_AGENT_spec.md(상세 설계·평가)
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 END-METADATA -->
 
 # 09_0 — Agent 정의서 (간략)
@@ -27,7 +27,7 @@ END-METADATA -->
 | ~~`AGENT_MSTR`~~ | ~~MSTR 리포트~~ | 🔴 **[O207-C] DROP** — 역할은 위 3종의 `analyst_mstr_spnsr_dvlp` 로 흡수 | ~~MSTR 정기회원 후원개발 리포트~~ | 🔴 MSTR |
 
 - 🔴 **기준이 다른 Agent 끼리 수치를 합산하지 않는다** — MSTR 기준과 GN_DW 기준은 같은 지표명이라도 정의가 다르다.
-  · 근거 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0199-A.md` ▣O199-A-3 · 각 스펙 `orchestration` 절.
+  · 근거 = `_archive/O276_project_closure/99_NEXT_SESSION_조각/99_NEXT_SESSION-O0199-A.md` ▣O199-A-3 · 각 스펙 `orchestration` 절.
 - 🟢 같은 SV 를 여러 Agent 가 도구로 쓸 수 있다(SV 를 복사하지 않는다) — 예: `SV_MEMBER_MONTHLY` = MEMBER·EXECUTIVE.
 - 🟢 MSTR SV 는 현업 승인 후 기존 Agent 에 **같은 SV 를 도구로 추가**한다(O199-A-3).
 
@@ -51,7 +51,7 @@ END-METADATA -->
 | (폐기 스텁) | `09_0_AGENT_spec_구현.sql` | 실행 대상 아님 · 2026-07-31 분해 |
 
 - 🔴 owner = **GN_DW_ADMIN**(`02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql:38`) — ACCOUNTADMIN 세션으로 만들면 이후 버전업이 막힌다
-  (`20_issue/10_진단_원인분석_조각/10_진단_원인분석-015.md:57`).
+  (`_archive/O276_project_closure/20_issue/10_진단_원인분석_조각/10_진단_원인분석-015.md:57`).
 - 🔴 COMMENT·PROFILE 은 스펙이 아니라 DDL 속성이다 ⇒ `09_2` 버전업으로는 바뀌지 않는다.
 
 ## 4. 실측 방법 (수는 여기서 센다)

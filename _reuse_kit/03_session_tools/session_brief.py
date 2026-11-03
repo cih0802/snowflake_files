@@ -1,0 +1,880 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""session_brief.py — 세션 착수 브리핑을 **정본에서 추출해 생성**한다.
+
+[2026-08-28 O106 신설 · `R4-4-1`·`init_ihcho` Step 3 의 집행 장치]
+
+🔴 왜 필요한가 — 브리핑이 「독해의 산출물」이라 구조적으로 위반이 났다
+--------------------------------------------------------------------------
+`R4-4-1` 은 *"브리핑은 Step 2 독해의 산출물이므로 생략은 미독의 증거다"* 라고 규정한다.
+그런데 Step 2 가 요구하는 전량 독해는 **물리적으로 불가능**하다 — O106 실측:
+
+    지침 18,109자 + 00_INDEX 114,934 + 50_dbt 190,010 + 99_NEXT 146,825
+      = 「필수」만 469,878자  (전 문서군 1,678,616자)
+
+⇒ 규약을 지키면 컨텍스트가 터지고, 터지지 않으려면 **읽지 않고 읽은 척**하게 된다.
+   그것이 `R1-3-7` 이 잡으려던 실패의 **상류 원인**이고, `R4-4-1` 위반이
+   **최소 6세션 연속** 등재된 이유와 같은 구조다(원인은 게으름이 아니라 조문 설계).
+
+🟢 처방 = 브리핑을 **스크립트의 산출물**로 바꾼다
+--------------------------------------------------------------------------
+· 열린 작업·게이트 상태는 **표에서 기계로 추출**한다 ⇒ 읽지 않아도 정확하다.
+· 「읽은 척」이 **원리적으로 불가능**해진다(수치의 출처가 파일이고 재현 가능하다).
+· 에이전트는 브리핑에 실린 **좌표만 보고 필요한 조각을 골라** 읽는다.
+
+🔴 이 도구가 **내용을 요약하지 않는다**
+--------------------------------------------------------------------------
+각 항목은 **제목 + 상태 + 좌표(파일:행)** 만 싣는다. 판정·수치는 싣지 않는다.
+근거 = `R1-3-7` 「대체 근거 금지」 — 요약을 근거로 쓰면 정본 대체물이 된다.
+⇒ 브리핑은 **색인**이고 정본이 아니다. 수치를 인용하려면 그 좌표를 읽어야 한다.
+
+🔴 DB 를 보지 않는다 — 파일시스템만 읽는다(이 계정은 문서작업용).
+   라이브 판정이 필요한 항목은 `92_실측필요_후속작업.md` 소관이다(`R2-8-4-c`).
+
+사용
+--------------------------------------------------------------------------
+    python3 scripts/session_brief.py               # 브리핑을 stdout 에 출력
+    python3 scripts/session_brief.py --no-gates    # 게이트 실행 생략(빠름)
+    python3 scripts/session_brief.py --write       # `01_project_control/00_BRIEF.md` 생성
+"""
+
+import argparse
+import io
+import os
+import re
+import subprocess
+import sys
+import datetime
+
+ROOT = __import__('kit_paths').ROOT  # [kit] 루트 = kit_paths.py
+BRIEF = os.path.join(ROOT, '01_project_control', '00_BRIEF.md')
+MAX_BRIEF_BYTES = 32 * 1024      # doc_type_gate 축3(여유 20%)을 만족하는 상한
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from doc_census import census, stale_check, chunk_paths      # noqa: E402
+# 🆕 🔴 [2026-09-17 O172] 라벨 파일 규격·열거의 **정본은 `doc_census`** 다(`R3-9 ㉡`).
+from doc_census import label_paths, outdir_marker, label_rx    # noqa: E402
+
+#: 분할 조각의 본문 시작 센티넬 — 🔴 **여기서 다시 정의하지 않는다.**
+#: 근거 = `R3-9 ㉡`(같은 것을 다르게 재는 지점이 어긋난다) ⇒ `split_doc.py` 가 유일한 정의 지점이고
+#: `index_row_gate.py` 도 같은 문자열을 쓴다. 문자열이 바뀌면 이 도구는 자동으로 따라간다.
+from split_doc import BODY_BEGIN                             # noqa: E402
+
+EMOJI_OPEN = ('🔴', '🟠', '🟡')
+EMOJI_DONE = ('🟢', '✅')
+STRIKE = re.compile(r'^\s*~~.*~~\s*$')
+LEAD_EMO = re.compile(r'^([🟢🟡🟠🔴✅⚪⛔🆕🔒🔄🛠️❌⚠️\s]*)')
+
+
+def read_text(p):
+    with io.open(p, encoding='utf-8', errors='replace') as fh:
+        return fh.read()
+
+
+def strip_md(s):
+    """표시용 축약 — 마크다운 장식을 걷어낸다(내용은 자르지 않는다)."""
+    s = re.sub(r'<br\s*/?>', ' ', s)
+    s = s.replace('**', '').replace('`', '')
+    return re.sub(r'\s+', ' ', s).strip()
+
+
+def clip(s, n):
+    return s if len(s) <= n else s[:n - 1] + '…'
+
+
+def strip_chunk_preamble(lines):
+    """조각 머리말(`BODY-BEGIN` 위 3줄)을 걷어내 **논리 문서 스트림**을 만든다.
+
+    🔴🔴 [2026-08-29 O112 신설 · `99_NEXT §0-RRR ▣NNNN ⑦` 의 처방]
+    왜 필요한가 — **브리핑의 「열린 착수표」 수가 조각 경계에 의존했다.**
+    O111-B 실측: 재균형 직후 착수표가 **10 → 11** 로 늘었고 늘어난 ⑬은
+    `99_NEXT_SESSION-015.md:68` 의 **진짜 열린 항목**이었다. 종전 10 은 **과소 보고**였고,
+    더 나쁜 것은 그 감소가 **「닫아서 줄었다」와 구별되지 않는다**는 점이다
+    (`init_ihcho` 세션 종료 절차가 「열린 건수가 줄었는가」를 **닫힘의 판정식**으로 쓴다
+     ⇒ 경계가 바뀌면 그 판정식이 조용히 거짓말을 한다).
+
+    원인 = `family_lines` 가 조각을 **파일별로** 흘려보내는데, 조각 선두 3줄
+    (`SPLIT-CHUNK` · 편집 금지 경고 · `BODY-BEGIN`)이 `|` 로 시작하지 않으므로
+    `rows_of_table` 의 `inside` 를 **꺼 버린다** ⇒ 표 헤더가 앞 조각에 남은 채
+    경계 뒤 본문 행이 **헤더 없는 행**으로 보여 전부 탈락한다.
+
+    선례 = `index_row_gate.logical_text()` — **같은 사고를 35행 오탐으로 겪었다.**
+    ⇒ 같은 분할 계약(`BODY-BEGIN` 아래만 본문)을 상속한다.
+
+    🟢 **줄 번호는 보존한다** — 이 도구의 산출물은 좌표(`파일:행`)이고, 좌표가 틀리면
+    브리핑의 유일한 가치(무엇을 읽어야 하는가)가 무너진다. ⇒ 머리말을 **드롭**하되
+    남는 줄의 번호는 원본 그대로 둔다(재번호 부여 금지).
+    """
+    has_sentinel = set()
+    for rel, _ln, line in lines:
+        if line.strip() == BODY_BEGIN:
+            has_sentinel.add(rel)
+    out, passed = [], set()
+    for rel, ln, line in lines:
+        if rel in has_sentinel and rel not in passed:
+            if line.strip() == BODY_BEGIN:
+                passed.add(rel)          # 이 줄까지 버리고 다음 줄부터 본문
+            continue
+        out.append((rel, ln, line))
+    return out
+
+
+def family_lines(hub_rel, where='sibling'):
+    """(파일상대경로, 행번호, 줄) 스트림 — 허브+조각을 순서대로.
+
+    🔴 [O112] 조각 머리말을 걷어낸 **논리 문서**를 돌려준다(`strip_chunk_preamble`).
+    걷어내지 않으면 조각 경계에 걸친 표·절 문맥이 끊긴다.
+    """
+    out = []
+    hub = os.path.join(ROOT, hub_rel)
+    paths = [hub] + chunk_paths(hub_rel, where)
+    for p in paths:
+        if not os.path.exists(p):
+            continue
+        rel = os.path.relpath(p, ROOT)
+        for i, line in enumerate(read_text(p).split('\n'), 1):
+            out.append((rel, i, line))
+    return strip_chunk_preamble(out)
+
+
+# ── 표 범위 한정 헬퍼 ──────────────────────────────────────────────────
+#   🔴🔴 [O106 자기시정] 첫 판본은 「4열 이상인 표 행」을 전부 착수표로 봤고
+#     그 결과 허브의 **조각 목차 표**·**대조 표**·**결함 표** 등이 섞여
+#     열린 작업이 **크게 과대**로 나왔다(허브 조각 목차 13행이 그대로 실렸다).
+#     ⇒ 표는 **헤더 서명(첫 셀 이름들)으로 범위를 한정**한다. 열 수는 판정 근거가 못 된다.
+def rows_of_table(lines, head_cells):
+    """헤더 첫 셀이 `head_cells` 중 하나인 표의 **본문 행만** 돌려준다."""
+    out, inside = [], False
+    for rel, ln, line in lines:
+        s = line.strip()
+        if not s.startswith('|'):
+            inside = False
+            continue
+        cells = [c.strip() for c in s.strip('|').split('|')]
+        if not cells:
+            continue
+        if set(''.join(cells)) <= set('-: '):
+            continue                       # 구분행
+        first = strip_md(cells[0])
+        if first in head_cells:
+            inside = True                  # 헤더 행 — 다음부터 본문
+            continue
+        if inside:
+            out.append((rel, ln, cells))
+    return out
+
+
+# ── ① 착수표(열린 작업) ─────────────────────────────────────────────────
+#   🔴 열림 판정 = 「순」 셀이 **취소선이 아니다**. 취소선(`~~⑨~~`)은 완료 관례다.
+#     근거 = `99_NEXT` 착수표가 완료 항목을 `~~순~~` + `✅` 로 표기한다.
+def open_tasks(lines=None):
+    if lines is None:
+        lines = family_lines('01_project_control/99_NEXT_SESSION.md')
+    rows = []
+    for rel, ln, cells in rows_of_table(lines, ('순',)):
+        if len(cells) < 4:
+            continue
+        order = cells[0]
+        if STRIKE.match(order):
+            continue                     # 완료
+        if '✅' in cells[1][:8]:
+            continue                     # 완료 표기가 작업 셀 선두에 온 경우
+        rows.append({
+            'order': strip_md(order),
+            'task': clip(strip_md(cells[1]), 130),
+            'stop': clip(strip_md(cells[2]), 34),
+            'where': '%s:%d' % (rel, ln),
+        })
+    return rows
+
+
+# 🆕 [2026-10-03 O201 D1] 라벨 파일 「남은 작업」 표 — 3열(`순|작업|다음 행동`)도 받는다.
+#   🔴 완료 = 「순」 취소선 · 작업 셀 선두 `✅`/`🟢 ~~` · 취소선으로 시작하는 작업 셀.
+def open_label_tasks(lines):
+    rows = []
+    for rel, ln, cells in rows_of_table(lines, ('순',)):
+        if len(cells) < 3:
+            continue
+        order, task = cells[0], cells[1]
+        if STRIKE.match(order):
+            continue
+        head = task.strip()[:8]
+        if '✅' in head or head.lstrip('🟢 ').startswith('~~'):
+            continue
+        rows.append({
+            'order': strip_md(order),
+            'task': clip(strip_md(task), 130),
+            'stop': clip(strip_md(cells[-1] if len(cells) == 3 else cells[2]), 34),
+            'where': '%s:%d' % (rel, ln),
+        })
+    return rows
+
+
+# ── ② 문서50 열린 절 ────────────────────────────────────────────────────
+def open_sections(hub_rel, lines=None):
+    out = []
+    if lines is None:
+        lines = family_lines(hub_rel)
+    for rel, ln, line in lines:
+        if not line.startswith('## '):
+            continue
+        t = line[3:].strip()
+        lead = LEAD_EMO.match(t).group(1)
+        if any(e in lead for e in EMOJI_DONE):
+            continue
+        if not any(e in lead for e in EMOJI_OPEN):
+            continue
+        out.append({'title': clip(strip_md(t), 130), 'where': '%s:%d' % (rel, ln)})
+    return out
+
+
+# ── ③ 현행 인수인계 절 ─────────────────────────────────────────────────
+#   🔴 `99_NEXT` 는 「여기서 시작한다」가 **적층**된다(O106 실측 8겹).
+#     승계된 것은 `~~여기서 시작한다~~` 취소선으로 표시되므로 **취소선이 아닌 것**만 고르고,
+#     그중 **날짜가 가장 최신**인 절을 현행으로 판정한다.
+#
+#   🆕 🔴🔴 [2026-08-30 O123-D 신설] **blockquote 접두를 걷어낸다.**
+#     실사고: O119 의 `§0-ZZZ` 는 `### ▣ ZZZ1` (비-quote)이라 추출됐는데,
+#     O123 의 `§0-AAAA` 는 `> ### ▣ AAAA1` (**blockquote**)로 쓰였다
+#     ⇒ `line.startswith('### ')` 가 **8건을 하나도 못 봤고 「항목 0」으로 조용히 흘렀다**.
+#     실측 = `grep -c "^> ### ▣ AAAA"` **8** · `grep -c "^### ▣ ZZZ"` **7**.
+#     🔴 그래서 O123-D 가 등재한 `▣ AAAA8` 이 **브리핑에 안 보였다** — 등재의 목적이 무력화된다.
+#     🔴 이것이 `O111 ㉠`(「0건」은 없다가 아니라 **판정식이 못 본다**)의 실물이고,
+#       `doc_heading_gate`·`doc_census` 는 이 축을 **원리적으로 보지 않는다**(형식 드리프트다).
+#     ⇒ 🟢 판정식 = **마크다운 구조를 볼 때는 인용 접두(`>`)를 먼저 정규화하라.**
+#       문서가 절을 인용 블록으로 감싸는 것은 서식 선택이고 **의미 변경이 아니다.**
+DATE_RX = re.compile(r'(20\d\d-\d\d-\d\d)')
+#   🔴 `*` 이다(`+` 가 아니다) — 비-quote 줄도 통과시켜 **선행 공백까지 정규화**한다.
+#     이유(자기시정 · O123-D) = 처음엔 `\s?` 로 공백 1개만 먹었더니 `>   ### ▣ …`(들여쓴 quote)가
+#     `  ### ▣ …` 로 남아 `startswith('### ')` 가 **또 불성립**했다 — 같은 결함의 재발이다.
+#     🟢 마크다운은 제목 앞 공백을 허용하므로 **구조 판정 시 선행 공백은 의미가 없다.**
+QUOTE_RX = re.compile(r'^(?:\s*>)*\s*')
+
+#   🆕 🔴🔴 [2026-09-08 O143 신설] **취소선은 리터럴 인접이 아니라 「구간 포함」으로 판정한다.**
+#     실사고: 종전 배제 조건은 `'~~여기서 시작한다' in t` 였다 — 취소선 기호가 그 문구에
+#     **바로 붙어 있을 때만** 승계로 봤다. 그런데 O129 이후 정본 관례가 바뀌었다:
+#       구관례 = `## 0-ZZZ. 🔴 [… ~~여기서 시작한다~~ …]`        ← 문구만 감싼다
+#       신관례 = `## 0-NNNN. ~~🔴🔴 [… **여기서 시작한다.** …]~~` ← **대괄호 전체**를 감싼다
+#     신관례 문안에는 `~~여기서 시작한다` 라는 **연속 부분문자열이 존재하지 않는다**
+#     ⇒ 승계된 절이 후보로 남아 **O140 의 절이 현행으로 뽑혔고**, 그 절의 열린 작업 목록에는
+#       O141 이 이미 닫은 `㊵`·`⑫` 가 열림으로 실려 있었다 ⇒ **닫힌 작업을 다시 하게 된다.**
+#     🔴 이것이 `O111 ㉠`(「0건」은 없다가 아니라 **판정식이 못 본다**)의 실물이고,
+#       `R1-6-25`(분모가 조용히 깨진다)의 **서식 버전**이다 — 게이트 6종·음성 테스트 29종이
+#       전부 🟢 인 상태에서 났다(`R3-9`).
+#     ⇒ 🟢 판정식 = **문구의 각 등장 위치가 `~~ … ~~` 구간 안에 있는가**를 본다.
+#       서식이 「무엇을 감쌌는가」에 의존하지 않으므로 관례가 또 바뀌어도 견딘다.
+#     🔴 역방향 오탐도 막는다 — 제목 **어딘가에** 무관한 취소선이 있다는 이유로
+#       현행 절을 버리면 브리핑의 인수인계가 비어버린다 ⇒ **전 등장이 구간 안**일 때만 승계다.
+STRIKE_SPAN = re.compile(r'~~(.+?)~~', re.S)
+START_PHRASE = '여기서 시작한다'
+
+#   🆕 🔴🔴 [2026-09-16 O165 신설] **취소선 축만으로는 승계를 못 본다 — 「중첩 물결」이 있다.**
+#     실사고(O165 착수 시점) = 브리핑이 현행 시작점으로 **§0-DDDD(2026-08-31 O126)** 를 뽑았다.
+#       실제 문안 = `## ~~0-DDDD. 🔴🔴 [… O126 — ~~여기서 시작한다~~ · §0-EEEE 로 승계됐다]~~`
+#     `STRIKE_SPAN` 은 **비탐욕 쌍 맞추기**라 `~~`(선두)↔`~~`(문구 앞) 을 한 쌍으로 먹고,
+#     그 다음 쌍은 `~~`(문구 뒤)↔`~~`(말미) 가 된다 ⇒ **문구 자체가 두 구간 사이(밖)에 놓인다.**
+#     ⇒ `struck_out` 이 **False**(= 살아 있음)를 돌려주고, 그 절이 유일 후보가 되어
+#       **2026-08-31 절이 「현행」으로 발행됐다**(O143 이 고친 것과 **다른 형태의 같은 사고**).
+#   🔴 이것이 `O111 ㉠`(「0건」은 없다가 아니라 **판정식이 못 본다**)의 3차 실물이고,
+#     교훈은 O143 이 이미 적어 둔 그대로다 — **판정을 서식에 의존시키면 서식이 바뀔 때마다 깨진다.**
+#   ⇒ 🟢 판정식 = **서식 축(취소선) OR 의미 축(승계 문구)**. 둘 중 하나면 승계로 본다.
+#     🔴 방향을 구별한다 — `… 로 승계`(이 절 → 다른 절 · **자기 승계**)와 `시작점은 …`(이관 안내)만
+#       승계 신호로 쓴다. `… 는 승계됐다`(다른 절 → 이 절)는 **현행 절이 스스로 적는 문구**이므로
+#       신호로 쓰면 **살아 있는 절을 죽인다**(O143 이 경고한 역방향 오탐).
+SUPERSEDE_RX = re.compile(r'(로 승계|시작점은)')
+
+
+def superseded(title):
+    """이 절이 **이미 승계됐는가**(= 현행이 아닌가). 서식 축 OR 의미 축."""
+    return struck_out(title) or bool(SUPERSEDE_RX.search(title))
+
+
+def struck_out(text, needle=START_PHRASE):
+    """`needle` 의 **모든 등장**이 취소선 구간(`~~ … ~~`) 안에 있으면 True(= 승계됨).
+
+    🔴 하나라도 구간 밖에 있으면 **살아 있는 문구**이므로 False 다.
+    """
+    spans = [(m.start(1), m.end(1)) for m in STRIKE_SPAN.finditer(text)]
+    found = False
+    i = text.find(needle)
+    while i >= 0:
+        found = True
+        if not any(s <= i < e for s, e in spans):
+            return False
+        i = text.find(needle, i + 1)
+    return found
+
+
+def tail_handoff(lines=None):
+    """`99_NEXT` 의 **문서 최말단** 인수인계 절(승계 여부 무관). 없으면 `None`.
+
+    🔴 용도는 **오직 진단**이다 — 현행 후보가 0 일 때 「무엇을 열어야 하는가」를 준다.
+    이것을 현행으로 승격하지 않는다(승계 표기가 붙은 절을 현행으로 쓰면 닫힌 작업을 다시 한다).
+    """
+    if lines is None:
+        lines = family_lines('01_project_control/99_NEXT_SESSION.md')
+    tail = None
+    for rel, ln, line in lines:
+        t = dequote(line)
+        if t.startswith('## ') and START_PHRASE in t:
+            tail = {'title': clip(strip_md(t[3:]), 120), 'where': '%s:%d' % (rel, ln)}
+    return tail
+
+
+def dequote(line):
+    """줄 앞의 blockquote 접두(`> ` · `>> ` · ` > `)와 **선행 공백**을 걷어낸다.
+
+    🔴 제목·표 판정 **전에** 반드시 통과시킨다(위 O123-D 경위 참조).
+    """
+    return QUOTE_RX.sub('', line)
+
+
+# ── ③-0 인수인계 **라벨 파일** 우선 판정 ──────────────────────────────────
+#   🆕 🔴🔴 [2026-09-17 O172 신설 · 사용자 지시] **현행 판정을 「기재」에서 「파일명」으로 옮긴다.**
+#   🔴 종전 판정식(조각 적층 + 취소선 승계)은 이 워크스페이스에서 **3회 오발행**했다:
+#     · O143 = 날짜 동점 3절에서 `max` 가 **가장 오래된 절**을 골랐다.
+#     · O165 `D1` = 겹친 `~~` 때문에 `struck_out` 이 문구를 구간 밖으로 밀어 **8-31 절**을 발행했다.
+#     · O163 = 「§0-LLLL 로 승계됨」이라 적고 **그 절을 쓰지 않아** 후보가 0 이 됐다.
+#     ⇒ 🔴 공통 원인 = **현행성이 「문서에 어떻게 적혔는가」에 의존**했다(`J3`「열림은 상태가 아니라 기재다」).
+#   🟢 라벨 파일 방식은 현행성을 **파일 시스템의 사실**로 만든다 = 라벨 최대값(O번호 → 접미 길이 → 접미).
+#     ⇒ 취소선 관례·날짜 동점·승계 예고 미이행이 **판정에 영향을 주지 못한다.**
+#   🔴 **분모는 `doc_census.label_paths` 다** — 이 파일에서 파일명 규칙을 다시 쓰지 않는다(`R3-9 ㉡`).
+#   ⚠️ 라벨 파일이 **0개면 종전 경로로 되돌아간다**(전환 기간 동안 두 방식이 공존한다).
+def label_lines():
+    """최신 라벨 파일의 `(상대경로, 행번호, 원문)` 목록. 없으면 `[]`."""
+    paths = label_units()
+    if not paths:
+        return []
+    out = []
+    for p in paths:
+        rel = os.path.relpath(p, ROOT)
+        with io.open(p, encoding='utf-8', errors='replace') as fh:
+            out.extend((rel, i, l.rstrip('\n')) for i, l in enumerate(fh, 1))
+    return out
+
+
+# 🆕 🔴🔴 [2026-09-17 O172-B 신설 · 자기결함 시정] **현행은 「파일 1개」가 아니라 「그 세션의 전 단위」다.**
+#   🔴 O172 초판은 `paths[-1]` **한 파일만** 현행으로 실었다. 그런데 한 세션이 작업 단위별로
+#     여러 라벨을 쓰는 것은 **정상이고 명문화돼 있다**(`R1-4-3`) — 실측 최대 **21단위**(`O59`).
+#     ⇒ 초판대로면 `O172-B` 를 쓰는 순간 **`O172-A` 의 인수인계가 브리핑에서 사라진다.**
+#   🔴 이것은 내가 없애려던 결함과 **같은 형태**다(O143 = 닫지 않은 항목이 인수인계에서 조용히 사라짐).
+#     🟢 판정식 = **「현행」의 단위를 파일이 아니라 세션(O번호)으로 잡아라.**
+#   🟢 접미가 다른 앞 단위는 **승계가 아니라 형제**다 — 승계는 **O번호가 낮은 것**이다.
+def label_units():
+    """**현행 세션(최대 O번호)의 라벨 파일 전건**(접미 순). 없으면 `[]`."""
+    paths = label_paths('01_project_control/99_NEXT_SESSION.md',
+                        outdir_marker(os.path.join(ROOT, '01_project_control/99_NEXT_SESSION.md'))
+                        or 'sibling')
+    if not paths:
+        return []
+    rx = label_rx('99_NEXT_SESSION', '.md')
+    nums = [int(rx.match(os.path.basename(p)).group(1)) for p in paths]
+    top = max(nums)
+    return [p for p, n in zip(paths, nums) if n == top]
+
+
+def label_handoff():
+    """라벨 파일 기준 현행 인수인계. 반환 = `(cur, subs, lines)`.
+
+    🟢 `cur['where']` 는 그 파일의 **첫 절 제목** 좌표다(없으면 파일 선두 `# ` 제목).
+    🔴 `is_last` 는 **항상 True** 다 — 라벨 최대값이 곧 말단이므로 「말단이 아닌 현행」이 성립하지 않는다.
+    """
+    lines = label_lines()
+    if not lines:
+        return None, [], []
+    head = None
+    # 🆕 [O207] 시작점 = **최대 접미 단위**의 첫 절 — 종전은 전 단위를 이어 붙인 첫 `## ` 라 항상 -A 를 뽑았다.
+    last_rel = lines[-1][0]
+    for rel, ln, line in [x for x in lines if x[0] == last_rel]:
+        t = dequote(line)
+        if t.startswith('## ') or (head is None and t.startswith('# ')):
+            head = {'title': clip(strip_md(t.lstrip('#').strip()), 120),
+                    'where': '%s:%d' % (rel, ln)}
+            if t.startswith('## '):
+                break
+    if head is None:
+        rel = last_rel
+        head = {'title': os.path.basename(rel), 'where': '%s:1' % rel}
+    m = DATE_RX.search('\n'.join(l for _r, _n, l in lines[:20]))
+    head['date'] = m.group(1) if m else '0000-00-00'
+    head['idx'] = 0
+    head['is_last'] = True
+    head['is_label'] = True
+    head['units'] = [os.path.relpath(p, ROOT) for p in label_units()]
+    head['tail_where'] = head['where']
+    head['tail_title'] = head['title']
+    subs = []
+    for rel, ln, line in lines:
+        t = dequote(line)
+        if t.startswith('### ') or t.startswith('▣ '):
+            subs.append({'title': clip(strip_md(t.lstrip('#').strip()), 120),
+                         'where': '%s:%d' % (rel, ln)})
+    return head, subs, lines
+
+
+def current_handoff(lines=None):
+    if lines is None:
+        lines = family_lines('01_project_control/99_NEXT_SESSION.md')
+    cands = []
+    allsecs = []
+    for idx, (rel, ln, line) in enumerate(lines):
+        t = dequote(line)
+        if not t.startswith('## '):
+            continue
+        if START_PHRASE not in t:
+            continue
+        m = DATE_RX.search(t)
+        rec = {'date': m.group(1) if m else '0000-00-00',
+               'idx': idx,
+               'title': clip(strip_md(t[3:]), 120),
+               'where': '%s:%d' % (rel, ln)}
+        allsecs.append(rec)
+        if superseded(t):
+            continue
+        cands.append(rec)
+    if not cands:
+        #   🆕 🔴🔴 [2026-09-16 O165] **후보 0 을 침묵으로 흘리지 않는다.**
+        #     이 상태는 정상이 아니다 = 마지막 절이 「§0-XXXX 로 승계됨」이라 적었는데
+        #     **그 §0-XXXX 를 쓰지 않은 것**이다(O163 이 실제로 `§0-LLLL` 을 쓰지 않았다).
+        #     🔴 `subs` 자리에 말단 절을 끼워 넣지 않는다 — 그것은 **하위 항목 표**이고
+        #       거기 절을 넣으면 「항목이 있다」는 **거짓 신호**가 된다(축 혼용 · `O111 ㉡`).
+        #     ⇒ 말단 절은 `tail_handoff` 로 따로 조회한다.
+        return None, []
+    #   🆕 🔴🔴 [2026-09-08 O143] **동점은 문서 순서상 「마지막」이 현행이다.**
+    #     실사고: 종전은 `max(cands, key=date)` 였고, O140·O141·O142 세 절의 날짜가
+    #     **모두 `2026-09-07`** 이라 파이썬 `max` 의 동점 규칙(**최초 등장**)이
+    #     **가장 오래된 절**을 골랐다. ⇒ 취소선 판정을 고쳐도 이 축만으로 같은 오선택이 재발한다.
+    #     🟢 근거 = `99_NEXT` 는 인수인계 절이 **아래로 적층**된다(문서 순서 = 시간 순서).
+    #     🔴 그래서 정렬 키에 `idx` 를 넣는다 — 날짜는 하루 안에 여러 절을 구분하지 못한다.
+    cur = max(cands, key=lambda c: (c['date'], c['idx']))
+    #   🆕 🔴🔴 [2026-09-16 O165 신설] **현행 절이 문서 최말단 절이 아니면 경고한다.**
+    #     `99_NEXT` 는 절이 **아래로 적층**되므로 현행은 **마지막 절**이어야 한다.
+    #     어긋나면 ㉠ 뒤 절에 승계 표기가 빠졌거나 ㉡ 판정식이 뒤 절을 못 보는 것이다
+    #     — 둘 다 **틀린 시작점을 발행하는 경로**다(`O111 ㉠`). 🔴 판정은 사람이 한다.
+    cur['is_last'] = bool(allsecs) and cur['idx'] == allsecs[-1]['idx']
+    cur['tail_where'] = allsecs[-1]['where'] if allsecs else ''
+    cur['tail_title'] = allsecs[-1]['title'] if allsecs else ''
+    # 그 절의 ▣ 하위 항목을 좌표와 함께 모은다
+    subs, hit = [], False
+    for rel, ln, line in lines:
+        loc = '%s:%d' % (rel, ln)
+        t = dequote(line)
+        if loc == cur['where']:
+            hit = True
+            continue
+        if hit and t.startswith('## '):
+            break
+        if hit and t.startswith('### '):
+            subs.append({'title': clip(strip_md(t[4:]), 120), 'where': loc})
+    return cur, subs
+
+
+# ── ③-B 인수인계 절의 「열린 작업」 누락 대조 ────────────────────────────
+#   🆕 🔴🔴 [2026-09-08 O143 신설] **두 정본이 같은 것을 다르게 말한다.**
+#     실측(착수 시점):
+#       · 착수표 열린 집합            = ② ④ ⑪ ⑭ ⑱ ㊳   (6건)
+#       · `§0-PPPP` 인수인계 열린 목록 = ② ④ ⑪ ⑱        (⑭·㊳ **누락**)
+#     `⑭` 는 **P1 🔴🔴**(FME STOP 팬아웃 귀속 · 현업 결정 대기)이고,
+#     `§0-NNNN`(O140)에는 실려 있었는데 `§0-OOOO`(O141)에서 사라졌다.
+#     O141 은 `⑭` 를 **「점검」만** 했고 종결하지 않았다(착수표 행은 그대로 열림이다)
+#     ⇒ **닫지 않은 항목이 인수인계에서 조용히 사라졌다.**
+#   🔴 선례가 있다 — 착수표 `㊲` 행이 스스로 적고 있다:
+#     *"이 항목은 착수표 등재 후 O128 이 먼저 해소했으나 **취소선 처리가 누락**됐다"*
+#     ⇒ 두 등록부의 **결합이 사람 손에만 맡겨져 있고**, 어느 게이트도 이 축을 보지 않았다.
+#   🔴 이것이 `R3-9 ㉠`(이력 등재는 원장 갱신의 대체물이 아니다)의 **인수인계 판본**이다.
+#   ⇒ 🟢 판정식 = **착수표에서 열린 순번이 현행 인수인계 절 본문에 등장하는가.**
+#     🔴 방향을 한쪽으로만 본다 — 역방향(인수인계에만 있는 항목)은 **정상**이다
+#       (문서50 계열 `BLOCKING-1`·`O59-P-1` 등은 착수표 순번이 아니다) ⇒ 오탐이 된다.
+#   ⚠️ 이것은 **경고**다(blocking 아님) — 인수인계 절을 의도적으로 압축하는 것은
+#     서식 재량이고, 판정은 사람이 한다. 🟢 그러나 **보이지 않으면 판단할 수 없다.**
+def handoff_body_text(lines, cur):
+    """현행 인수인계 절의 본문(다음 `## ` 전까지)을 한 덩어리 문자열로 돌려준다.
+
+    🆕 🔴 [2026-09-17 O172] **라벨 파일이면 파일 전문이 본문이다.**
+      🔎 왜 = 라벨 파일은 1세션 1파일이므로 그 안의 `## ` 는 **절 경계가 아니라 목차 구조**다.
+      종전 규칙(다음 `## ` 에서 끊기)을 그대로 쓰면 두 번째 절부터가 분모에서 빠져
+      누락 대조가 **있는 항목을 없다고** 신고한다(`J2`「그릇이 다르다」).
+    """
+    if not cur:
+        return ''
+    if cur.get('is_label'):
+        return '\n'.join(dequote(l) for _r, _n, l in lines)
+    buf, hit = [], False
+    for rel, ln, line in lines:
+        t = dequote(line)
+        if '%s:%d' % (rel, ln) == cur['where']:
+            hit = True
+            continue
+        if hit and t.startswith('## '):
+            break
+        if hit:
+            buf.append(t)
+    return '\n'.join(buf)
+
+
+def handoff_gap(tasks, lines=None, cur=None):
+    """열린 착수표 순번 중 **현행 인수인계 절 본문에 등장하지 않는** 것들.
+
+    반환 = `[{'order':…, 'title':…, 'where':…}, …]` (착수표 좌표를 그대로 운반한다).
+    """
+    if lines is None:
+        lines = family_lines('01_project_control/99_NEXT_SESSION.md')
+    if cur is None:
+        cur, _subs = current_handoff(lines)
+    body = handoff_body_text(lines, cur)
+    if not body:
+        return []
+    return [t for t in tasks if t.get('order') and t['order'] not in body]
+
+
+# ── ④ 원장 §1 최신 세션 행 ──────────────────────────────────────────────
+SESSION_RX = re.compile(r'`(O\d+[A-Z\-]*)`')
+
+
+def recent_sessions(n=6, lines=None):
+    if lines is None:
+        lines = family_lines('01_project_control/00_INDEX_이슈원장.md')
+    out = []
+    for rel, ln, cells in rows_of_table(lines, ('현황',)):
+        if len(cells) < 3:
+            continue
+        m = SESSION_RX.search(cells[0])
+        if not m:
+            continue
+        out.append({'label': m.group(1),
+                    'head': clip(strip_md(cells[0]), 100),
+                    'state': clip(strip_md(cells[1]), 64),
+                    'where': '%s:%d' % (rel, ln)})
+        if len(out) >= n:
+            break
+    return out
+
+
+# ── ⑤ 게이트 ───────────────────────────────────────────────────────────
+GATES = [
+    ('doc_census', ['scripts/doc_census.py']),
+    ('doc_type_gate', ['scripts/doc_type_gate.py']),
+    ('clause_order_gate', ['scripts/clause_order_gate.py']),
+    ('index_row_gate', ['scripts/index_row_gate.py']),
+    ('doc_heading_gate', ['scripts/doc_heading_gate.py']),
+    # 🆕 [2026-08-28 O109] 인용 좌표 실재 — 폴더화·재균형이 좌표를 죽인다(축1a blocking).
+    ('doc_coord_gate', ['scripts/doc_coord_gate.py']),
+    # 🆕 [2026-09-22 O180] dbt Jinja 안전 6축
+    ('jinja_config_gate', ['scripts/jinja_config_gate.py']),
+    # 🆕 [2026-10-13 O219] Agent · Eval · SV · NULL사유 게이트 상설 편입 (백로그 #10·#11)
+    ('agent_tool_claim_gate', ['scripts/agent_tool_claim_gate.py']),
+    ('agent_object_ref_gate', ['scripts/agent_object_ref_gate.py']),
+    ('agent_source_lineage_gate', ['scripts/agent_source_lineage_gate.py']),
+    ('eval_expectation_gate', ['scripts/eval_expectation_gate.py', '--no-sql']),
+    ('sv_identifier_gate', ['scripts/sv_identifier_gate.py']),
+    ('null_reason_registry_gate', ['scripts/null_reason_registry_gate.py']),
+    # 🆕 [2026-10-14 O225-C] BRONZE 캠페인 컬럼 → SV 배선 등재표(미등재·배선 끊김 FAIL · GAP 경고)
+    ('campaign_axis_gate', ['scripts/campaign_axis_gate.py']),
+    # 🆕 [2026-10-23 O259] SV 지시문·VQR 소계/합계 행 유도 금지(ROLLUP·CUBE·GROUPING SETS)
+    ('sv_no_rollup_gate', ['scripts/sv_no_rollup_gate.py']),
+    # 🆕 [2026-10-24 O261] SV COMMENT 열거 목록 신규값 0 · 「실제값 N종」 잔존 0(라이브 DISTINCT 대조)
+    #   🆕 [2026-10-28 O266-B] 단일 실행이 300초 timeout(⚪ 미판정) ⇒ SV 이름순 4조각 순차 실행(조각마다 timeout · 합집합 = 전체)
+    ('sv_enum_newvalue_gate 1/4', ['scripts/sv_enum_newvalue_gate.py', '--shard', '0/4']),
+    ('sv_enum_newvalue_gate 2/4', ['scripts/sv_enum_newvalue_gate.py', '--shard', '1/4']),
+    ('sv_enum_newvalue_gate 3/4', ['scripts/sv_enum_newvalue_gate.py', '--shard', '2/4']),
+    ('sv_enum_newvalue_gate 4/4', ['scripts/sv_enum_newvalue_gate.py', '--shard', '3/4']),
+]
+
+
+#: 게이트 판정 줄 = 상태 이모지로 시작하는 줄. 🔴 [2026-08-28 O110] 종전에는 **마지막 줄**을
+#: 그대로 판정으로 썼는데, 여러 게이트가 판정 뒤에 **처방 힌트 줄**을 덧붙인다 ⇒
+#: ㉠ `doc_type_gate` 는 힌트(`- 여유 부족 …`)가 실려 판정이 **🟡 인데 ✅ 로 표시**됐고
+#: ㉡ `clause_order_gate` 는 「경고 **0**건」의 「경고」에 걸려 **✅ 인데 🟡 로 표시**됐다.
+#: ⇒ **세션 시작이 의존하는 표가 두 방향으로 거짓말**을 했다(O109 D5).
+STATUS_HEAD = re.compile(r'^(?:✅|🟢|🟡|🔴|⚪)')
+#: 경고 「0건」은 경고가 아니다 — 수를 보고 판정한다.
+WARN_RX = re.compile(r'🟡|경고\s*([1-9]\d*)\s*건|(?<![0-9])([1-9]\d*)건\s*(?:경고|·\s*사람 판단)')
+
+
+def gate_verdict(tail):
+    """게이트 stdout 에서 **판정 줄**을 고른다(힌트 줄이 아니라)."""
+    for line in reversed(tail):
+        if STATUS_HEAD.match(line.strip()):
+            return line.strip()
+    return tail[-1].strip() if tail else '(출력 없음)'
+
+
+def gate_mark(rc, verdict):
+    """rc + 판정 줄로 마크를 정한다 — 🔴 FAIL · 🟡 통과(경고 있음) · ✅ 통과."""
+    if rc != 0:
+        return '🔴'
+    return '🟡' if WARN_RX.search(verdict) else '✅'
+
+
+def run_gates():
+    out = []
+    for name, argv in GATES:
+        # [kit] 설치 안 된 게이트 · 전제 경로 부재 = ⚪ 건너뜀(판정 아님) — kit_paths.GATE_REQUIRES
+        if not os.path.exists(os.path.join(ROOT, argv[0])):
+            out.append({'name': name, 'mark': '⚪', 'rc': -1, 'verdict': '미설치(%s 없음) — 건너뜀' % argv[0]})
+            continue
+        miss = __import__('kit_paths').gate_prereq(name)
+        if miss:
+            out.append({'name': name, 'mark': '⚪', 'rc': -1, 'verdict': '전제 부재(%s) — 건너뜀' % miss})
+            continue
+        try:
+            r = subprocess.run([sys.executable] + argv, cwd=ROOT,
+                               capture_output=True, text=True, timeout=300)
+            tail = [l for l in r.stdout.strip().split('\n') if l.strip()]
+            verdict = gate_verdict(tail)
+            mark = gate_mark(r.returncode, verdict)
+            out.append({'name': name, 'mark': mark, 'rc': r.returncode,
+                        'verdict': clip(strip_md(verdict), 120)})
+        except Exception as e:                       # pragma: no cover
+            out.append({'name': name, 'mark': '⚪', 'rc': -1,
+                        'verdict': '실행 실패: %s' % e})
+    return out
+
+
+# ── 조립 ───────────────────────────────────────────────────────────────
+def build(with_gates=True):
+    inv = census()
+    stale = stale_check(inv)
+    tasks = open_tasks()
+    d50 = open_sections('01_project_control/50_dbt_파이프라인_미결조치.md')
+    #   🆕 [2026-09-08 O143] `99_NEXT` 스트림을 **한 번만** 읽어 인수인계·누락대조가 함께 쓴다
+    #   (같은 것을 두 번 읽으면 두 판정이 어긋날 수 있다 · `R3-9 ㉡`).
+    nxt = family_lines('01_project_control/99_NEXT_SESSION.md')
+    #   🆕 🔴🔴 [2026-09-17 O172] **라벨 파일이 있으면 그것이 현행이다**(파일 최대값 = 사실).
+    #     🔴 없으면 종전 경로(조각 적층 + 취소선)로 되돌아간다 — 전환 기간에 두 방식이 공존한다.
+    #     🔴 누락 대조(`handoff_gap`)의 분모도 **같이** 옮긴다 — 본문이 라벨 파일에 있으므로
+    #       조각 스트림으로 대조하면 「전건 누락」으로 오탐한다(`J2`「그릇이 다르다」).
+    lcur, lsubs, llines = label_handoff()
+    if lcur:
+        cur, subs, hoff_lines = lcur, lsubs, llines
+    else:
+        cur, subs = current_handoff(nxt)
+        hoff_lines = nxt
+    #   🆕 🔴🔴 [2026-10-03 O201 D1] 착수표가 비면 **라벨 파일 「남은 작업」 표**로 내려간다.
+    #     실사고 = O172 이후 열린 작업이 라벨 파일로 옮겨갔는데 이 함수는 조각 착수표만 읽어
+    #     브리핑 §1 이 「0건」을 냈다(게이트 전종 🟢 상태) ⇒ 분모 stale(카탈로그 #18·#24).
+    if not tasks and lcur:
+        tasks = open_label_tasks(llines)
+    recent = recent_sessions()
+    gates = run_gates() if with_gates else []
+
+    L = []
+    a = L.append
+    a('<!-- LLM-METADATA')
+    a('doc_id: SESSION_BRIEF')
+    a('doc_role: 세션 착수 브리핑 — 열린 작업·인수인계·게이트 상태의 **색인**(정본 아님)')
+    a('project: {{DB}} (굿네이버스)')
+    a('created: 2026-08-28')
+    a('created_by: O106')
+    a('index: 01_project_control/00_INDEX_이슈원장.md')
+    a('END-METADATA -->')
+    a('')
+    a('# 00_BRIEF — 세션 착수 브리핑 (자동 생성)')
+    a('')
+    a('> 🔴🔴 **이 파일은 자동 생성물이다 — 여기에 내용을 쓰지 마라.**')
+    a('> `python3 scripts/session_brief.py --write` 가 **통째로 다시 쓴다**')
+    a('> ⇒ 손으로 적은 문장은 **조용히 사라진다**(허브와 같은 계약 · `R1-6` 축).')
+    a('> 내용은 정본(원장 조각 · `99_NEXT` 조각 · 문서50 조각)에 쓰고 이 파일을 재생성한다.')
+    a('')
+    a('> 🔴 **이 브리핑은 색인이고 정본이 아니다.** 각 항목은 **제목 + 상태 + 좌표**만 싣는다.')
+    a('> 판정·수치를 인용하려면 **그 좌표를 `read` 해야 한다**(`R1-3-7` 「대체 근거 금지」).')
+    a('> 🟢 대신 **무엇을 읽어야 하는지**가 여기 다 있다 ⇒ 전량 독해가 불필요해진다.')
+    a('')
+    a('> 📏 생성 시각 기준 실측 = 아래 수치는 **전부 파일에서 센 것**이다(창작 0).')
+    a('')
+
+    a('## 1. 열린 작업 — 착수표 (정본 = `99_NEXT_SESSION` 착수 순서)')
+    a('')
+    a('> 판정 = 「순」 셀이 **취소선이 아닌 행**. 취소선(`~~⑨~~`)은 완료 관례다.')
+    a('')
+    if tasks:
+        a('| 순 | 작업 | 정지점 | 정본 좌표 |')
+        a('|---|---|---|---|')
+        for t in tasks:
+            a('| %s | %s | %s | `%s` |' % (t['order'], t['task'], t['stop'] or '—',
+                                           t['where']))
+    else:
+        a('⚪ 착수표에서 열린 행을 찾지 못했다 — 표 형식이 바뀌었는지 확인하라.')
+    a('')
+
+    a('## 2. 직전 세션 인수인계 (현행 절만)')
+    a('')
+    if cur:
+        a('> 🔴 **현행 시작점** = `%s`' % cur['title'])
+        a('> · 좌표 = `%s`' % cur['where'])
+        if cur.get('is_label'):
+            #   🆕 🟢🟢 [2026-09-17 O172] 라벨 파일 판정 — 판정법이 **파일명**이므로 문면 관례가 없다.
+            a('> · 판정법 = **라벨 파일 최대값**(O번호 → 접미 길이 → 접미) · 정본 = `handoff_write.py`')
+            a('> 🟢 **취소선 승계 표기를 읽지 않는다** — 현행성이 파일 시스템의 사실이다(`O172`).')
+            a('> 🔴 조각(`99_NEXT_SESSION-0NN.md`)에 남은 `## 0-XXXX` 절은 **전부 승계된 것**이다.')
+            #   🆕 🔴🔴 [O172-B] **현행 세션의 단위를 전건 싣는다** — 한 세션 다단위는 정상이고
+            #     한 파일만 실으면 앞 단위가 조용히 사라진다(내가 없애려던 결함의 재발 형태).
+            units = cur.get('units') or []
+            if len(units) > 1:
+                a('> 🔴🔴 **이 세션은 단위 %d개다 — 전부 읽어라**(접미가 다른 것은 승계가 아니라 형제다):'
+                  % len(units))
+                for u in units:
+                    a('>   · `%s`' % u)
+            a('> · 라벨 파일 색인 = `01_project_control/99_NEXT_SESSION_조각/00_인수인계_색인.md`')
+        else:
+            a('> · 판정법 = 「여기서 시작한다」가 **취소선이 아니고**(또는 「로 승계」·「시작점은」')
+            a('>   승계 문구가 없고) 날짜가 최신인 절.')
+            a('>   ⚠️ `99_NEXT` 는 이 절이 **적층**된다 — 과거 절은 취소선으로 승계 표시된다.')
+        a('')
+        #   🆕 🔴🔴 [2026-09-16 O165 신설] 현행이 **문서 최말단 절이 아니면** 크게 알린다.
+        if not cur.get('is_last', True):
+            a('> 🔴🔴 **현행 판정이 문서 최말단 절이 아니다 — 시작점을 의심하라.**')
+            a('> 말단 절 = `%s`' % cur.get('tail_title', ''))
+            a('> · 좌표 = `%s`' % cur.get('tail_where', ''))
+            a('> ⇒ ㉠ 말단 절에 **승계 표기가 빠졌는가** ㉡ 아니면 판정식이 **말단을 못 보는가**.')
+            a('> 🔴 둘 다 **틀린 시작점을 발행하는 경로**다(`O111 ㉠`) — 좌표를 열어 판단하라.')
+            a('')
+        if subs:
+            a('| 항목 | 좌표 |')
+            a('|---|---|')
+            for s in subs:
+                a('| %s | `%s` |' % (s['title'], s['where']))
+        else:
+            # 🆕 🔴🔴 [2026-08-30 O123-D 신설] 「항목 0」을 침묵으로 흘리지 않는다.
+            #   경위 = 이 자리에서 **8건이 0건으로 보였다**(blockquote 접두 · 위 `dequote` 주석).
+            #   🔴 현행 절을 찾았는데 하위 항목이 0 이면 그것은 「없다」보다 **「못 봤다」가 더 흔하다**
+            #     ⇒ `O111 ㉠` 의 제도화다. 분모를 의심할 근거를 **브리핑에 박아 넣는다.**
+            a('> 🔴🔴 **항목 추출 0건 — 「없다」로 읽지 마라.**')
+            a('> 현행 절은 찾았는데 그 안의 `### ▣` 항목이 **0건**이다.')
+            a('> ⇒ ㉠ 그 절이 실제로 항목 없이 쓰였는가, 아니면 ㉡ **제목 형식이 바뀌어**')
+            a('>   추출기가 못 보는가를 **좌표를 열어 확인하라**(`%s`).' % cur['where'])
+            a('> 🔴 실사고 = `> ### ▣ …`(blockquote) 8건을 `### ▣ …` 만 찾다가 놓쳤다(O123-D 시정).')
+        # 🆕 🔴🔴 [2026-09-08 O143 신설] 착수표 ↔ 인수인계 열린 목록 **누락 대조**.
+        #   경위·판정식 = 위 `handoff_gap` 주석(실측 = `⑭`·`㊳` 가 `§0-PPPP` 에서 빠져 있었고
+        #   `⑭` 는 P1 🔴🔴 였다). 🔴 **색인이므로 좌표만 싣는다** — 판정은 사람이 한다.
+        gap = handoff_gap(tasks, lines=hoff_lines, cur=cur)
+        if gap:
+            a('')
+            a('> 🟠 **착수표에는 열려 있는데 이 인수인계 절에 안 보이는 항목 %d건**' % len(gap))
+            a('> ⇒ ㉠ 인수인계 절이 의도적으로 압축된 것인가,')
+            a('>   아니면 ㉡ **닫지 않은 항목이 조용히 사라진 것**인가를 좌표를 열어 판단하라.')
+            a('> 🔴 선례 = 착수표 `㊲` 행이 「해소됐는데 취소선 처리가 누락됐다」고 스스로 적고 있다.')
+            a('')
+            a('| 순 | 착수표 좌표 |')
+            a('|---|---|')
+            for g in gap:
+                a('| %s | `%s` |' % (g['order'], g['where']))
+    else:
+        #   🆕 🔴🔴 [2026-09-16 O165] 종전 문안은 `⚪ 현행 인수인계 절을 찾지 못했다.` 였다 —
+        #     ⚪ 는 「관측」 등급이라 **이 세션이 실제로 그것을 흘려 읽었다**. 🔴🔴 로 올린다.
+        tail = tail_handoff(nxt)
+        a('> 🔴🔴 **현행 인수인계 절이 0건이다 — 이것은 정상 상태가 아니다.**')
+        a('> 원인은 둘 중 하나다: ㉠ 마지막 세션이 **후속 절을 예고하고 쓰지 않았다**')
+        a('>   (실사고 = O163 이 「§0-LLLL 로 승계됨」이라 적고 `§0-LLLL` 을 만들지 않았다)')
+        a('>   ㉡ 판정식이 **살아 있는 절을 승계로 오판**한다(역방향 오탐 · O143 경고).')
+        if tail:
+            a('> 🔴 **먼저 이 좌표를 열어라**(문서 최말단 절 · 승계 여부 무관):')
+            a('> · 말단 절 = `%s`' % tail['title'])
+            a('> · 좌표 = `%s`' % tail['where'])
+        a('> 🔴 **말단 절을 현행으로 승격하지 마라** — 승계 표기가 붙은 절을 그대로 시작점으로')
+        a('>   쓰면 **이미 닫힌 작업을 다시 한다**(O143 실사고). 새 절을 쓰는 것이 정답이다.')
+    a('')
+
+    a('## 3. dbt 미결조치 — 열린 절 (정본 = `50_dbt_파이프라인_미결조치`)')
+    a('')
+    a('> 판정 = 절 제목 선두 이모지가 🔴/🟠/🟡. 🟢/✅ 는 제외한다.')
+    a('')
+    if d50:
+        a('| 절 | 좌표 |')
+        a('|---|---|')
+        for s in d50:
+            a('| %s | `%s` |' % (s['title'], s['where']))
+    else:
+        a('✅ 열린 절 0건.')
+    a('')
+
+    a('## 4. 최근 세션 (정본 = 원장 §1 상태 대시보드)')
+    a('')
+    a('| 라벨 | 표제 | 상태 | 좌표 |')
+    a('|---|---|---|---|')
+    for r in recent:
+        a('| `%s` | %s | %s | `%s` |' % (r['label'], r['head'], r['state'], r['where']))
+    a('')
+
+    a('## 5. 문서군 규모 · 독해 예산 (실측)')
+    a('')
+    a('| 문서 | 조각 | 총 바이트 | max B | 여유 B |')
+    a('|---|---|---|---|---|')
+    for f in inv['families']:
+        a('| `%s` | %d | %s | %s | %s%s |' % (
+            f['stem'], f['chunks'], format(f['bytes'], ','),
+            format(f['max_bytes'], ','), format(f['free'], ','),
+            ' 🟠' if f['tight'] else ''))
+    for s in inv['singles']:
+        a('| `%s` | — | %s | %s | %s%s |' % (
+            s['stem'], format(s['bytes'], ','), format(s['bytes'], ','),
+            format(s['free'], ','), ' 🟠' if s['tight'] else ''))
+    a('')
+    tot = sum(f['chars'] for f in inv['families']) + \
+        sum(s['chars'] for s in inv['singles'])
+    a('> 전 문서군 = **%s 자**. 🔴 **전량 독해는 물리적으로 불가능하다** ⇒' % format(tot, ','))
+    a('> 이 브리핑 + 지침만 읽고 착수하고, 필요한 조각을 좌표로 골라 읽는다.')
+    a('')
+
+    a('## 6. 게이트 상태')
+    a('')
+    if gates:
+        a('| 게이트 | 판정 | 결론 |')
+        a('|---|---|---|')
+        for g in gates:
+            a('| `%s` | %s | %s |' % (g['name'], g['mark'], g['verdict']))
+    else:
+        a('⚪ `--no-gates` 로 생략됐다. 착수 전 직접 실행하라.')
+    a('')
+    a('> 🔴 **게이트 전수 PASS 는 「지침 준수」의 증거가 아니다**(`R3-9`).')
+    a('> 완료 보고 전에 **게이트가 보지 않는 축** ㉠~㉥ 를 자문한다.')
+    a('')
+    a('| 손으로 적은 조각 수 stale | %d건 |' % len(stale))
+    a('|---|---|')
+    for s in stale[:10]:
+        a('| `%s:%d` %s | 기재 %d ↔ 실측 %d |' %
+          (s['file'], s['line'], s['doc'], s['written'], s['actual']))
+    a('')
+    a('---')
+    a('')
+    a('> 🔴 **재생성** = `python3 scripts/session_brief.py --write`')
+    a('> 🔴 **이 파일을 손으로 고치지 마라** — 다음 생성에서 사라진다.')
+    a('')
+    a('_Co-authored with CoCo_')
+    return '\n'.join(L) + '\n', {'tasks': len(tasks), 'd50': len(d50),
+                                 'subs': len(subs), 'stale': len(stale),
+                                 'gates': gates}
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--write', action='store_true', help='01_project_control/00_BRIEF.md 를 생성')
+    ap.add_argument('--no-gates', action='store_true', help='게이트 실행 생략')
+    a = ap.parse_args()
+
+    text, meta = build(with_gates=not a.no_gates)
+    nb = len(text.encode('utf-8'))
+
+    if not a.write:
+        print(text)
+        print('── 생성 규모: %s B / %s 자 (상한 %s B)' %
+              (format(nb, ','), format(len(text), ','), format(MAX_BRIEF_BYTES, ',')))
+        return 0
+
+    if nb > MAX_BRIEF_BYTES:
+        print('🔴 %s B > 상한 %s B — 항목 축약 길이를 줄여라(쓰지 않았다).'
+              % (format(nb, ','), format(MAX_BRIEF_BYTES, ',')))
+        return 1
+    with io.open(BRIEF, 'w', encoding='utf-8', newline='') as fh:
+        fh.write(text)
+    print('🟢 %s 생성 — %s B / %s 자 (여유 %s B)' %
+          (os.path.relpath(BRIEF, ROOT), format(nb, ','), format(len(text), ','),
+           format(MAX_BRIEF_BYTES - nb, ',')))
+    print('   열린 착수표 %d · 문서50 열린 절 %d · 인수인계 항목 %d · stale %d'
+          % (meta['tasks'], meta['d50'], meta['subs'], meta['stale']))
+    print('   이어서: python3 scripts/line_len.py 01_project_control/00_BRIEF.md')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

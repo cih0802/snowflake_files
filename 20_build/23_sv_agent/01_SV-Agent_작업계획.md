@@ -5,7 +5,7 @@ project: GN_DW (굿네이버스)
 created: 2026-07-21
 supersedes: _archive/00_SV-Agent 작업계획_legacy.md (v3.1 — 설계문서 only)
 scope: SV/Agent 실배포 + Snowflake Intelligence(CoWork) 연결 + 평가·거버넌스
-inputs: 03_top-down_gold/ (GOLD 실물 star schema) + 20_issue/ (데이터 게이트·미결)
+inputs: 03_top-down_gold/ (GOLD 실물 star schema) + _archive/O276_project_closure/20_issue/ (데이터 게이트·미결)
 END-METADATA -->
 
 # Semantic View · Agent 작업계획 (GN_DW · v4.3)
@@ -19,7 +19,7 @@ END-METADATA -->
 ## ★ 실행 가이드 (이 문서를 실행하는 에이전트 필독)
 
 **착수 전 반드시:**
-1. 입력 SSOT를 먼저 읽는다 — `03_top-down_gold/04_SV파생 매핑.md`(derived 81 분자/분모·소속 FACT), `03_테이블 설계.md`(9 FACT·15 DIM grain), `06_DDL.sql`(실제 컬럼명), `07_메타.md`(시간가용성·미해결 충돌), `20_issue/00_INDEX_이슈원장.md`(데이터 게이트).
+1. 입력 SSOT를 먼저 읽는다 — `03_top-down_gold/04_SV파생 매핑.md`(derived 81 분자/분모·소속 FACT), `03_테이블 설계.md`(9 FACT·15 DIM grain), `06_DDL.sql`(실제 컬럼명), `07_메타.md`(시간가용성·미해결 충돌), `_archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md`(데이터 게이트).
  2. `_archive/1_SV_metric 배속.md`는 **레거시 4-SV 구조 기준**이다 → 본 v4의 **7-SV 구조로 재배속(1단계)** 하기 전까지 그대로 신뢰하지 말 것(metric↔FACT 매핑만 재사용).
 3. 3절 단계를 **순서대로** 수행하고, 산출물은 이 폴더(`05_SV-Agent_ai/`)에 단계번호 접두사로 쓴다. 진행상태표를 갱신한다.
 
@@ -180,7 +180,7 @@ END-METADATA -->
 
 ## 2. 데이터 현황 게이트 (배포 Phase 결정)
 
-> 실측 행수(2026-07-20)와 `20_issue/` 게이트. 배포 순서를 이 표가 가른다(원칙 9).
+> 실측 행수(2026-07-20)와 `_archive/O276_project_closure/20_issue/` 게이트. 배포 순서를 이 표가 가른다(원칙 9).
 
 | SV | FACT 행수 | Phase | 근거·게이트 |
 |---|---:|---|---|
@@ -303,7 +303,7 @@ END-METADATA -->
 | DDL | `03_top-down_gold/06_DDL.sql` | base_table·relationship 실컬럼 |
 | 메타·미해결 | `03_top-down_gold/07_메타.md` | 시간가용성 enum·중복정의 충돌 |
 | 1단계(레거시) | `05_SV-Agent_ai/_archive/1_SV_metric 배속.md` | 4-SV 배속(metric↔FACT 매핑 재사용) |
-| 데이터 게이트 | `20_issue/00_INDEX_이슈원장.md` 외 | Phase 2 트리거(G-5·E-6·E-1/4·Q10·A~G) |
+| 데이터 게이트 | `_archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md` 외 | Phase 2 트리거(G-5·E-6·E-1/4·Q10·A~G) |
 | **BRONZE 계보(원칙 13)** | `30_output_share/04_컬럼계보매핑.md` | **GOLD 컬럼 → SILVER → BRONZE 1:1 매핑 + 변환규칙** — SV `[원천]` 절의 근거. 컬럼 단위 상세는 여기만 인용 |
 | **지표별 계보** | `30_output_share/05_지표GOLD매핑.md` | 지표#(215) → GOLD 배속 → SILVER → BRONZE 추적 |
 | SILVER 의존 | `03_top-down_gold/08_silver의존.md` | SILVER→BRONZE lineage 확정(원천 테이블·컬럼) |

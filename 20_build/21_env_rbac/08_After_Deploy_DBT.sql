@@ -96,7 +96,7 @@ GRANT USAGE ON SNOWFLAKE INTELLIGENCE SNOWFLAKE_INTELLIGENCE_OBJECT_DEFAULT TO R
 
 /* =====================================================================
    D.9 [2026-09-28 O184] dbt 전용 롤 GN_DW_DBT — ENGINEER(사람+dbt 혼용) 분리
-      설계 정본 = 99_NEXT_SESSION_조각/99_NEXT_SESSION-O0182-A.md ▣ O182-A-6 (사용자 지시)
+      설계 정본 = _archive/O276_project_closure/99_NEXT_SESSION_조각/99_NEXT_SESSION-O0182-A.md ▣ O182-A-6 (사용자 지시)
       WARN: D.5 의 「별도 GN_DW_DBT 롤 불필요」 결정은 이 절로 **대체**된다(O182 사용자 지시).
        착수 실측(xf98254 · 2026-09-28) — 설계안과 다른 점 3건:
         ㉠ GOLD WIDE 뷰 14개 · OPS store_failures 테이블 9개의 **소유자가 GN_DW_ENGINEER** 다

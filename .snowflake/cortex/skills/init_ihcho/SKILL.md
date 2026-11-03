@@ -1,6 +1,6 @@
 ---
 name: init_ihcho
-description: "세션 최초 실행용 초기화 스킬. 작업 지침(00_guides/00_작업지침_세션운영규칙.md)을 로드하고, 20_issue/ 미해결 항목과 이전 세션 인수인계를 파악한 뒤 셸 안전·문서 전량읽기·한 줄 2000자·파일 쓰기 안전 가드를 활성화한다. Use when: starting a new session in this workspace, resuming prior work, 세션 시작, 작업 시작, 초기화, 인수인계 확인, 백로그 착수. Triggers: init_ihcho, 세션 시작, 작업 시작, 초기화, 이슈 확인, 이어서 작업, 남은 작업, 열린 작업."
+description: "세션 최초 실행용 초기화 스킬. 작업 지침(00_guides/00_작업지침_세션운영규칙.md)을 로드하고, _archive/O276_project_closure/20_issue/ 미해결 항목과 이전 세션 인수인계를 파악한 뒤 셸 안전·문서 전량읽기·한 줄 2000자·파일 쓰기 안전 가드를 활성화한다. Use when: starting a new session in this workspace, resuming prior work, 세션 시작, 작업 시작, 초기화, 인수인계 확인, 백로그 착수. Triggers: init_ihcho, 세션 시작, 작업 시작, 초기화, 이슈 확인, 이어서 작업, 남은 작업, 열린 작업."
 ---
 
 # init_ihcho — 세션 초기화
@@ -25,9 +25,10 @@ description: "세션 최초 실행용 초기화 스킬. 작업 지침(00_guides/
 
 `bash` 툴에 **`run_in_background=true`** 로 아래 한 줄을 넘기고 **반환된 shell id 를 기억**한다:
 ```
-cd /workspace && python3 scripts/session_brief.py --write </dev/null >/tmp/session_brief.out 2>&1; echo "BRIEF_RC=$?"
+cd /workspace && mkdir -p tmp && python3 scripts/session_brief.py --write </dev/null >tmp/session_brief.out 2>&1; echo "BRIEF_RC=$?"
 ```
 - 🔴 `timeout 60` 을 붙이지 마라(60초에 죽어 `rc=143` · background 는 G1 의 예외).
+- 🔴 출력은 **워크스페이스 `tmp/`** 에 받는다 — OS `/tmp` 는 샌드박스 재시작 때 지워진다(G1 「임시 파일」).
 - 🔴 **기다리지 않는다** — 곧바로 §1 → Step 1 로 간다. 완료 대기는 Step 2 에서 한다.
 
 ---
@@ -42,8 +43,10 @@ cd /workspace && python3 scripts/session_brief.py --write </dev/null >/tmp/sessi
 - 타임아웃 시 **같은 명령을 재시도하지 않고**(`R0-6`) 구문 점검 → 최소 명령 → 경로 분해로 복구한다.
 - dbt 명령에는 셸 연산자를 쓸 수 없다. `--project-dir` 로 경로를 넘긴다.
 - 🔴🔴 **`R0-8`「0건」은 `rc` 를 먼저 보라.** `rc=0` 일 때만 「없다」 — `143`·`124`·`2` 는 **미판정**이다.
-- 🔴 **`R0-8-2` `rc` 를 파이프 뒤에서 읽지 마라** — `>/tmp/x.out 2>&1` 로 받고 `rc=$?` 를 먼저 잡는다.
-- 🟢 정본 검색 분모 = `20_issue/` · `99_NEXT_SESSION_조각/` · `00_guides/` · `scripts/`.
+- 🔴 **`R0-8-2` `rc` 를 파이프 뒤에서 읽지 마라** — `>/workspace/tmp/x.out 2>&1` 로 받고 `rc=$?` 를 먼저 잡는다.
+- 🔴 **임시 파일 = 워크스페이스 `/workspace/tmp/`**(`R0-8-5` · 세션 시작에 `mkdir -p` · `.gitignore` 대상) — 실행 출력 · 검증 결과 · 일회성 도구를 둔다.
+  OS `/tmp` 는 샌드박스 재시작 때 **통째로 지워진다**(경위 = 개발이력). 마운트가 느린 대량 반복 I/O 만 `/tmp` 에서 돌리고 **남길 결과는 즉시 `/workspace/tmp/` 로 옮긴다.**
+- 🟢 정본 검색 분모 = `_archive/O276_project_closure/20_issue/` · `_archive/O276_project_closure/99_NEXT_SESSION_조각/` · `00_guides/` · `scripts/`.
   `_archive/` 는 `ls _archive/ | grep <문서명>` 으로 **파일명부터** 좁힌다(대용량 · 60초 초과).
 
 ### G2. 읽기 — 전량 확보 (지침 `R1-3`)
@@ -110,7 +113,7 @@ cd /workspace && python3 scripts/session_brief.py --write </dev/null >/tmp/sessi
 
 | 문서 | 읽는 시점 |
 |---|---|
-| `20_issue/91_사고사례집.md` | 쓰기 사고 조사 · 조문 개정 · 「이 규칙을 왜 지키나」가 의심될 때 |
+| `_archive/O276_project_closure/20_issue/91_사고사례집.md` | 쓰기 사고 조사 · 조문 개정 · 「이 규칙을 왜 지키나」가 의심될 때 |
 | `00_guides/01_문서분할_규약.md`(`R1-6-N`) | 분할·재균형·롤오버·은퇴·폴더이전을 할 때 |
 | `00_guides/02_파일쓰기_안전규약.md`(`R1-7-N`) | 파일을 쓰기 전 · 쓰기 사고 조사 |
 | `00_guides/04_단계종료_게이트.md`(`R3-N`) | 로드맵 단계 종료 시 · 완료 보고 전(자문 질문은 §5-2 에 상주) |
@@ -124,9 +127,9 @@ cd /workspace && python3 scripts/session_brief.py --write </dev/null >/tmp/sessi
 `bash_output` 에 Step 0 의 shell id 와 `wait=true` · `timeout_ms=300000` 을 넘긴다.
 - 🔴 **`BRIEF_RC=0` 을 본 뒤에만** 다음으로 간다(`R0-8`) — 그 전의 `00_BRIEF.md` 는 **직전 세션 것**이다.
 - 아직 실행 중이면 같은 호출로 다시 기다린다(재실행 금지 — 두 프로세스가 같은 파일을 쓴다 · `R1-7-2`).
-- `rc≠0` 이면 `/tmp/session_brief.out` 을 `read` 하고 브리핑에 FAIL 로 적은 뒤 사용자 지시를 기다린다.
+- `rc≠0` 이면 `/workspace/tmp/session_brief.out` 을 `read` 하고 브리핑에 FAIL 로 적은 뒤 사용자 지시를 기다린다.
 
-그 다음 **`20_issue/00_BRIEF.md` 를 1회 `read`** 한다.
+그 다음 **`_archive/O276_project_closure/20_issue/00_BRIEF.md` 를 1회 `read`** 한다.
 
 | § | 내용 | 추출 판정식 |
 |---|---|---|
@@ -139,11 +142,11 @@ cd /workspace && python3 scripts/session_brief.py --write </dev/null >/tmp/sessi
 🔴🔴 **`00_BRIEF.md` 는 색인이지 정본이 아니다** — 수치를 인용하려면 **그 좌표를 `read`** 한다(G5).
 🔴 손으로 고치지 마라(재생성에서 사라진다). 🔴 **「열림」은 상태가 아니라 기재다** — 착수 전 실측(§3 J3).
 
-🔴 **인수인계 정본 = 라벨 파일**(`99_NEXT_SESSION_조각/99_NEXT_SESSION-O0172-A.md` 형태) —
+🔴 **인수인계 정본 = 라벨 파일**(`_archive/O276_project_closure/99_NEXT_SESSION_조각/99_NEXT_SESSION-O0172-A.md` 형태) —
 브리핑 §2 가 준 **단위 전건**을 읽는다(접미가 다른 것은 승계가 아니라 **형제**다).
 그 밖의 문서는 **필요할 때만** → `references/doc-map.md`.
 
-🔴 지시가 `20_issue/` 와 충돌하면 `20_issue/` 를 우선하거나 사용자에게 문의한다.
+🔴 지시가 `_archive/O276_project_closure/20_issue/` 와 충돌하면 `_archive/O276_project_closure/20_issue/` 를 우선하거나 사용자에게 문의한다.
 
 ### Step 3. 브리핑 출력
 
@@ -198,7 +201,7 @@ read 미반환: <건수> · 재호출 <건수>   ← 0 이면 「0」이라고 �
 ## §4. 세션 중 상시 준수
 
 - **실측 중심**: BRONZE 원본 직접 스캔 · 완료 판정은 `INFORMATION_SCHEMA` 스캔(`P33`).
-  문서작업 전용 계정이면 **라이브 판정을 보류**한다(`R2-8-4-c`) ⇒ `20_issue/92_실측필요_후속작업.md`.
+  문서작업 전용 계정이면 **라이브 판정을 보류**한다(`R2-8-4-c`) ⇒ `_archive/O276_project_closure/20_issue/92_실측필요_후속작업.md`.
 - 🔴🔴 **「수」는 문서에서 읽지 말고 재라** — `python3 scripts/doc_census.py`(`--strict` = stale 시 exit 1).
   문서에 조각 수를 새로 적지 마라. 쪼갠 직후에는 「분할 분모 대조 … 위반 0건」을 보라(`R1-6-25`).
 - **자동 생성물을 손으로 고치지 마라** = `00_BRIEF.md` · `92_실측필요_후속작업.md` · 모든 허브 · 이 스킬.

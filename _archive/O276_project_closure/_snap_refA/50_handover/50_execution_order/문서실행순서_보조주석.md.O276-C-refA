@@ -1,0 +1,176 @@
+# 문서실행순서 보조 주석
+
+> 이 파일은 `문서실행순서.md`의 각 단계에 대한 상세 주석(포함 컬럼·변경 이력·덧입히기 절차)을 모은다.
+> 실행 순서 자체는 `문서실행순서.md`만 보면 된다 — 이 파일은 참고용이다.
+
+## 단계별 주석
+
+| # | 파일 | 주석 |
+|---|---|---|
+| 2 | `07_OPS_알림수신자관리_및_파이프라인_이메일알림_표준.sql` | [2026-10-16] `IS_DBT_ALERT_YN` 컬럼(비파괴 ADD COLUMN) · **§3-1 변수 `DBT_ALERT_RECIPIENTS` = dbt 알림 수신자 정본**(USER_NAME 쉼표 구분 · 목록 외 사용자는 N) · 발송 프로시저 `DBT_ALERT` 분기 · 실행 롤 = §1~§1-1 ACCOUNTADMIN(통합 객체·EXECUTE ALERT·기존 객체 소유권 이관) → §2~§6 GN_DW_ADMIN |
+| 7 | `07_데이터마이그 C_CONSUMER.sql` | [대체가능] 동일계정 Direct Share(GN_DW_SHARED) 환경이면 CSV 언로드/적재 대신 `08_데이터마이그 B-C 통합.sql`로 고속 직접 이관(INSERT OVERWRITE) 가능(Imported DB는 CLONE 불가) |
+| 8 | `08_SILVER_테이블DDL_20260714.sql` | [O225] CRM_SEND_MEMBER SND 캠페인 3종 포함 · [O232] AD_CREATIVE_CAMPAIGN_MAP(소재 매핑·카테고리 코드) |
+| 9 | `09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql` | [O232] 광고 소재→캠페인 매핑표 적재(CSV 258행 · COPY FILES → INSERT OVERWRITE · dbt build 앞 필수 — 비면 소재 매핑 귀속 0) |
+| 10 | `06_DDL.sql` | [O225] 캠페인 축 컬럼(FAP·FER·FMD·FPBS·FMM·DMC) · [O231·O232] FME DEV_CNT_RAW·DEV_EXCL_REASON · FMC OBS_\* · FMCS(신규 표) · FAP AD_MAP_\*·AD_CTGR_\* · DMC CMPGN_CTGR_\* · [O233-A] FMC LAST_STOP_DATE_SK·OBS_TENURE_MONTHS_LAST·IS_STOPPED_OBS_LAST · [O234] FMC OBS_\*·\*_LAST·FMCS COMMENT 「잠정」→확정(구조 무변경) |
+| 17 | `01_deploy_dbt_project.sql` | [주의] 신규 환경은 CREATE DBT PROJECT 주석 해제 필수(기존 프로젝트 없으면 ALTER ADD VERSION 실패) |
+| 19 | `02_dbt_parse_compile_build.sql` | [O225] 매크로 billing_campaign_asof · 테스트 6종 · [O231·O232] 매크로 gn_biz_codes · [O233-A] var ltv_caps=[80]·ltv_min_cell=1·ltv_unlimited·ltv_horizon_max=480 · 테스트 assert_fmcs_grain_and_survival(무기한 ㉤) · 실측 O233 PASS=41 WARN=0 · [O234] yml description·모델 주석 확정 문안(로직·vars 무변경 ⇒ 재build 불필요) · [2026-10-16 grain 보정] SILVER 진입부 BRONZE 이중적재 dedup(QUALIFY) 5모델(CRM_MEMBER_CONVERT_HIST·CRM_EVENT·CRM_MSG_TEMPLATE·SEARCH_CONSOLE_DATA·CRM_PAYMENT_BILLING) · WIDE_SPNSR_CLS_AGGR 큰 값 1건 · 신규 WARN 테스트 warn_spnsr_cls_aggr_src_dup(store_failures→OPS) · 기존 환경은 DIM_MSG_TEMPLATE 잔존 중복 1회 정리 필요(아래 덧입히기) · 🆕 🔴 [O261] **개발계·신규 구축은 전체 `build` 다음 BigQuery 범위 build 필수**(운영계는 `R2-9` 백필 제외 · Step 3-3 정지점만 공통) — 사람이 전체 build 만 돌리면 GA4 하류가 0행으로 끝난다(ERROR 0 · 무증상 · 개발계 UM80684 2026-10-24 실사고) · 정지점 = Step 3-3 [3-3-a] 원천·BASIC·FACT 일자 수 일치(실측 34일 3자 일치) |
+| 20 | `09_OPS_dbt경고_이메일알림_구축.sql` | [2026-10-16 신설] dbt WARN(OPS.WARN_SPNSR_CLS_AGGR_SRC_DUP) → ALERT `ALERT_DBT_WARN_SPNSR_CLS_DUP` → 07 `DBT_ALERT` 수신자 메일 · 전제 = 2번(07) + 19번(dbt build) · 실행 시각 = §0 변수 `DBT_ALERT_SCHEDULE`(기본 매일 09:00 KST · build 종료 이후로 조정) · 실행 롤 = 전 구간 GN_DW_ADMIN(EXECUTE ALERT 는 07 §1 에서 부여됨) · ALERT 는 SUSPENDED 생성 → 시험 발송 후 RESUME |
+| 21 | `06_MSTR_적재_실행.sql` | [시간소요] 202401~최신월 루프 프로시저 적재(34개월). 웨어하우스 LARGE 권장→완료 후 XSMALL 원복 |
+| 22 | `05_01_SV_DDL_MEMBER_MONTHLY.sql` | [O225] 그 달 후원 캠페인 차원(단일 월만·IS_MULTI_CAMPAIGN) |
+| 23 | `05_02_SV_DDL_MEMBER_EVENT.sql` | [O-HC] 개발 제외 사유(DEV_EXCL_REASON)·원천 개발건(TOTAL_DEV_CNT_RAW) |
+| 24 | `05_03_SV_DDL_MEMBER_COHORT.sql` | [O231·O232] 생존(KM) 표 FMCS · LTV 상한별 기대 유지개월(RMST) · [O234] 현업 확정 문안(상한 80 + 무기한 9999 · 셀 최소 1) |
+| 25 | `05_04_SV_DDL_SERVICE.sql` | [O225] 발송(SND) 캠페인 차원 |
+| 28 | `05_07_SV_DDL_AD.sql` | [O225] 마케팅캠페인 UTM·국내해외·사업사례 · [O232-B] 광고비 귀속 카테고리(AD_CTGR_\*·대표값·다중 플래그) · 마케팅캠페인 대표 카테고리 |
+| 40 | `05_19_SV_DDL_PAYMENT_BILLING_STATUS.sql` | [O225] 그 달 후원 캠페인 차원(청구 행 단위 정확 귀속) |
+| 44 | `05_23_SV_DDL_EXPENSE_RESOLUTION.sql` | [O225] 세부캠페인코드(콘텐츠구분자)→마케팅캠페인 차원 |
+| 45 | `05_24_SV_DDL_CAMPAIGN_CUM_STOP.sql` | [O236] 캠페인별 누계중단율(후원건 캠페인 귀속) · 선행 = GOLD.FACT_CAMPAIGN_CUM_STOP(06_DDL·dbt build) · [O237] +1 metric · 🔴 09_2 전 필수(도구 analyst_campaign_cum_stop) · [O239] 순서표 누락 보정 |
+| 46 | `05_25_SV_DDL_CAMPAIGN_MONTHLY.sql` | [O237-B] 캠페인 월 팩트 SV(신규) · 선행 = GOLD.FACT_CAMPAIGN_MONTHLY · [O237-C] 소규모 이상치 규칙 · 🔴 09_2 전 필수(도구 analyst_campaign_monthly) · [O239] 순서표 누락 보정 |
+| 47 | `05_26_SV_DDL_GA_CHILD_UNPAID.sql` | [O239] 결연아동코드(공#122)·미납서비스 전환율(공#81) SV(신규 · 추천안 A/B 병기 · 잠정) · 선행 = GOLD.FACT_GA_CHILD_VIEW · FACT_UNPAID_SERVICE_CONV(06_DDL·dbt build) · 🔴 09_2 전 필수(도구 analyst_ga_child_unpaid) · 개발계 덧입히기 = `20_build/23_sv_agent/29_DEPLOY_G1_REMAINDER.sql` |
+| 50 | `23_ML_INC_MKTG_CMPGN_DDL.sql` | [ML연계] 증액 ML 예측 × MSTR 마케팅캠페인 귀속 뷰 및 SV 배선 |
+| 51 | `24_ML_REALTIME_SIMULATOR_DDL.sql` | [ML시뮬레이터] 실시간 경량 ML 광고비/예산 변동 시뮬레이션 SP·SERVING 뷰·SV 배포 |
+| 52 | `25_ML_CHURN_CMPGN_CTGR_DDL.sql` | [ML연계·O224] 중단 ML 예측×캠페인카테고리 사전 결합 뷰·SV(09_2 전 필수) · 🆕 [O261] `22_`·`25_` 에 `34_`(O246-D 기준월 폴백 각주 · 차원 COMMENT 4 × 3 SV · MA 표 COMMENT · 지시문)를 이식 — 종전 신규 구축은 34 가 순서에 없어 각주가 빠졌다 |
+| 53 | `26_BIZ_DEFINITION_CORPUS_DDL_적재.sql` | [연계] Search 서비스(SEARCH_BIZ_DEFINITION) 생성·코퍼스 적재 · [O233-B] 다국어 multi-index 하이브리드(arctic-embed-l-v2.0·TEXT TITLE/KEYWORDS/SEARCH_TEXT·VECTOR SEARCH_TEXT) · 코퍼스 수정 시 먼저 `python3 30_operate/32_agent_improvement/tools/build_biz_definition_corpus.py` · [O234] 코퍼스 2,155행(RT-29 기대 유지개월 · RT-04/20 동의어 · 오버레이 +2) |
+| 54 | `05_27_SV_DDL_AD_INFLOW_ALLOC.sql` | 🆕 [O249 · O250-E 단독 정본] SV_AD_INFLOW_ALLOC(광고비 → 개발인입경로 배분 · MARKETING) · 선행 = GOLD.FACT_AD_INFLOW_ALLOC(06_DDL·dbt build) · 🔴 09_2 전 필수 · 원 배포 = 35_(이력) |
+| 55 | `05_28_SV_DDL_MEMBER_EVENT_COHORT.sql` | 🆕 [O249 · O250-E 단독 정본] SV_MEMBER_EVENT_COHORT(회원 개발사건 × 경과월 · MEMBER) · 선행 = GOLD.FACT_MEMBER_EVENT_COHORT(06_DDL·dbt build) · 🔴 09_2 전 필수 · 원 배포 = 35_(이력) |
+| 56 · 57 | `05_29_SV_DDL_ML_MEMBER_PRED_AXIS.sql` · `05_30_SV_DDL_ML_FEE_FORECAST_AXIS.sql` | 🆕 [O250 · O250-E 단독 정본 · 뷰 2종 = 48 `21_` [O250] 절 · 원 배포 = 36_(이력)] 뷰 ML_MEMBER_PRED_AXIS_V(중단·증액 + 미납 실적 × 7축 · MEMBER_WEIGHT) · ML_FEE_FORECAST_AXIS_V(회비 예측 × 7축 실적 비중 배분) · SV 2종 · 선행 = 21_(ML_MEMBER_RISK_V·ML_SPONSOR_RISK_V·ML_MEMBER_ATTR_ASOF_V·ML_MEMBER_PRED_BRIDGE_V·ML_FEE_FORECAST_V) · 본부지부 = DIM_ORG 8종 → 본부/지부/기타 · 법인 = SPAN.ACQ_CPR_DIV_NM · 🔴 09_2 전 필수(도구 analyst_ml_pred_axis · analyst_ml_fee_axis) |
+| 58 | `09_1_AGENT_생성.sql` | Agent 3종(MEMBER·EXECUTIVE·MARKETING) 껍데기 생성·소유권/권한·CoWork 등록 · 🆕 [O250-C] COMMENT = 수치 없는 「조회 데이터 = 카테고리」 문안([1]·[5] 두 곳 정본) |
+| 59 | `09_2_AGENT_버전업.sql` | 20_build/28_cortex_project/agents/\* 정본 YAML → OPS 스테이지 동기화 후 실서비스 버전 발행 · [O234] MARKETING LTV 유지개월 지침 교체(개발계 VERSION$10) · 🆕 [O250-B] [0] 정적 목록에 7축 SV 5행 · [3] COMMENT 수치 제거 |
+
+## 덧입히기 절차(기존 계정에서 특정 세션분만 반영할 때)
+
+### O225만 덧입힐 때
+처음부터 다시 돌리지 않는다 — 아래 3단계만 한다.
+1. `ALTER TABLE … ADD COLUMN IF NOT EXISTS`(비파괴) 7테이블
+   - 컬럼·COMMENT 정본 = `10_design/12_silver_design/08_…sql`(CRM_SEND_MEMBER)
+     · `10_design/11_gold_topdown/06_DDL.sql`(FAP·FER·FMD·FPBS·FMM·DMC)
+2. dbt build(👤) = `CRM_SEND_MEMBER+ FACT_PAYMENT_BILLING_STATUS+ FACT_MEMBER_MONTHLY+ DIM_MARKETING_CAMPAIGN+ FACT_EXPENSE_RESOLUTION+ FACT_AD_PERFORMANCE+`
+3. SV 재배포 = `05_23`·`05_07`·`05_19`·`05_04`·`05_01`(Agent 버전업 불필요)
+   - 경위 = 인수인계 `99_NEXT_SESSION-O0225-C.md`
+
+### O231·O232만 덧입힐 때
+아래 4단계만 한다(경위 = 인수인계 `99_NEXT_SESSION-O0232-B.md`).
+1. 구조(비파괴)
+   - SILVER `CREATE TABLE AD_CREATIVE_CAMPAIGN_MAP`(08 DDL)
+   - GOLD `CREATE TABLE FACT_MEMBER_COHORT_SURVIVAL`(06_DDL)
+   - `ALTER TABLE … ADD COLUMN IF NOT EXISTS` = FME·FMC·FAP·DMC(정본 = 06_DDL)
+   - dbt 롤은 SILVER/GOLD CREATE 권한 없음 → 소유자 롤(GN_DW_ADMIN) · 확인 = `python3 scripts/o163_ddl_live_drift.py`
+2. 매핑표 적재 = `10_design/12_silver_design/09_SILVER_AD_CREATIVE_CAMPAIGN_MAP_적재.sql`(258행)
+3. dbt build(👤) = `FACT_MEMBER_EVENT+ FACT_MEMBER_COHORT+ DIM_MARKETING_CAMPAIGN+ FACT_AD_PERFORMANCE+`(+ ERP_BUDGET·FACT_EVENT_ATTENDANCE·FACT_MESSAGE_DISPATCH = 코드 매크로 전환분)
+   - 기대 = 광고비 귀속 합 556.3억
+4. SV 재배포 = `05_02`·`05_03`·`05_07`(Agent 버전업 불필요)
+
+### O233만 덧입힐 때
+O231·O232 덧입힘을 마친 뒤 아래를 한다(경위 = `30_operate/32_agent_improvement/20_O21X_잔여작업_정리.md` #36).
+
+**O233-A(#36 카테고리명 나열 + LTV 최종중단)**
+1. `ALTER TABLE … ADD COLUMN IF NOT EXISTS` 5건
+   - `DIM_MARKETING_CAMPAIGN.CMPGN_CTGR_NM_LIST` · `FACT_AD_PERFORMANCE.AD_CTGR_NM_LIST`(정본 = 06_DDL)
+   - `FACT_MEMBER_COHORT.LAST_STOP_DATE_SK` · `OBS_TENURE_MONTHS_LAST` · `IS_STOPPED_OBS_LAST`(정본 = 06_DDL)
+2. dbt build(👤) = `FACT_MEMBER_COHORT FACT_MEMBER_COHORT_SURVIVAL DIM_MARKETING_CAMPAIGN+ FACT_AD_PERFORMANCE+`
+   - 기대 = DIM 591 전건 채움 · FAP 246,371 채움 · FMCS 전체 최종 80 RMST 52.7 · 무기한 130.3 · PASS=41
+3. SV 재배포 = `05_07`(SV_AD) · `05_03`(SV_MEMBER_COHORT)
+
+**O233-B(RAG 하이브리드 고도화)**
+1. `python3 30_operate/32_agent_improvement/tools/build_biz_definition_corpus.py --apply`(코퍼스 재적재 2,154행 · KEYWORDS·IS_ADDITIVE 포함)
+2. `26_BIZ_DEFINITION_CORPUS_DDL_적재.sql` [5](검색 서비스 CREATE OR REPLACE → 다국어 multi-index) + [6](GRANT 재부여)
+3. Agent 버전업(`09_2`) — 되묻기 지침 반영(MEMBER $5·EXEC $8·MKT $9)
+
+### O234만 덧입힐 때
+O233 덧입힘을 마친 뒤 아래를 한다(경위 = 인수인계 `99_NEXT_SESSION-O0234-B.md`). 🟢 구조·dbt 로직 변경 없음 ⇒ dbt build 불필요.
+1. COMMENT 동기화 = FMC OBS_TENURE_DAYS·OBS_TENURE_MONTHS·IS_STOPPED_OBS·LAST_STOP_DATE_SK·OBS_TENURE_MONTHS_LAST·IS_STOPPED_OBS_LAST · FMCS LTV_CAP_MONTHS·테이블 COMMENT
+   - 정본 = 06_DDL 문안 · 방법 = `ALTER TABLE … ALTER COLUMN … COMMENT` / `COMMENT ON TABLE`(소유자 롤 GN_DW_ADMIN) · 06_DDL 을 처음부터 돌리는 환경이면 생략
+2. 코퍼스 재적재 = `python3 30_operate/32_agent_improvement/tools/build_biz_definition_corpus.py --apply`(2,155행) → `ALTER CORTEX SEARCH SERVICE GN_DW.SERVING.SEARCH_BIZ_DEFINITION REFRESH`
+   - 확인 = `python3 30_operate/32_agent_improvement/tools/o234_search_probe.py`(개발계 hit@1 79% · hit@3 88%)
+3. SV 재배포 = `05_03`(SV_MEMBER_COHORT) · 기대 = 상한 80 52.75 · 무기한 130.27
+4. Agent 버전업(`09_2`) — MARKETING 스펙(LTV 유지개월 = 기대 유지개월 80/무기한)
+
+### 2026-10-16 dbt grain 보정 + dbt 경고 메일만 덧입힐 때
+BRONZE 는 손대지 않는다(이중적재는 적재 파이프라인 쪽 과제). 아래 5단계만 한다.
+1. dbt 재배포 = `01_deploy_dbt_project.sql`(ADD VERSION) — 개발계 버전명 `SILVER_DEDUP_20261016`
+2. dbt build(👤) = `CRM_MEMBER_CONVERT_HIST+ CRM_EVENT+ CRM_MSG_TEMPLATE+ SEARCH_CONSOLE_DATA+ CRM_PAYMENT_BILLING+ WIDE_SPNSR_CLS_AGGR+ --exclude DIM_MSG_TEMPLATE+` → `test --select warn_spnsr_cls_aggr_src_dup`
+   - 기대(개발계) = PASS=189 ERROR=0 SKIP=0 · CONVERT_HIST 7,256 · CRM_EVENT 4,053 · CRM_MSG_TEMPLATE 7,099 · SEARCH_CONSOLE 994,778 · WARN 459키
+3. DIM_MSG_TEMPLATE 잔존 중복 정리 — GOLD `full_refresh:false` 라 `--full-refresh` 가 무시된다(MERGE 는 기존 중복을 지우지 않음)
+   - `INSERT OVERWRITE INTO GN_DW.GOLD.DIM_MSG_TEMPLATE SELECT * FROM GN_DW.GOLD.DIM_MSG_TEMPLATE QUALIFY ROW_NUMBER() OVER (PARTITION BY TEMPLATE_SK ORDER BY DW_UPDATE_TS DESC NULLS LAST) = 1;`(DDL·제약·주석 보존)
+   - 이어서 build `DIM_MSG_TEMPLATE+` · 기대 = 7,099행 · unique PASS
+4. `07` = §1~§1-1(ACCOUNTADMIN: EXECUTE ALERT 부여 · 기존 OPS 객체 4종 GN_DW_ADMIN 소유 이관) → §2~§6(GN_DW_ADMIN: IS_DBT_ALERT_YN 컬럼 · §3-1 수신자 변수 · §4 발송 프로시저 재배포 · §6 GRANT)
+5. `09` 전체 실행 → 시험 발송 → `ALTER ALERT … RESUME` · 확인 = `ALERT_HISTORY` STATE=TRIGGERED · 오류 없음
+
+### O250만 덧입힐 때
+O249 덧입힘(「기존 환경 갱신」 20~25)을 마친 뒤 아래를 한다(경위 = 인수인계 `99_NEXT_SESSION-O0250-A.md`·`-B`·`-C`). 🟢 테이블·dbt 변경 없음 ⇒ dbt build 불필요.
+1. `36_DEPLOY_ML_PRED_7AXIS.sql` 전체 → 끝의 스모크 2개(회원수 = ML_MEMBER_RISK_V · 배분 합 = 예측 합) — 🆕 [O250-E] 같은 정의의 정본 = `21_` [O250] 절 → `05_29` → `05_30`(어느 쪽을 써도 결과 동일)
+2. Agent 버전업(`09_2` · [0] 부재 0행 확인) — 3종 모두 analyst_ml_pred_axis · MEMBER·MARKETING 만 analyst_ml_fee_axis
+3. `09_1` [5] 만 — Agent COMMENT 문안 교체
+4. 확인 = Cortex Analyst 로 7축 질의(예: 「법인별 본부지부별 기준월 미납 회원수와 미납 중 중단 고위험 회원수」) 결과를 뷰 직접 SQL 과 대조
+
+### 폐지·개편 부서 현재 조직 귀속(DEC-63)만 덧입힐 때
+O250 덧입힘(「기존 환경 갱신」 26~28)을 마친 뒤 아래를 한다(경위 = 인수인계 `99_NEXT_SESSION-O0252-A.md` · 결정 = `30_설계_의사결정-017.md` DEC-63).
+🔴 원천 부서값은 그대로 두고(DEC-56) 현재 조직 기준 조회 축만 더한다 · SILVER·BRONZE 변경 없음 · Agent 변경 없음.
+배포순서 정본 = `20_build/23_sv_agent/37_DEPLOY_ORG_SUCCESSION.sql`([D0]~[D6]).
+1. GOLD 테이블 2종 = `37` [D1] 2문장(`IF NOT EXISTS` · 정본 = `06_DDL.sql` 의 같은 2블록 · 🔴 06_DDL 전체 재실행 금지)
+   - `DIM_ORG_SUCCESSION`(grain = 원천 부서 1행 · DIM_ORG 와 1:1) · `ORG_SUCCESSION_MANUAL`(dbt seed 대상)
+   - GN_DW_DBT 는 GOLD 에 CREATE TABLE 권한이 없다 ⇒ seed 테이블도 DDL 로 선생성 · DBT DML 은 FUTURE GRANT 로 자동
+2. dbt 재배포 + build(👤) = `build --select ORG_SUCCESSION_MANUAL DIM_ORG_SUCCESSION`(운영계 백필 없음 · R2-9)
+   - 기대(개발계 SR61467 2026-10-21) = PASS=11 WARN=0 ERROR=0 · 1,314행 = DIM_ORG(SK≠0) · seed 0행
+3. 대사 = `37` [D3] — 키 중복 0 · 귀속 방법별 부서 수 · 중단 연도별 합계 보존(2024 143,153 · 2025 153,263 · 2026 129,707)
+4. SV 재배포 = `05_10`(SV_MEMBER_SPONSOR_BIZ · 현재 부서 축 `CUR_DEPARTMENT` · 지표 `STOP_REGISTRATIONS` · 규칙 (5) · VQR 1)
+   - 기대 = 14/14 문장 OK · 현재 부서 축 합계 = 팩트 중단 약정 수(개발계 1,381,827)
+5. 현업 회신 반영(반복) = `37` [D5] — 검토 xlsx → `seeds/ORG_SUCCESSION_MANUAL.csv` → 2번 재실행 → MANUAL 부서 수 = seed 행수
+6. 🆕 DEC-63-D(🟡 현업 확인 대기) = 부서별 중단률은 분모(전월말 활동 약정)도 같은 귀속 축 — `05_10` 규칙 (6) · VQR `vqr_stop_rate_by_current_dept` · 통보 = 안내문 `_v2.docx` §8
+   - 기대(개발계 2026-09) = 전체 1.47% · 회원서비스기획팀 0.59%(분자만 연결 시 1.76%)
+7. 🆕 DEC-63-E(🟡 선반영 · 현업 선택 대기) = `05_08`(SV_DEV_ACHIEVEMENT · 목표·실적 함께 귀속 · 규칙 (6) · VQR 1) → `05_02`(SV_MEMBER_EVENT · 개발 DEV 행 귀속) · 통보 = 안내문 `_v3.docx` §9
+   - 기대(개발계) = 05_08 15/15 · 05_02 9/9 · 현재 부서 축 목표 합 4,622,103 = 기존 · 2025 개발 319,305.86 = 기존 · 회원참여팀 2025 달성율 45.0% → 78.0%
+   - 롤백 = 해당 SV 파일의 DEC-63-E 표지 줄을 빼고 재실행(원천·당시 부서 축은 그대로라 데이터 작업 없음)
+
+### O261만 덧입힐 때
+O260 덧입힘(「기존 환경 갱신」 36)을 마친 뒤 아래를 한다(경위 = 인수인계 `99_NEXT_SESSION-O0261-A.md` · 증거 = `tmp/o261/evidence.md` E1~E6).
+1. dbt 재배포 + build(👤) = `build --select AGENCY_AD_PERFORMANCE+`(「기존 환경 갱신」 37)
+   - 변경 = 재방송 분기 `CAMPAIGN_NM = clean_str(MKTG_CMPGN_NM)`(사용자 결정 · O260-A-3 ②㉠) · `FACT_MEMBER_COHORT_SURVIVAL` Jinja 주석 닫기 1곳(출력 무변경)
+   - 기대(개발계 UM80684) = 재방송 NAME 286 · UPPER_CODE 1,808 · NONE 96 · 합 2,190 · 다른 캠페인으로 바뀐 행 0
+2. SV 재배포(「기존 환경 갱신」 38) — COMMENT 만 바뀐다 ⇒ Agent 버전업 불필요
+   - ㉠ 「실제값 N종」 → 「주요 값(늘거나 줄 수 있음 · 전체는 조회로 확인)」(종 수는 값이 늘면 즉시 거짓이 된다 · 사용자 승인)
+   - ㉡ 라이브 신규값 목록 반영(예: GA `DEFAULT_CHANNEL_GROUP` +6 · 지라니 중단사유 +4)
+   - ㉢ 저카디널리티(≤20) 코드·라벨 차원 중 값 열거가 없던 253 차원에 값 목록 추가(`sv_code_label_gate` §6.9-(5) advisory 해소 · 범주 아님 2건 제외 = `SV_MEMBER_SERVICE_COHORT.CHRG_DEPT_NAMES`(부서명 조합) · `SV_ML_REALTIME_SIMULATOR.ASSUMPTIONS`(설명문 · 게이트 `ENUM_SKIP`))
+   - ㉣ 비표준 열거 문안(「값 N종:」 · 접두 없음 · 무따옴표 범위) 15곳을 표준 문안으로 · 변형 종 수 표기(「원값 55종」·「실측 값 6종」) 18건 제거
+   - ㉤ `SV_MEMBER_SPONSOR_BIZ.MAP_METHOD` = 목록은 라이브 값만 · `MANUAL`·`MANUAL_UNMAPPED` 는 seed(`GOLD.ORG_SUCCESSION_MANUAL`) 적재 후에 생기는 값으로 별 문장(현업 회신 seed 가 들어오면 목록으로 올린다)
+   - ㉥ `22_`·`25_` 에 `34_`(O246-D 폴백 각주) 이식 — 신규 구축이 34 없이도 같은 SV 가 된다
+3. 확인 = `python3 scripts/sv_enum_newvalue_gate.py`(NEW 0 · STALE 0) · `sv_code_label_gate.py`(🔴 0) · `sv_no_rollup_gate.py`
+   - 🔴 운영계는 원천 값이 다를 수 있다 ⇒ `sv_enum_newvalue_gate` 가 ❌ NEW 를 내면 그 값을 COMMENT 목록에 넣고 재배포한다(규칙 = 「값 목록은 늘어날 수 있다 · 종 수는 적지 않는다」)
+
+### 배포순서 파일 이름 변경표(2026-10-21)
+`20_build/23_sv_agent/` 의 배포순서 SQL 파일명에서 작업번호를 뺐다 — 규칙 = `NN_DEPLOY_<주제>.sql`(SV 정본 `05_NN_SV_DDL_<주제>.sql` 과 같은 「번호_유형_주제」 형태 · 번호 NN 유지).
+🔴 실행문은 바뀌지 않았다(SHA256 대조 후 이름만 변경 · 머리 주석의 자기 파일명만 갱신). 이력 문서(`20_issue/` · `99_NEXT_SESSION_조각/` · `_archive/`)의 옛 이름은 원문 무변경 원칙으로 그대로 두므로 이 표로 찾는다.
+
+| 옛 이름 | 새 이름 |
+|---|---|
+| `27_O237_산식대응_배포순서.sql` | `27_DEPLOY_FORMULA_ALIGN.sql` |
+| `28_O237C_G1해소_배포순서.sql` | `28_DEPLOY_G1_RESOLVE.sql` |
+| `29_O239_G1잔여_배포순서.sql` | `29_DEPLOY_G1_REMAINDER.sql` |
+| `30_O240_실데이터이상치_배포순서.sql` | `30_DEPLOY_DATA_ANOMALY.sql` |
+| `32_O241_AB병기_SV배선_배포순서.sql` | `32_DEPLOY_AB_DUAL_SV_WIRING.sql` |
+| `33_O241C_O242_운영계반영_배포순서.sql` | `33_DEPLOY_PROD_ROUNDING_VQR.sql` |
+| `34_O246D_운영계반영_SV_ML_폴백각주.sql` | `34_DEPLOY_SV_ML_FALLBACK_NOTE.sql` |
+| `35_O249_SV_신설_광고비배분_개발사건코호트.sql` | `35_DEPLOY_SV_AD_INFLOW_EVENT_COHORT.sql` |
+| `36_O250_ML예측_7축확장.sql` | `36_DEPLOY_ML_PRED_7AXIS.sql` |
+| (신설) | `37_DEPLOY_ORG_SUCCESSION.sql` |
+
+- 바꾸지 않은 것 = `21_`~`26_`(ML·코퍼스 DDL 정본 · `scripts/` 게이트·배포 도구 9종이 경로를 직접 참조) · `09_N_AGENT_*` · `13_SV_AD_배포_추가작업.sql`.
+
+### O266만 덧입힐 때(「기존 환경 갱신」 45~52)
+경위 = 현업 마케팅 Agent 피드백 1~4(2026-10-28) · 인수인계 `99_NEXT_SESSION-O0266-A.md` · 사용자 결정 ㉠-b(정산액 병기) · ㉡-a(결합 팩트·SV 신설) · 개발(건) = MSTR.
+1. 45 = `46_DEPLOY_AD_SETTLE_CAMPAIGN_COST.sql` [D0](GN_DW_DBT 에 GN_DW.MSTR 읽기 · 정본 = `00_mstr_schema_role.sql` [4-b] · `07_ENVIRONMENT_RBAC_setup.sql` §D.9 [1-g] 는 포인터) · [D0-b] 기준값 · [D1](FAP `LAST_STMT_AMT` ADD · `FACT_MKTG_CAMPAIGN_MONTHLY_COST` `IF NOT EXISTS`)
+   - 🔴 [D1] 없이 build 하면 003001(GN_DW_DBT 는 GOLD CREATE TABLE·ALTER 없음) · 🔴 06_DDL 전체 재실행 금지(R2-9)
+2. 46 = 👤 dbt 재배포 + `build --select FACT_AD_PERFORMANCE+ FACT_MKTG_CAMPAIGN_MONTHLY_COST`(dbt source `mstr.F_MM_SPNSR_DVLP_SUM` 신설 · 결합 팩트는 TRUNCATE 후 전 구간 재계산형이라 백필이 아니다)
+3. 47 = [D2] 대사 — 기대(개발계 ZS83821 · build 전 원천 실측) = 정산액 ≈ 41,089,073,328.05(원천 DOUBLE · 반올림 차 허용) · 디지털 외 정산액 0행 · 광고비 합 = FAP · 개발(건) 885,881.0585 · 제작비 3,295,334,668 · PK 중복 0
+4. 48~50 = SV 3종 — `05_07`(지표 `AD_SETTLE_AMT` · 규칙 O266 · VQR 1) · 🆕 `05_31`(`SV_MKTG_CAMPAIGN_COST`) · `05_03`(VQR `vqr_o266_ltv_tenure_cap_unlimited`)
+5. 51 = `09_2_AGENT_버전업.sql` — 정본 `20_build/28_cortex_project/agents/AGENT_MARKETING/agent_spec.yaml`(생성기 = `30_operate/32_agent_improvement/tools/o266_patch_marketing_spec.py` · 도구 32 → 33 `analyst_mktg_campaign_cost` · LTV 표 열 고정 · 정산액 병기 · 캠페인명 재시도 규칙)
+6. 52 = [D3] SV 지표 실재 확인
+- 신규 구축 = 06_DDL(결합 팩트 블록) · 00_mstr [4-b] · dbt 전체 build · `05_31`(개발계 56-1 · 운영계 52-1)이 본 순서에 들어 있다.
+- 🔴 알려진 한계 = 제작비는 지출결의 세부캠페인코드 기재분만(제작비 세세목 정의 없음 · 현업 확인 대기) · 마케팅채널별 비용 없음
+- 🆕 [O266-B] [D1-b] = 제작비 COMMENT 갱신(세세목 정의 부재 사유 · 수치 제거 R2-6) · `05_03` LTV 지표 2종 `EXP_TENURE_MONTHS_CAP`·`EXP_TENURE_MONTHS_UNLIMITED`
+  (무기한 = 관측 최대월과 상한 중 긴 창 · 종전 = 관측 최대월만 ⇒ 무기한 < 상한 셀 37/98 해소 · 모델·테이블 무변경) · 현업 안내문 = `50_handover/55_business_req_handover/20261028_마케팅Agent_피드백_회신.md`
+- 개발계(ZS83821) 반영 = 2026-10-28 · 45~52 전체 · Agent `AGENT_MARKETING` VERSION$4 · [D2] 일치(정산액 41,089,073,335.65 · PK 중복 0 · 3,960행)
+- 🆕 [O266-C] 53~55 = `sv_enum_newvalue_gate` NEW 7 처방(COMMENT 값 목록만 · Agent 재버전 불요) — `05_07`(48 에 포함 · 캠페인유형 `-`·`0`·`전체사업` = 대행사 원천 미분류 원값) ·
+  `05_20` 운영체제 PalmOS·UNIX · `05_23` 세목 업무추진비·운영비 · `05_MSTR` 부서4 「없음」 3곳 · 확인 = 게이트 4조각 NEW 0
+  · 🔴 운영계는 원천 값이 다를 수 있다 ⇒ 반영 후 `sv_enum_newvalue_gate --shard k/4`(k = 0~3) 4회 실행 · NEW 가 나오면 같은 방식으로 목록에 추가
+
+_Co-authored with CoCo_

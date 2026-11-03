@@ -4,7 +4,7 @@ doc_role: 운영계(ZL50263) 저가형 LLM 새 세션 입력 프롬프트 — O2
 project: GN_DW (굿네이버스)
 created: 2026-10-30
 created_by: O271-D
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 END-METADATA -->
 
 # 운영계 LLM 새 세션 프롬프트 — O270 남은 단계 이어가기
@@ -59,7 +59,7 @@ END-METADATA -->
 
 ## 단계 D — Agent 재배포(경영·회원·마케팅)
 
-- `O270_운영계_LLM_프롬프트.md` 의 **단계 4** 를 그대로 한다(`tmp/o250/deploy_agents.py pre` → 승인 → `deploy` → 경영 COMMENT 1문).
+- `O270_운영계_LLM_프롬프트.md` 의 **단계 4** 를 그대로 한다(`_archive/O276_project_closure/tmp/o250/deploy_agents.py pre` → 승인 → `deploy` → 경영 COMMENT 1문).
 - `deploy` 출력의 `[5]` 줄(Agent 이름 · VERSION · tool_spec 수)을 **전부** 그대로 보고한다.
   기대 = AGENT_EXECUTIVE tool_spec 17 · AGENT_MEMBER tool_spec 31 · AGENT_MARKETING 줄이 있으면 그 값도 적는다.
 

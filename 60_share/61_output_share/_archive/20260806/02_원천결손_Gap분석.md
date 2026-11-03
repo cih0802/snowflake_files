@@ -4,8 +4,8 @@ doc_role: 원천 결손(Gap) 분석 — 무엇이 왜 안 되는가 · 누가 �
 project: GN_DW (굿네이버스)
 created: 2026-07-16
 rewritten: 2026-08-06 (구 판본은 30_output_share/_archive/202607/ 로 이관)
-companion: 30_output_share/04_컬럼계보매핑.md · 06_BRONZE노출감사.md · 20_issue/00_INDEX_이슈원장.md (이슈 정본)
-grounded_on: GOLD 386 DATA 컬럼 census(COUNT/COUNT_IF) 실측 2026-08-06 + BRONZE 1,162 컬럼 노출감사 + 20_issue/{00,40,50}.md
+companion: 30_output_share/04_컬럼계보매핑.md · 06_BRONZE노출감사.md · _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md (이슈 정본)
+grounded_on: GOLD 386 DATA 컬럼 census(COUNT/COUNT_IF) 실측 2026-08-06 + BRONZE 1,162 컬럼 노출감사 + _archive/O276_project_closure/20_issue/{00,40,50}.md
 updated: 2026-08-06 (O45 조립축 신설 반영 — 회비 팩트·획득 귀속축·마케팅캠페인축 · 수기 문서이므로 구조 변경 시 함께 갱신 필요)
 END-METADATA -->
 
@@ -72,7 +72,7 @@ END-METADATA -->
 
 | ID | 필요 데이터 | GOLD 타깃 | 실측 상태 | 필요 조치 |
 |---|---|---|---|---|
-| **E-6** | **CRM** 사업목표(연사업·추경, 단위=건) | `FACT_TARGET_BIZ` 8컬럼 · `WIDE_TARGET_BIZ` | **테이블 0행** | 신규 입고 — 입고요청서 `20_issue/41_*.md` 발행·**회신 대기**. 🔴 원천은 **ERP 가 아니라 CRM** 이다(2026-07-20 정정) |
+| **E-6** | **CRM** 사업목표(연사업·추경, 단위=건) | `FACT_TARGET_BIZ` 8컬럼 · `WIDE_TARGET_BIZ` | **테이블 0행** | 신규 입고 — 입고요청서 `_archive/O276_project_closure/20_issue/41_*.md` 발행·**회신 대기**. 🔴 원천은 **ERP 가 아니라 CRM** 이다(2026-07-20 정정) |
 | **E-1** | 모금성비용(원) | `FACT_BUDGET.FUNDRAISING_COST` | **전건 NULL** | ERP 예산원장에 컬럼이 없음 → 대행사 비용 보강 입고 |
 | **E-4** | 광고비(원, 캠페인/매체 단위) | `FACT_BUDGET.AD_COST`·`EXEC_BUDGET_EST` | **전건 NULL** | 대행사 원천 연동. ⚠️ 광고비 자체는 `FACT_AD_*` 에 실적재돼 있다 — 결손은 **예산 팩트 쪽 슬롯**이다 |
 | **C-9-R** | 발송 **오픈 여부·오픈율** | `FACT_SERVICE_EVENT.OPEN_MEMBERS` | **전건 0** (38,470,780행) | 🔴 BRONZE `TD_MS_EMAIL_LQY_SNDNG.URL_OTHBC_*` **전건 NULL** = 원천에 값이 없다. **ML 예측 3종(증액·충성·중단)이 이 Feature 에 의존** → 발송 시스템에 오픈 로깅 요청 |

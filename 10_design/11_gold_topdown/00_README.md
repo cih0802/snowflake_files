@@ -124,7 +124,7 @@ END-METADATA -->
 
 ## 보완 — README 미기재 파일 (4-A 판정 · 2026-10-31)
 
-> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
+> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `_archive/RESTRUCTURE_20261031-pre/00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
 
 | 파일 | 크기 | 상태 | 비고 |
 |---|---|---|---|

@@ -27,7 +27,7 @@ END-METADATA -->
 
 ## 1. 폴더 위상
 - **입력(읽기전용)**: `10_design/11_gold_topdown/` (GOLD 정본 — DIM 15·FACT 9·derived 81 SSOT), `99_provided_definition/` (지표사전·용어).
-- **근거**: `30_operate/31_monitoring/` (거버넌스 SQL 근거), `20_issue/` (BLOCKING-5 등 데이터 게이트).
+- **근거**: `30_operate/31_monitoring/` (거버넌스 SQL 근거), `_archive/O276_project_closure/20_issue/` (BLOCKING-5 등 데이터 게이트).
 - **이 폴더 = SERVING(SV·Agent)**: GOLD 소비 계층. 배포 산출물(Agent YAML·매니페스트)은 워크스페이스 루트 `20_build/28_cortex_project/`.
 
 ---
@@ -115,7 +115,7 @@ _Co-authored with CoCo_
 
 ## 보완 — README 미기재 파일 (4-A 판정 · 2026-10-31)
 
-> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
+> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `_archive/RESTRUCTURE_20261031-pre/00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
 
 | 파일 | 크기 | 상태 | 비고 |
 |---|---|---|---|

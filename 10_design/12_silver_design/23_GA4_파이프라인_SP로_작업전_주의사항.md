@@ -1,7 +1,7 @@
 # GA4 파이프라인 작업 전 주의사항
 
 > 🔄 **[2026-09-01 DEC-48] 명명 반전** — 본 문서의 `GA4_*` 표기는 그 시점 기록(역사)이다.
-> 라이브 명칭은 `BIGQUERY_*` 로 전환됐다(`DEC-38` 수퍼시드). 정본 = `20_issue/30_설계_의사결정.md` DEC-48.
+> 라이브 명칭은 `BIGQUERY_*` 로 전환됐다(`DEC-38` 수퍼시드). 정본 = `_archive/O276_project_closure/20_issue/30_설계_의사결정.md` DEC-48.
 
 > 작성일: 2026-07-02 · 대상: Bronze_BIGQUERY → Silver GA4 파이프라인 개발자
 
@@ -28,7 +28,7 @@
 >
 > 🔴 **SILVER 착수 전 미해소 2건** — `GA4-PK-1`(2024-01-01~07-18 · 199일 · 48,862,926행 = 17.10%
 > 가 PK `BATCH_ORDERING_ID` NOT NULL 위반) · `GA4-LEN-1`(`USER_ID VARCHAR(10)` 초과 12,690행 +
-> CRM 조인불가 ID 4종 혼재). 상세 = `20_issue/90_해소완료_로그.md` §1-A.
+> CRM 조인불가 ID 4종 혼재). 상세 = `_archive/O276_project_closure/20_issue/90_해소완료_로그.md` §1-A.
 >
 > 🔴 **비용 가드** — 모든 SILVER 조회에 `EVENT_DT` 범위 제한을 강제할 것.
 > 빼면 2.86억행 × VARIANT 11개를 전량 스캔한다(BRONZE 프루닝은 3,006 중 19 파티션으로 양호).

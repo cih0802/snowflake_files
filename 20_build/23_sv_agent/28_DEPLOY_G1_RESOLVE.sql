@@ -5,7 +5,7 @@
 --     LAST_CAMPAIGN = 1,621,462명 채움(DIM_MEMBER 1,800,737) · fan-out 0 · DIM_CAMPAIGN 미매칭 2
 --     FACT_SPONSORSHIP_MONTHLY 202609 = 활동 1,574,434.2317 · 미납 2,471,716,927원(FMM 과 DIFF 0) · 전체 미납율 15.6991%
 --     클릭대비 전환(2025~ · 클릭일 기준 · 인정 개발) = 클릭 126,799명 · D+1~5 377명 · D+1~30 1,839명
---   · 백업 = tmp/o237c/bak/*.O237C-before
+--   · 백업 = _archive/O276_project_closure/tmp/o237c/bak/*.O237C-before
 -- Co-authored with CoCo
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
@@ -79,5 +79,5 @@ SELECT COVERAGE, COUNT(*) N FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS WHERE HAS_F
 --   ② AGENT_MEMBER 「2026년 9월 후원사업별 미납율」 → SPONSORSHIP_UNPAID_RATE · 전체 ≈ 15.70%
 --   ③ AGENT_MEMBER 「2025년 이후 클릭대비 전환율」 → 5일·30일 두 값과 회원수
 
--- [C9] 롤백 = tmp/o237c/bak/*.O237C-before 를 정본 자리로 되돌린 뒤 같은 파일 재실행 · FACT_SPONSORSHIP_MONTHLY 는 DROP
+-- [C9] 롤백 = _archive/O276_project_closure/tmp/o237c/bak/*.O237C-before 를 정본 자리로 되돌린 뒤 같은 파일 재실행 · FACT_SPONSORSHIP_MONTHLY 는 DROP
 --   🔴 05_10 백업은 첫 편집 이후 사본이다(fsm TABLES·RELATIONSHIPS 가 이미 들어 있음) — 롤백 시 그 두 블록을 손으로 걷어낸다

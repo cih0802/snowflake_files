@@ -1,0 +1,33 @@
+<!-- METADATA
+doc_id: PROMPT_O220
+doc_role: 다음 세션 착수 프롬프트 — 세션 O219 가 남기는 것
+project: GN_DW (굿네이버스)
+created: 2026-10-13
+created_by: O219-A
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+# 24_다음세션_착수프롬프트_O220
+
+> 작성 = O219-A (2026-10-13 · 개발계 ua91864).
+> 아래 블록을 새 세션 첫 메시지로 붙여 넣는다.
+
+```
+/init_ihcho
+개발계 = ua91864. 직전 인수인계 = 99_NEXT_SESSION_조각/99_NEXT_SESSION-O0219-B.md.
+이번 세션은 13차 Agent 개선 = 실시간 경량 ML 시뮬레이터 구축 및 2단계 가드레일 배선이다. 승인이 필요한 작업은 단계마다 나에게 묻고 진행해라.
+
+0. 착수 점검(읽기 전용):
+   · 05_SV-Agent_ai/09_2_AGENT_버전업.sql [0] 사전점검이 0행인가
+   · cortex_project/agents/*/agent_spec.yaml 3종 ↔ 라이브 기본 버전 diff 0 인가
+   · BIZ_DEFINITION_CORPUS 2,157행 및 OPS_COLUMN_NULL_REGISTRY 166행 실재 확인
+1. 실시간 경량 ML 시뮬레이터 구축 (12_agent개선과제/25_실시간_경량ML_시뮬레이터_설계계획.md):
+   · Step 1: 시뮬레이션 프로시저/함수 DDL (예: 광고비/예산 변동 시뮬레이션 SP) 구현
+   · Step 2: SERVING 뷰 및 시맨틱 뷰(SV_ML_REALTIME_SIMULATOR) DDL 배포
+   · Step 3: BIZ_DEFINITION_CORPUS 라우팅 정의(RT-32) 등록 및 Search refresh
+   · Step 4: Agent 3종 스펙 YAML(orchestration 2단계 실행 규칙 및 도구) 반영 -> VERSION$5 배포
+   · Step 5: 음성 테스트 및 2단계 분기(부재 시 확인 질문 -> 승인 시 ML 도구 실행) 스모크 검증
+2. 끝나면 세션을 정리하고(인수인계 라벨 파일 · 세션이력 · 원장 행) 다음 세션 프롬프트를 만들어라.
+```
+
+_Co-authored with CoCo_

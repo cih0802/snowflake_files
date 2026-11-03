@@ -48,4 +48,4 @@ SELECT COVERAGE, COUNT(*) N FROM GN_DW.SERVING.BIZ_DEFINITION_CORPUS WHERE HAS_F
 
 -- [D8] 현업 결정 후 정리(별도 세션) = 고르지 않은 안의 metric·플래그 컬럼·overlay 문안을 걷어내고 「잠정」을 확정 문안으로 교체
 -- [D9] 롤백 = DROP SEMANTIC VIEW GN_DW.SERVING.SV_GA_CHILD_UNPAID · DROP TABLE 두 팩트 · Agent 이전 VERSION ·
---      코퍼스 = tmp/o239/O217_biz_definition_corpus.csv 를 output 으로 되돌리고 26 재실행
+--      코퍼스 = _archive/O276_project_closure/tmp/o239/O217_biz_definition_corpus.csv 를 output 으로 되돌리고 26 재실행

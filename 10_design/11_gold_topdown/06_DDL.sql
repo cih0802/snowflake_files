@@ -18,7 +18,7 @@
 --   · WARN: FK 는 참조 PK 와 타입이 정확히 같아야 한다(폭이 넓어도 실패):
 --       *_DATE_SK NUMBER(8,0) · MONTH_KEY NUMBER(6,0) · *_SK NUMBER(38,0) · MEMBER_DK VARCHAR(10).
 --   · 뷰(WIDE_* · DIM_MEMBER_ACQUISITION 계열 뷰)는 dbt 모델 소관 — 이 파일에서 만들지 않는다.
---   · 설계근거·실측 이력 = 06_DDL_설계이력_부록.md · 이슈 원장 = 20_issue/00_INDEX_이슈원장.md
+--   · 설계근거·실측 이력 = 06_DDL_설계이력_부록.md · 이슈 원장 = _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

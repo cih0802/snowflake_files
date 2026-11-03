@@ -1687,6 +1687,6 @@ dbt GOLD 모델에서 `0 as X_SK` 또는 `CAST(NULL AS ..) as X` 로 하드코�
 
 - `03_top-down_gold/05_필드 인벤토리.md` — 지표↔GOLD 필드 정본(P12)
 - `03_top-down_gold/11_BRONZE적재 컬럼대조.md` — **CRM 전용·역방향**(원천요청서 대비 BRONZE 적재 확인). 본 감사는 **전 원천·순방향**(BRONZE→GOLD 노출)으로 범위·방향이 다르며 상호 보완 관계.
-- `20_issue/10_진단_원인분석.md` §8-I — 본 감사 기반 진단
+- `_archive/O276_project_closure/20_issue/10_진단_원인분석.md` §8-I — 본 감사 기반 진단
 
 _감사일 2026-08-13 · Co-authored with CoCo_

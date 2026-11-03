@@ -710,7 +710,7 @@ ORG_SK:-- FK→DIM_ORG
 -- ############################################################################
 -- [2026-08-06 O45] 보고서 섹션 조립 가능화 — 축 3종 + 팩트 1종
 -- ----------------------------------------------------------------------------
--- 정본 이슈 = 20_issue/00_INDEX_이슈원장.md §O45 · 실행 스크립트 = 03_top-down_gold/O45_ASSEMBLY_AXES.sql
+-- 정본 이슈 = _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md §O45 · 실행 스크립트 = 03_top-down_gold/O45_ASSEMBLY_AXES.sql
 -- 사후 검증 = 03_top-down_gold/O45_VERIFY.sql (build 후 필수)
 --
 -- 🔴 아래 4개는 `CREATE OR REPLACE` 로 만들지 않는다 — FK·GRANT·COMMENT 소실(순서9 G-1/G-2).
@@ -860,7 +860,7 @@ ORG_SK:-- FK→DIM_ORG
 --   · PAID_SPONSOR_BIZ_CNT: W4/ML: 그 달 실제 납입(PAY_AMT>0)한 후원사업 수 = COUNT(DISTINCT SPNSR_BSNS_ID), 회비 한정. 🔴 약정 보유 사업수가 아니라 납입 발생 사업수. HAS_BILLING=FALSE면 NULL
 --   · IS_MULTI_PAID_BIZ: W4/ML: 그 달 2개 이상 사업에 납입했는지 (PAID_SPONSOR_BIZ_CNT>1). HAS_BILLING=FALSE면 NULL
 --   · IS_MULTI_SPONSORSHIP: [DEC-41] 그 달 회비 행이 귀속된 후원사업이 2개 이상인지 = SPONSORSHIP_SK 가 0 인 사유의 구분자. 🔴 SPONSORSHIP_SK=0 에는 두 사유가 섞인다: TRUE=다중 사업이라 대표를 고르지 않았다(정책) / FALSE=회비 행에 후원사업이 없거나 회비 행 자체가 없다. 이 플래그가 없으면 두 사유를 가를 수 없다. 🔴 IS_M
---     ULTI_PAID_BIZ 와 **모집단이 다르다**: 그쪽은 회비·PAY_AMT>0 한정 「납입 발생」 사업수이고 이 컬럼은 청구·기부금 포함 전 행의 「귀속」 사업이다 ⇒ 두 값이 어긋나는 것은 결함이 아니다. 규칙·실측 근거 = 20_issue/30_설계_의사결정.md §28(DEC-41)
+--     ULTI_PAID_BIZ 와 **모집단이 다르다**: 그쪽은 회비·PAY_AMT>0 한정 「납입 발생」 사업수이고 이 컬럼은 청구·기부금 포함 전 행의 「귀속」 사업이다 ⇒ 두 값이 어긋나는 것은 결함이 아니다. 규칙·실측 근거 = _archive/O276_project_closure/20_issue/30_설계_의사결정.md §28(DEC-41)
 --   · HAS_BILLING: 결제(billing) 행 존재 여부 — TRUE=결제 스파인(구 37.79M), FALSE=개발/중단 전용 월(회비 measure NULL). 🔴**「회비만」 스코프가 아니다**(O40): 기저 CTE 가 회비와 **기부금을 함께** 담으므로 TRUE 행에도 기부금이 섞이고 청구 없는 기부금 전용 월도 TRUE 다. 이 필터를 걸어도 납부율 분자는 정화되지
 --      않는다 — 회비 기준이 필요하면 PAID_FEE_BILLABLE 을 쓴다.
 --   · DW_BATCH_ID: 적재 배치 식별자 = dbt invocation_id (공통감사)

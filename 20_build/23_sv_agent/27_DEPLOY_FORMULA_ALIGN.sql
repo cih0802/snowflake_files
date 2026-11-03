@@ -57,9 +57,9 @@ SELECT PARSE_JSON(SNOWFLAKE.CORTEX.SEARCH_PREVIEW('GN_DW.SERVING.SEARCH_BIZ_DEFI
 --   ④ 「서비스별 서신 참여율」 → D5_LETTER_RATE + 분모 해석(발송 대상) 명시
 
 -- [6] 롤백
---   SV = tmp/o237/bak/<파일>.O237-before 를 정본 자리로 되돌려 같은 파일 재실행
+--   SV = _archive/O276_project_closure/tmp/o237/bak/<파일>.O237-before 를 정본 자리로 되돌려 같은 파일 재실행
 --   Agent = 09_2 의 이전 VERSION 으로 ALTER AGENT … (09_2 롤백 절 참조)
---   코퍼스 = tmp/o237/bak/O217_biz_definition_corpus.csv.O237-before 를 output 으로 되돌리고 tmp/o237/bak/26.O237-before 로 26 재실행
+--   코퍼스 = _archive/O276_project_closure/tmp/o237/bak/O217_biz_definition_corpus.csv.O237-before 를 output 으로 되돌리고 _archive/O276_project_closure/tmp/o237/bak/26.O237-before 로 26 재실행
 
 -- ============================================================================
 -- 🆕 [O237-B] 캠페인 월 팩트 + 서비스 코호트 확장 — 위 [1]~[3] 과 **함께 한 번에** 진행한다(코퍼스·Agent 는 B 반영본이 정본)
@@ -83,4 +83,4 @@ SELECT PARSE_JSON(SNOWFLAKE.CORTEX.SEARCH_PREVIEW('GN_DW.SERVING.SEARCH_BIZ_DEFI
 --   ⑥ 「연도별 캠페인 미납율」 → 연도마다 마지막 마감 기준월 1개씩
 --   ⑦ 「서신참여회원의 6개월 유지율」(MEMBER) → analyst_service_cohort · D5_LETTER_FLAG + RETAINED_6M_RATE
 --   ⑧ 「캠페인별 납입방식 활동율」 → SETTLE_METHOD 분해 + 「잠정 축」 문구
--- [B8] 롤백 = tmp/o237b/bak/*.O237B-before 를 정본 자리로 되돌린다(모델·yml·06_DDL·05_18·Agent 3종) · 신규 05_25·FACT 는 DROP
+-- [B8] 롤백 = _archive/O276_project_closure/tmp/o237b/bak/*.O237B-before 를 정본 자리로 되돌린다(모델·yml·06_DDL·05_18·Agent 3종) · 신규 05_25·FACT 는 DROP

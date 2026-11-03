@@ -1,0 +1,106 @@
+<!-- LLM-METADATA
+doc_id: O270_NEXT_SESSION_PROMPT_PROD_STEP01
+doc_role: 개발계 다음 세션 착수 프롬프트 — O270 운영계 0·1단계 결과(ZL50263) 반영 · 운영계 2단계 이후 준비
+project: GN_DW (굿네이버스)
+created: 2026-10-30
+created_by: O270-F
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+# 다음 세션 착수 프롬프트 — O270 운영계 0·1단계 결과 반영
+
+> 사용법 = 아래 「=== 프롬프트 시작 ===」~「=== 프롬프트 끝 ===」을 개발계(ZS83821) 새 세션에 붙여 넣는다.
+
+=== 프롬프트 시작 ===
+
+/init_ihcho 로 세션을 시작한 뒤, 브리핑을 출력하고 바로 아래 작업을 이어서 해.
+
+## 0. 배경
+
+- O270(원천별 접근통제)은 개발계에서 끝났다. 정본 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0270-F.md`.
+- 운영계(ZL50263)에서 `12_agent개선과제/O270_운영계_LLM_프롬프트.md` 의 **0·1단계**를 실행했고, 정지 조건에 걸려 멈췄다.
+- 결과 원문 = 아래 §1 · 운영계 객체 목록 파일 = `12_agent개선과제/output/O270_live_object_types_ZL50263.txt`
+  (운영계에서 만든 파일 · 개발계에 없으면 사용자에게 받아라 · 🔴 내용을 추측해 만들지 마라).
+- 🔴 라이브 변경(GRANT·DROP·OWNERSHIP·Agent 재배포)은 이번 세션에서도 **각각 승인**받는다(`R4-4-3`).
+
+## 1. 운영계 실측 결과(2026-10-30 · 사용자 제공 · 원문 요약)
+
+| Q | 결과 | 정지 |
+|---|---|---|
+| Q01·Q04 | GN_DW_ANALYST 사용자 10명(ANALYST_01·CHOIH·G2010009·G2011032·GN00710·GN00963·GN01121·GN01445·GN02248·SWLEE) + Streamlit 서비스 계정 활발 · VIEWER = VIEWER_01·CHOIH · SERVICE = LEESH | 예 |
+| Q02 | DEFAULT_SECONDARY_ROLE 대부분 `[ALL]`(CHOIH 만 `[]`) · GN_DW 역할 2개 이상 = CHOIH 3 · CRM_ETL 2 · LEESH 2 · SWLEE 2 | 예 |
+| Q03 | Streamlit = LAB 9(소유자 GN_DW_ANALYST 8 · GN_DW_ADMIN 1) · USER$CHOIH 3 · 소유자 권한 | 예 |
+| Q05 | 구 역할(ANALYST)로 AGENCY·ERP 객체 대량 조회(GN01445·GN01121·GN00710 · Streamlit) | 예 |
+| Q06 | PUBLIC 에 CORTEX_USER 등 · GN_DW 객체 권한 0 | 아니오 |
+| Q07 | GOLD FUTURE VIEWS/TABLES 6역할 · SERVING 0 | 아니오 |
+| Q08 | 경영 Agent 에 analyst_ad·시뮬레이터(19 도구) · 회원 Agent 에 시뮬레이터(32 도구) | 예(재배포 필요) |
+| Q09 | 🔴 GOLD 테이블 68 중 67 = GN_DW_ADMIN · **`GOLD.FACT_MKTG_CAMPAIGN_MONTHLY_COST` = ACCOUNTADMIN** · WIDE 뷰 19 = GN_DW_DBT · SERVING 뷰 25 = GN_DW_ADMIN | 예 |
+| Q10 | GN_DW_AR_SRC_* · GN_DW_FR_* 0건 | 아니오 |
+| 1단계 | 운영계 113 · 개발계 110 · **운영계에만 4** = `SERVING.DIM_MEMBER_CURRENT` · `SERVING.DIM_MONTH` · `SERVING.FACT_AD_COMBINED` · `SERVING.ML_LTV_SCORE_V`(전부 VIEW) · 개발계에만 0 | 예 |
+
+## 2. 이번 세션 할 일(순서대로 · 각 항목 끝에 사용자 결정·승인)
+
+### A. 운영계 전용 SERVING 뷰 4개 분류(1단계 정지 해소)
+
+1. 4개가 개발계 정본(소스 DDL)에 있는지 검색한다(`05_SV-Agent_ai/` · `_archive/` 는 파일명부터 좁혀라 · `R0-8`).
+   - 정본에 없으면 = 운영계에만 남은 **구 산출물(잔존 뷰)** 후보다(예: ML_LTV_SCORE_V = O198 원천 폐기 대상).
+2. 운영계 원천 판정용 읽기 쿼리를 만든다 → 파일 `85_실제 인수인계 문서/30_현업요청대응/_근거쿼리/R98_O270_운영계잔존뷰_원천.sql`.
+   - 내용 = 4개 뷰의 `GET_DDL` · `ACCOUNT_USAGE.OBJECT_DEPENDENCIES` 재귀 참조 · 최근 30일 `ACCESS_HISTORY` 조회 건수(누가 쓰나) · 이 뷰를 base 로 쓰는 SV 존재 여부.
+   - 🔴 읽기 전용(SELECT/SHOW/GET_DDL)만.
+3. 🔴 이름으로 분류하지 마라(FACT_AD_COMBINED → AGENCY 「후보」일 뿐 · 리니지가 정본).
+   R98 결과를 받기 전 임시 원칙 = **4개 모두 GRANT 하지 않는다**(fail-safe · 생성기 기본 동작과 같다).
+4. 사용자 결정 요청 = 각 뷰 ㉠ 분류 후 GRANT ㉡ 미부여 유지 ㉢ 운영계에서 DROP(🔴 별도 승인 · 이 작업 범위 밖이면 백로그).
+
+### B. 생성기 운영계 대응 → 운영계 판 48번 SQL
+
+1. `12_agent개선과제/output/O270_gen_rbac_sql.py` 에 **유형 파일·출력 파일 인자**를 추가한다
+   (기본값 = 지금 개발계 경로 유지 · 개발계 산출물이 바뀌지 않음을 재생성 diff 0 으로 확인).
+2. 운영계 판 = `05_SV-Agent_ai/48_RBAC_SOURCE_ACCESS_ZL50263.sql`(별도 파일 · 개발계 판을 덮지 마라).
+   - 미분류 4개는 머리 주석 「미분류」 목록에 나와야 한다(A 결정 전).
+3. `scripts/rbac_source_gate.py` 의 A3 는 분류표 밖 라이브 객체에 GRANT 이 없으면 위반이 아니다 — 운영계 4개 뷰로 오탐이 나지 않는지 음성 테스트에 축 1개 추가(`R3-2`).
+
+### C. Q09 — `GOLD.FACT_MKTG_CAMPAIGN_MONTHLY_COST` 소유자 = ACCOUNTADMIN
+
+1. 영향 판정(문서로 근거를 적어라):
+   - 48번 GRANT = SECURITYADMIN(MANAGE GRANTS)이 실행하므로 소유자와 무관하게 부여된다(개발계와 같은 방식).
+   - dbt(GN_DW_DBT)가 이 incremental 테이블에 INSERT·TRUNCATE 할 수 있는지는 소유자와 별개 권한이다 —
+     운영계 build 가 지금 성공하고 있는지를 R98 에 쿼리 1개로 넣어 확인한다(TASK_HISTORY 또는 QUERY_HISTORY).
+   - 컬럼 추가(append_new_columns) 시 OWNERSHIP 이 필요하다(dbt_project.yml O121 주석 · `003001`) ⇒ 장래 위험.
+2. 처방안 = `GRANT OWNERSHIP ON TABLE GN_DW.GOLD.FACT_MKTG_CAMPAIGN_MONTHLY_COST TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS;`
+   🔴 사용자 승인 후 운영계 실행카드에 **2단계 직전 단계(1-B)** 로 추가 · 개발계는 이미 GN_DW_ADMIN(변경 없음).
+
+### D. 사용자 배정표 초안(Q01·Q02·Q05 정지 해소의 선행물)
+
+1. 파일 = `12_agent개선과제/O270_운영계_사용자배정표.md` — 열 = 사용자 · 현 역할 · 최근 30일 사용 · 제안 기능 역할 · 근거 · 확정(빈칸).
+2. 🔴 제안은 **빈칸 확정 열을 사용자가 채운다** — 부서·직무를 추측해 확정하지 마라(Q05 의 대량 조회자 3명은 근거 칸에 「AGENCY·ERP 조회 실적」만 적는다).
+3. 다역할 4명(CHOIH·CRM_ETL·LEESH·SWLEE)은 「사람 / 서비스 계정」 구분부터 묻는다 — 서비스 계정은 1인 1역할 원칙 밖(별도 서비스 역할)일 수 있다.
+4. 전원 `DEFAULT_SECONDARY_ROLES = ()` 적용 시 기존 업무 영향(다른 DB 를 보조 역할로 쓰던 사람)을 질문 목록에 넣는다.
+
+### E. Q03 — Streamlit 소유자 = GN_DW_ANALYST(소유자 권한)
+
+1. 판정 = 앱은 **소유자 역할 권한으로 실행**된다 ⇒ 신 역할 도입만으로는 앱이 깨지지 않는다 · 팀장 역할에 앱 USAGE 만 주면 앱이 보여주는 데이터 전부를 본다(요건 「팀장 = Streamlit 전부」와 일치).
+2. 🔴 반대로 **구 역할 GN_DW_ANALYST 회수(48번 [6]) 시 앱 8개가 깨진다** ⇒ 회수 전 앱 소유자를 전용 역할(예: GN_DW_APP_OWNER)로 옮기는 별도 계획이 필요하다 — 이번 세션은 백로그 등재만.
+3. 팀장 역할 GRANT 문(앱 USAGE 9개)은 앱 이름 목록을 운영계에서 받은 뒤 만든다(지금 만들지 마라).
+
+### F. 운영계 LLM 프롬프트 갱신
+
+- `12_agent개선과제/O270_운영계_LLM_프롬프트.md` 를 `edit` 로 부분 수정(전체 재작성 금지 · `R1-7-1`):
+  ㉠ 단계 1 = 운영계 판 48번 파일 사용 ㉡ 단계 1-B(OWNERSHIP 이전 · 승인 시) ㉢ R98 실행 단계 ㉣ 단계 7 = 배정표 「확정」 열만 실행.
+- 실행카드 `12_agent개선과제/O270_W8_운영계_실행카드.md` 도 같은 순서로 맞춘다.
+
+## 3. 하지 마라
+
+- 🔴 운영계 구 역할 회수 · Streamlit 소유자 변경 · 운영계 뷰 DROP(이번 세션 범위 밖).
+- 🔴 운영계 4개 뷰를 이름으로 분류해 GRANT.
+- 🔴 개발계 `48_RBAC_SOURCE_ACCESS.sql` 덮어쓰기(운영계 판은 별도 파일).
+- 🔴 사용자 배정표의 「확정」 열을 에이전트가 채우기.
+
+## 4. 끝낼 때
+
+- 세션 종료 절차(스킬 §5) · 인수인계 = `python3 scripts/handoff_write.py --label O<다음 번호>-A --entry-file <파일>`
+  (번호 = `python3 scripts/id_collision_gate.py --next O` · 원장에 한 줄 선점 등재 후 착수 · `R1-4-3`).
+- 마지막 응답 = 사용자 결정 대기 목록(A 4개 뷰 · C OWNERSHIP · D 배정표 확정 · 서비스 계정 구분)을 번호로.
+
+=== 프롬프트 끝 ===
+
+_Co-authored with CoCo_

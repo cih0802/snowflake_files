@@ -20,7 +20,7 @@ SUBS = [
 ]
 
 ADD = """### O234만 덧입힐 때
-O233 덧입힘을 마친 뒤 아래를 한다(경위 = 인수인계 `99_NEXT_SESSION-O0234-B.md`). 🟢 구조·dbt 로직 변경 없음 ⇒ dbt build 불필요.
+O233 덧입힘을 마친 뒤 아래를 한다(경위 = 인수인계 `_archive/O276_project_closure/99_NEXT_SESSION_조각/99_NEXT_SESSION-O0234-B.md`). 🟢 구조·dbt 로직 변경 없음 ⇒ dbt build 불필요.
 1. COMMENT 동기화 = FMC OBS_TENURE_DAYS·OBS_TENURE_MONTHS·IS_STOPPED_OBS·LAST_STOP_DATE_SK·OBS_TENURE_MONTHS_LAST·IS_STOPPED_OBS_LAST · FMCS LTV_CAP_MONTHS·테이블 COMMENT
    - 정본 = 06_DDL 문안 · 방법 = `ALTER TABLE … ALTER COLUMN … COMMENT` / `COMMENT ON TABLE`(소유자 롤 GN_DW_ADMIN) · 06_DDL 을 처음부터 돌리는 환경이면 생략
 2. 코퍼스 재적재 = `python3 12_agent개선과제/tools/build_biz_definition_corpus.py --apply`(2,155행) → `ALTER CORTEX SEARCH SERVICE GN_DW.SERVING.SEARCH_BIZ_DEFINITION REFRESH`

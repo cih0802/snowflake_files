@@ -2,13 +2,13 @@
 doc_role: 상위 폴더 안내 — 10_design
 created: 2026-11-01
 created_by: O275-C
-related: 00_WORKSPACE_MAP.md · MOVE_MAP.csv
+related: 00_WORKSPACE_MAP.md · _archive/RESTRUCTURE_20261031-pre/MOVE_MAP.csv
 END-METADATA -->
 
 # 10_design — 설계
 
 > 목적 = 설계 — Gold top-down · Silver · 스냅샷 설계 문서.
-> 옛 경로 → 새 경로 대조 = 루트 `MOVE_MAP.csv`(요약) · `MOVE_MAP_files.csv`(파일 단위).
+> 옛 경로 → 새 경로 대조 = 루트 `_archive/RESTRUCTURE_20261031-pre/MOVE_MAP.csv`(요약) · `_archive/RESTRUCTURE_20261031-pre/MOVE_MAP_files.csv`(파일 단위).
 
 | 하위 폴더 | 옛 경로(O275 이전) | 파일 수 | 안내 파일 |
 |---|---|---|---|

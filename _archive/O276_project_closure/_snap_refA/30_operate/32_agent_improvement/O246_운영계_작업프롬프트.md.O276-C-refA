@@ -1,0 +1,70 @@
+# O246 운영계 반영 프롬프트 (개발계 반영 2026-10-19)
+
+> 운영계 세션에 아래를 그대로 붙여 넣는다. 개발계 실측은 BIGQUERY_REFINED_DATA 샘플링과 무관(CRM·MSTR 원천만 사용).
+
+## 반영 대상 (순서대로)
+
+1. `05_SV-Agent_ai/21_ML_SERVING_뷰_DDL.sql` 중 **ML_MEMBER_ATTR_ASOF_V** 블록 + 🆕 **ML_FEE_FORECAST_ALLOC_V** 블록(각 GRANT 포함)
+2. `05_SV-Agent_ai/22_ML_SV_DDL.sql` 중 **SV_ML_FEE_FORECAST** 블록(GRANT 포함)
+3. `cortex_project/agents/AGENT_MEMBER/agent_spec.yaml` → AGENT_SPEC_STAGE 복사 → `ALTER AGENT ... ADD VERSION`
+   (O245-B ㉠ ① 의 MEMBER spec 반영과 합쳐서 1회로)
+
+🔴 반드시 `USE ROLE GN_DW_ADMIN` 으로 실행한다. 개발계에서 ACCOUNTADMIN 으로 CREATE OR REPLACE 했다가 소유권이 바뀌고 GRANT 가 소실됐다(복구 완료 · sv_unit_gate 가 검출).
+
+## 반영 후 검증 SQL (개발계 기대값)
+
+```sql
+-- ① 고위험 미매칭: 기대 = amt_unm 0 · pay_unm 소수(개발계 220/7,016)
+SELECT r.CHURN_GRADE, COUNT(*) n, COUNT_IF(a.AMOUNT_BAND='(미매칭)') amt_unm,
+       COUNT_IF(a.PAYMENT_METHOD_NAME='(미매칭)') pay_unm, COUNT_IF(a.ATTR_FALLBACK) fallback
+FROM GN_DW.SERVING.ML_MEMBER_RISK_V r JOIN GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V a USING (STDR_MT, MBER_NO)
+WHERE r.STDR_MT = (SELECT MAX(STDR_MT) FROM GN_DW.SERVING.ML_MEMBER_RISK_V) AND r.HAS_CHURN_PRED
+GROUP BY 1 ORDER BY 1;
+
+-- ② grain: 기대 = n = d
+SELECT COUNT(*) n, COUNT(DISTINCT STDR_MT, MBER_NO) d FROM GN_DW.SERVING.ML_MEMBER_ATTR_ASOF_V;
+
+-- ③ 배분 합계 보존: 기대 = 축 3개 모두 alloc ≈ orig
+SELECT a.ALLOC_AXIS, SUM(a.ALLOC_FORECAST_AMT) alloc, ANY_VALUE(o.orig) orig
+FROM GN_DW.SERVING.ML_FEE_FORECAST_ALLOC_V a
+CROSS JOIN (SELECT SUM(FORECAST_AMT) orig FROM GN_DW.SERVING.ML_FEE_FORECAST_V
+            WHERE STDR_MT = (SELECT MAX(STDR_MT) FROM GN_DW.SERVING.ML_FEE_FORECAST_V)) o
+WHERE a.STDR_MT = (SELECT MAX(STDR_MT) FROM GN_DW.SERVING.ML_FEE_FORECAST_V)
+GROUP BY 1;
+```
+
+## 게이트
+
+`agent_object_ref_gate` · `sv_identifier_gate` · `sv_unit_gate`(GRANT 검사 포함) · `sv_comment_object_gate` · `agent_tool_claim_gate` · `table_ddl_column_gate`
+
+## 롤백
+
+- 뷰 = `12_agent개선과제/O246_백업_ML_MEMBER_ATTR_ASOF_V.sql` · ALLOC_V = `DROP VIEW`
+- SV = `12_agent개선과제/O246_백업_SV_ML_FEE_FORECAST.sql`
+- Agent = 직전 버전으로 `ALTER AGENT ... SET DEFAULT_VERSION`(개발계 = VERSION$4)
+
+## 🆕 O246-B 추가 반영 (같은 회차에 이어서)
+
+1. `21_ML_SERVING_뷰_DDL.sql` 의 🆕 [O246-B] 블록 2개 = **ML_MEMBER_PRED_BRIDGE_V** · **ML_DVLP_FORECAST_ALLOC_V**(GRANT 포함)
+   - 순서 = ML_MEMBER_ATTR_ASOF_V 다음(브리지가 그 뷰를 참조한다)
+2. `22_ML_SV_DDL.sql` 의 **SV_ML_DVLP_FORECAST**(fa 표 추가) · 말미 **SV_ML_MEMBER_PRED_BRIDGE**(신규)
+3. Agent 3종(MEMBER · EXECUTIVE · MARKETING) spec → ADD VERSION(개발계 = VERSION$6)
+
+검증 SQL(개발계 기대값):
+
+```sql
+-- ④ 브리지 grain: 기대 = n = d
+SELECT STDR_MT, COUNT(*) n, COUNT(DISTINCT MBER_NO) d
+FROM GN_DW.SERVING.ML_MEMBER_PRED_BRIDGE_V GROUP BY 1;
+
+-- ⑤ 개발 배분 합계 보존: 기대 = 4축 모두 alloc ≈ orig
+SELECT a.ALLOC_AXIS, SUM(a.ALLOC_FORECAST_AMT) alloc, ANY_VALUE(o.orig) orig
+FROM GN_DW.SERVING.ML_DVLP_FORECAST_ALLOC_V a
+CROSS JOIN (SELECT SUM(FORECAST) orig FROM GN_DW.SERVING.ML_DVLP_FORECAST_V
+            WHERE SERIES_TYPE = 'TOTAL'
+              AND STDR_MT = (SELECT MAX(STDR_MT) FROM GN_DW.SERVING.ML_DVLP_FORECAST_V)) o
+WHERE a.STDR_MT = (SELECT MAX(STDR_MT) FROM GN_DW.SERVING.ML_DVLP_FORECAST_V)
+GROUP BY 1;
+```
+
+롤백(B) = 신규 뷰 2·SV 1 `DROP` · SV_ML_DVLP_FORECAST 는 `tmp/o246/22.sql.beforeB` 의 해당 블록 재실행 · Agent 는 직전 기본 버전으로 되돌린다.

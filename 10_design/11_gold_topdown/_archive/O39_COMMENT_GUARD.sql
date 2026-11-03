@@ -19,7 +19,7 @@
 -- 대상 : GN_DW.GOLD.FACT_MEMBER_EVENT(DEV_MEMBERS·STOP_MEMBERS) · FACT_SERVICE_EVENT(SEND_MEMBERS)
 --        + 대응 WIDE 소비뷰 2종
 -- 역할 : GN_DW_ADMIN
--- 근거 : 20_issue/10_진단_원인분석.md §23 (O39)
+-- 근거 : _archive/O276_project_closure/20_issue/10_진단_원인분석.md §23 (O39)
 -- 측정일: 2026-08-05 (전 항목 GOLD·BRONZE 직접 실측 — 아래 §0)
 -- 선례 : O28_O29_COMMENT_GUARD.sql — 동일 패턴(FACT=즉시·영구 / WIDE=즉시+모델 동시수정 · P33)
 --

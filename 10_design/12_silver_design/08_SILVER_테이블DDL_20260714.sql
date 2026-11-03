@@ -12,7 +12,7 @@
 --   · WARN: 재실행하면 데이터가 비워진다. 증분 모델은 재실행 뒤 반드시 백필한다
 --       GA4 = build --select BIGQUERY_BASIC+ --vars '{"bigquery_dt_ranges": [["2024-01-01", "9999-12-31"]]}'
 --       그 밖 = build --select <모델>+ --full-refresh
---   · 설계근거·실측 이력 = 08_SILVER_DDL_설계이력_부록.md · 이슈 원장 = 20_issue/00_INDEX_이슈원장.md
+--   · 설계근거·실측 이력 = 08_SILVER_DDL_설계이력_부록.md · 이슈 원장 = _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 -- ============================================================================
 USE ROLE GN_DW_ADMIN;
 USE WAREHOUSE GN_DW_DEV_WH;

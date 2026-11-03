@@ -22,7 +22,7 @@
 -- ============================================================================
 -- 대상 : GN_DW.GOLD.FACT_EVENT_PARTICIPATION (O28) · GN_DW.GOLD.FACT_AD_BROADCAST (O29)
 -- 역할 : GN_DW_ADMIN
--- 근거 : 20_issue/10_진단_원인분석.md §14-H(O28) · §14-I(O29)
+-- 근거 : _archive/O276_project_closure/20_issue/10_진단_원인분석.md §14-H(O28) · §14-I(O29)
 -- 측정일: 2026-08-04 (본 세션 전 항목 BRONZE 원천 직접 재실측 — 아래 §0)
 --
 -- 🟢 왜 COMMENT 만으로 급한가

@@ -53,7 +53,7 @@
       AGENCY     → 06_SILVER_작업계획_AGENCY전용 20260714.md §6
       GA4        → 07_GA4_SILVER_샤드통합 설계결정.md §7
       S-7 브리지 → 02_SILVER_작업계획_BRONZE-GOLD연결 20260714.md §6
-    이슈·결정 ID(Q*/--O*/AD-*/DEC-*/E-*/P*) 원장 = 20_issue/00_INDEX_이슈원장.md
+    이슈·결정 ID(Q*/--O*/AD-*/DEC-*/E-*/P*) 원장 = _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 -- */
 -- ============================================================================
 -- STEP 1 — 스키마 생성
@@ -453,7 +453,7 @@ FRST_BRND_CD:-- 🆕 O189 편입(ALTER ADD · 라이브 ordinal 말미)
 --      회원 커버리지가 부분이다. 후원 마스터(TM_MM_FDRM_MBER_SPNSR)를 붙여 두 축을 얻는다.
 --   [컬럼별 설계 및 실측 이력]
 --   · MBER_NO: 회원번호 — 후원 마스터에서 얻는다(후원사업 테이블에는 없다).
---   · SPNSR_BSNS_NO: 후원사업번호 (PK). 🟢재후원 시 **새 번호가 발급**되므로 「재후원 넘버링 > 중단 넘버링」 조건이 이 축에 이미 반영돼 있다(정본 #51 비고의 tie-break 가 불필요해지는 이유). ⚠️채번의 시간 단조성은 초기 구간에서 성립하지 않는다 — tie-break 를 쓰는 설계라면 그 구간에서 작동하지 않는다. 구간 경계와 규모는 20_issue/3
+--   · SPNSR_BSNS_NO: 후원사업번호 (PK). 🟢재후원 시 **새 번호가 발급**되므로 「재후원 넘버링 > 중단 넘버링」 조건이 이 축에 이미 반영돼 있다(정본 #51 비고의 tie-break 가 불필요해지는 이유). ⚠️채번의 시간 단조성은 초기 구간에서 성립하지 않는다 — tie-break 를 쓰는 설계라면 그 구간에서 작동하지 않는다. 구간 경계와 규모는 _archive/O276_project_closure/20_issue/3
 --     0_설계_의사결정 §13-D 2 를 보라(R2-6: 수치는 문서에만).
 --   · SPNSR_AMT: 후원사업 약정금액 원단위. 🟢정본 #52 활동회원(건) = 활동 사업의 이 금액 합 / 10,000.
 --   · START_MONTH_KEY: 활동 개시 월키 YYYYMM. ⚠️**후원(SPNSR_NO) 등록월의 근사**다 — 원천에 후원사업 단위 시작일이 없다. 같은 후원 아래 사업이 나중에 추가되면 시작을 실제보다 이르게 본다(활동 과대 방향). 사업 단위 시작일이 입고되면 교체할 자리.
@@ -774,12 +774,12 @@ CMPGN_CD:-- 🆕 O189-B 2차-B
 --     USER_PSEUDO_ID          VARCHAR(200)    NOT NULL COMMENT '세션 스파인 (PK)',
 --     EVENT_TIMESTAMP         NUMBER          NOT NULL COMMENT 'UTC microsec (PK)',
 --     EVENT_NAME              VARCHAR(200)    NOT NULL COMMENT '이벤트명 (PK)',
---     EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). GA4GN_DW.INFORMATION_SCHEMA-PK-1 조치① surrogate — 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순 정렬. BATCH_ORDERING_ID 가 2024 상반기에 없어 PK 로 쓸 수 없던 문제를 대체한다. 🔴 [O87-B] 정렬 튜플이 동일한 행이 실재하므로 이 순번은 재실행 간 안정성이 미실증이다 — 미결 GA4-SEQ-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B',
+--     EVENT_SEQ               NUMBER          NOT NULL COMMENT '동일 3키 내 순번 (PK). GA4GN_DW.INFORMATION_SCHEMA-PK-1 조치① surrogate — 계보(SRC_FILE_NAME)+BATCH_ORDERING_ID 순 정렬. BATCH_ORDERING_ID 가 2024 상반기에 없어 PK 로 쓸 수 없던 문제를 대체한다. 🔴 [O87-B] 정렬 튜플이 동일한 행이 실재하므로 이 순번은 재실행 간 안정성이 미실증이다 — 미결 GA4-SEQ-1. 규모 실측 정본 = _archive/O276_project_closure/20_issue/90_해소완료_로그.md §1-B',
 --     EVENT_DATE              VARCHAR(8)      COMMENT '원본 YYYYMMDD',
 --     EVENT_DT                DATE            NOT NULL COMMENT '업무일자 DATE. 🔴 프루닝 키 — 하류 range 조회는 반드시 이 컬럼으로 제한(빼면 2.86억행 전량 스캔)',
 --     EVENT_TS                TIMESTAMP_NTZ   COMMENT '파생 TIMESTAMP',
---     USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). 🔴 GA4-LEN-1 조치① — 종전 VARCHAR(10)은 이메일·app- 접두 포맷에서 길이 초과로 적재 실패했다. CRM 회원번호가 아닌 값도 들어온다 ⇒ 반드시 ID_SCHEME 과 함께 읽을 것. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측(R2-6: COMMENT 에 수치 미기재)',
---     ID_SCHEME               VARCHAR(20)     COMMENT 'ID 체계 분류축(GA4-LEN-1 조치②). 값 = MBER_NO(7자리 CRM) / ONCE_MBER_NO(S+8자리) / APP(app- 접두) / EMAIL(@ 포함) / INVALID(원천 오류값 "null"·"undefined") / UNCLASSIFIED(미분류 = 신규 포맷 조기경보 · 기대값 0). 🔴 CRM 조인 가능한 것은 앞 2종뿐이다 — 채움률 분모에 뒤 4종을 넣으면 조용히 과소 보고된다. USER_ID 가 NULL 이면 이 컬럼도 NULL(라벨 창작 금지 · R2-7). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
+--     USER_ID                 VARCHAR(64)     COMMENT 'GA4 user_id 원본(불변 보존). 🔴 GA4-LEN-1 조치① — 종전 VARCHAR(10)은 이메일·app- 접두 포맷에서 길이 초과로 적재 실패했다. CRM 회원번호가 아닌 값도 들어온다 ⇒ 반드시 ID_SCHEME 과 함께 읽을 것. 규모 실측 정본 = _archive/O276_project_closure/20_issue/90_해소완료_로그.md §1-B-실측(R2-6: COMMENT 에 수치 미기재)',
+--     ID_SCHEME               VARCHAR(20)     COMMENT 'ID 체계 분류축(GA4-LEN-1 조치②). 값 = MBER_NO(7자리 CRM) / ONCE_MBER_NO(S+8자리) / APP(app- 접두) / EMAIL(@ 포함) / INVALID(원천 오류값 "null"·"undefined") / UNCLASSIFIED(미분류 = 신규 포맷 조기경보 · 기대값 0). 🔴 CRM 조인 가능한 것은 앞 2종뿐이다 — 채움률 분모에 뒤 4종을 넣으면 조용히 과소 보고된다. USER_ID 가 NULL 이면 이 컬럼도 NULL(라벨 창작 금지 · R2-7). 규모 실측 정본 = _archive/O276_project_closure/20_issue/90_해소완료_로그.md §1-B-실측',
 --     GA_SESSION_ID           NUMBER          COMMENT 'GA 세션ID. 🔴 user_pseudo_id 내에서만 유일 — 단독 세션키 사용 금지(다른 사용자 세션 오병합)',
 --     GA_SESSION_NUMBER       NUMBER          COMMENT 'GA 세션 번호',
 --     GA_SESSION_KEY          VARCHAR         COMMENT '파생 세션 자연키 = user_pseudo_id ∥ "-" ∥ ga_session_id (복합 필수)',
@@ -794,8 +794,8 @@ CMPGN_CD:-- 🆕 O189-B 2차-B
 --     PERCENT_SCROLLED        NUMBER          COMMENT '스크롤 비율',
 --     LINK_URL                VARCHAR         COMMENT '클릭 링크 URL',
 --     LINK_TEXT               VARCHAR         COMMENT '클릭 링크 텍스트',
---     DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생(GA4 공식 = platform × device.category). 값 = APP / M / PC / (unknown). 🔴 라이브 관측은 M·PC·(unknown) 3종이고 APP 은 0건이다(platform=WEB 단독 · O2 APP 휴면). ⚠️ device:category 의 smart tv 가 (unknown) 으로 격리된다 — TV 라벨 신설 여부 = 미결 GA4-TV-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
---     DEVICE_CATEGORY         VARCHAR         COMMENT '디바이스 카테고리(원본). 값 = mobile / desktop / tablet / smart tv 4종. 🔴 smart tv 는 DEVICE_TYPE 에서 (unknown) 으로 격리된다(미결 GA4-TV-1). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
+--     DEVICE_TYPE             VARCHAR(10)     COMMENT '디바이스 유형 파생(GA4 공식 = platform × device.category). 값 = APP / M / PC / (unknown). 🔴 라이브 관측은 M·PC·(unknown) 3종이고 APP 은 0건이다(platform=WEB 단독 · O2 APP 휴면). ⚠️ device:category 의 smart tv 가 (unknown) 으로 격리된다 — TV 라벨 신설 여부 = 미결 GA4-TV-1. 규모 실측 정본 = _archive/O276_project_closure/20_issue/90_해소완료_로그.md §1-B-실측',
+--     DEVICE_CATEGORY         VARCHAR         COMMENT '디바이스 카테고리(원본). 값 = mobile / desktop / tablet / smart tv 4종. 🔴 smart tv 는 DEVICE_TYPE 에서 (unknown) 으로 격리된다(미결 GA4-TV-1). 규모 실측 정본 = _archive/O276_project_closure/20_issue/90_해소완료_로그.md §1-B-실측',
 --     OS                      VARCHAR         COMMENT '운영체제',
 --     BROWSER                 VARCHAR         COMMENT '브라우저',
 --     LANGUAGE                VARCHAR         COMMENT '언어',
@@ -813,7 +813,7 @@ CMPGN_CD:-- 🆕 O189-B 2차-B
 --     XCHAN_MEDIUM            VARCHAR         COMMENT 'cross_channel medium',
 --     XCHAN_CAMPAIGN          VARCHAR         COMMENT 'cross_channel campaign',
 --     DEFAULT_CHANNEL_GROUP   VARCHAR         COMMENT '기본 채널그룹. 🔴 정규화 금지(정상 라벨 — 센티넬 아님)',
---     BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID. 🔴 NOT NULL 아님 — 원천 events_20240719 부터 생긴 컬럼이라 2024 상반기는 전건 NULL 이다. PK 에서 내려왔고 EVENT_SEQ 정렬 근거로만 쓴다. ⚠️ 2024 상반기는 이 컬럼이 전건 NULL 이므로 EVENT_SEQ 정렬이 사실상 SRC_FILE_NAME 부터 시작한다 — 미결 GA4-SEQ-1. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측',
+--     BATCH_ORDERING_ID       NUMBER          COMMENT '배치 내 정렬 ID. 🔴 NOT NULL 아님 — 원천 events_20240719 부터 생긴 컬럼이라 2024 상반기는 전건 NULL 이다. PK 에서 내려왔고 EVENT_SEQ 정렬 근거로만 쓴다. ⚠️ 2024 상반기는 이 컬럼이 전건 NULL 이므로 EVENT_SEQ 정렬이 사실상 SRC_FILE_NAME 부터 시작한다 — 미결 GA4-SEQ-1. 규모 실측 정본 = _archive/O276_project_closure/20_issue/90_해소완료_로그.md §1-B-실측',
 --     SRC_TABLE               VARCHAR(64)     NOT NULL COMMENT '원본 일별 테이블명(events_YYYYMMDD). 원천 대조 키 — BRONZE 계보 승계',
 --     SRC_FILE_NAME           VARCHAR(512)    NOT NULL COMMENT '파일 단위 계보. 중복 적재 검출 + EVENT_SEQ 결정적 정렬 근거 — BRONZE 계보 승계',
 --     BRONZE_LOAD_TS          TIMESTAMP_LTZ   NOT NULL COMMENT 'BRONZE 적재 배치 식별(= EVENTS.LOAD_TS). 업무일자 EVENT_DT 와 구분',
@@ -839,10 +839,10 @@ CMPGN_CD:-- 🆕 O189-B 2차-B
 --      ⚠️ 원천 `EP_GA_SESSION_ID`·`EP_GA_SESSION_NUMBER` 는 `BIGQUERY_REFINED_DATA` 의
 --         **외부 Python 적재 원천 컬럼**이라 개명 대상이 아니다(개명표 §1 `EXTERNAL_PYTHON` 축).
 --   🔴 EVENT_SEQ 결정성 미해결(GA4-SEQ-1) — ROW_NUMBER 는 PK 유일성만 보장하고 재실행 간
---      순번 안정성은 보장하지 않는다(정본 = 20_issue/90_해소완료_로그.md §GA4-SEQ-1).
+--      순번 안정성은 보장하지 않는다(정본 = _archive/O276_project_closure/20_issue/90_해소완료_로그.md §GA4-SEQ-1).
 --   [컬럼별 설계 및 실측 이력]
 --   · EVENT_SEQ: 동일 3키 내 순번 (PK). ROW_NUMBER OVER(PARTITION BY 3키 ORDER BY BATCH_EVENT_INDEX,EVENT_BUNDLE_SEQUENCE_ID). 🔴 두 컬럼 모두 100% 비NULL인데도 3키 중복의 8.66%(2025-06 실측)가 그대로 남는다 — 값 자체가 원천에서 중복. PK 유일성은 ROW_NUMBER 구조상
---      보장되지만 재실행 간 순번 안정성은 미실증(GA4-SEQ-1). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §GA4-SEQ-1
+--      보장되지만 재실행 간 순번 안정성은 미실증(GA4-SEQ-1). 규모 실측 정본 = _archive/O276_project_closure/20_issue/90_해소완료_로그.md §GA4-SEQ-1
 --   · EVENT_DT: 업무일자 DATE. 🔴 프루닝 키 — 하류 range 조회는 반드시 이 컬럼으로 제한
 --   · USER_ID: GA4 user_id 원본(불변 보존). USER_ID 사용 — UP_MEMBER_ID 는 선행 0 소실 확인(예: "0470071"→"470071")로 ID_SCHEME 정규식과 불일치
 --   · ID_SCHEME: ID 체계 분류축. 값 = MBER_NO(7자리)/ONCE_MBER_NO(S+8자리)/APP(app- 접두)/EMAIL(@ 포함)/INVALID("null"·"undefined")/UNCLASSIFIED. USER_ID NULL 이면 이 컬럼도 NULL
@@ -904,10 +904,10 @@ CMPGN_CD:-- 🆕 O189-B 2차-B
 --   🟢 [2026-08-19 O87] PK 4번째 키 교체 + USER_ID 확장 + ID_SCHEME 승계.
 --   [컬럼별 설계 및 실측 이력]
 --   · EVENT_SEQ: 동일 3키 내 순번 (PK). 🟢 GA4-PK-1 해소 — 종전 4번째 키 BATCH_ORDERING_ID 는 2024 상반기에 없어 그 구간을 NOT NULL 위반으로 배제했다. 3키로 낮춰도 중복이 남아 단순 제거도 불가였다 ⇒ 기반 테이블이 계보 순으로 부여한 surrogate 로 대체한다. 🔴 [O87-B] 성립하는 것은 「NOT NULL 위반 해소
---     」까지다 — 「손실 0」은 미실증이고 정렬 튜플 동일 행이 실재한다(미결 GA4-SEQ-1). 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측
+--     」까지다 — 「손실 0」은 미실증이고 정렬 튜플 동일 행이 실재한다(미결 GA4-SEQ-1). 규모 실측 정본 = _archive/O276_project_closure/20_issue/90_해소완료_로그.md §1-B-실측
 --   · BATCH_ORDERING_ID: 배치 내 정렬 ID. 🔴 PK 아님 · NOT NULL 아님(2024 상반기 NULL) — 계보·정렬 근거로만 보존
 --   · EVENT_DT: 파생 DATE. 🔴 프루닝 키 — 이 모델은 range 모델이고 pre-hook 이 이 컬럼으로 범위 DELETE 한다(silver_purge)
---   · USER_ID: GA4 user_id 원본(불변 보존). 🟢 GA4-LEN-1 해소 — 종전 VARCHAR(10)에서 이메일·app- 접두 포맷이 길이 초과로 실패했다. 🔴 CRM 회원번호가 아닌 값이 섞여 있다 ⇒ ID_SCHEME 과 함께 읽을 것. 규모 실측 정본 = 20_issue/90_해소완료_로그.md §1-B-실측
+--   · USER_ID: GA4 user_id 원본(불변 보존). 🟢 GA4-LEN-1 해소 — 종전 VARCHAR(10)에서 이메일·app- 접두 포맷이 길이 초과로 실패했다. 🔴 CRM 회원번호가 아닌 값이 섞여 있다 ⇒ ID_SCHEME 과 함께 읽을 것. 규모 실측 정본 = _archive/O276_project_closure/20_issue/90_해소완료_로그.md §1-B-실측
 --   · ID_SCHEME: ID 체계 분류축(기반 테이블 승계). MBER_NO/ONCE_MBER_NO 만 CRM 조인 대상 · APP/EMAIL/INVALID/UNCLASSIFIED 는 회원번호 아님. 🔴 채움률 분모 판정의 정본
 --   · BIGQUERY_SESSION_KEY: 파생 세션 자연키 (복합 = pseudo ∥ "-" ∥ session_id)
 --   · USER_ID_FILLED: 파생 세션 전파 회원번호. 🟢 GA4-LEN-1 해소로 VARCHAR(10) → VARCHAR(64). 신뢰도는 ID_RESOLUTION 참조(SESSION_FILL 은 추론값)

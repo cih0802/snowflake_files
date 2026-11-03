@@ -6,8 +6,11 @@ updated: 2026-11-01 (O275-C · §0 · §5 신설 · §3 처리 완료 표기)
 
 # 워크스페이스 지도 (00_WORKSPACE_MAP)
 
+> 🆕 [O276] 프로젝트 종료(2026-11-01) — 세션 운영물(`20_issue/` · `40_worklog/` · `80_…/` · `99_NEXT_SESSION.md` · `99_NEXT_SESSION_조각/` · `tmp/` · `999_temp.txt`)을 `_archive/O276_project_closure/` 로 **보관 이동**했다(은퇴·삭제 아님 · 재사용분은 `_reuse_kit/` 로 추출) · 재편 산출물 3종(`00_WORKSPACE_RESTRUCTURE_PLAN.md` · `MOVE_MAP*.csv`) = `_archive/RESTRUCTURE_20261031-pre/` · 대응표 = `_archive/O276_project_closure/CLOSURE_MOVE_MAP.csv` · 정리 경위 = `_archive/O276_project_closure/00_REFERENCE_CLEANUP_PLAN.md` · 폴더별 색인 = 각 폴더 `00_FOLDER_INDEX.md`.
+> 🆕 [O277] 「10」 번이 둘(`10_design/` · `10_dbt_pipeline/`)인 것은 의도다 — dbt 폴더는 `GN_DW.OPS.DW_PIPELINE` 배포 경로라 고정. 새 프로젝트 표준 번호 = `_reuse_kit/11_project_template/00_표준_폴더번호표.md`.
+> 🔴 §5 작업 흐름표의 `20_issue/` · `99_NEXT_SESSION_조각/` · `80_…/` 경로는 프로젝트 진행 당시 기준이다(현재 = `_archive/O276_project_closure/` 아래).
 > 🆕 [O275-C] 재편(4-A~4-E) 완료 후의 구조는 **§0** 이 정본이다. §1~§3 은 1단계 조사 기록이며 경로만 4-C 에서 새 이름으로 치환됐다.
-> 옛 경로 → 새 경로 = 루트 `MOVE_MAP.csv`(요약) · `MOVE_MAP_files.csv`(파일 단위).
+> 옛 경로 → 새 경로 = `_archive/RESTRUCTURE_20261031-pre/MOVE_MAP.csv`(요약) · `MOVE_MAP_files.csv`(파일 단위) — O276 에서 루트에서 보관 이동.
 
 ## 0. 새 구조 (O275 · 목적별)
 
@@ -16,20 +19,21 @@ updated: 2026-11-01 (O275-C · §0 · §5 신설 · §3 처리 완료 표기)
 | `00_guides/` | 작업 지침 · 스킬 정본 · 규약 (🔴 고정) | `00_README.md` |
 | `10_design/` | 설계 — Gold · Silver · 스냅샷 | `10_design/00_README.md` |
 | `10_dbt_pipeline/` | dbt 배포 소스 (🔴 고정 · `GN_DW.OPS.DW_PIPELINE` 재배포 회피) | `README.md` |
-| `20_build/` | 구축 — 환경·RBAC · SV/Agent · 일적재 · MSTR · Streamlit · Cortex 프로젝트 | `20_build/00_README.md` |
-| `20_issue/` | 이슈 원장 · 세션 이력 (🔴 고정 · 본문 치환 금지) | `00_INDEX_이슈원장.md` · `00_BRIEF.md` |
+| `20_build/` | 구축 — 환경·RBAC · SV/Agent · 일적재 · MSTR · Streamlit 앱(22) · BRONZE 인계(29) · Cortex 프로젝트 | `20_build/00_README.md` |
+| `20_issue/` | → `_archive/O276_project_closure/` (O276 이동) | — |
 | `30_operate/` | 운영 — 모니터링 · Agent 개선 · 어카운트 부트스트랩 | `30_operate/00_README.md` |
-| `40_worklog/` | 작업기록 — 핸드오프 · 인수인계 정제 | `40_worklog/00_README.md` |
+| `40_worklog/` | → `_archive/O276_project_closure/` (O276 이동) | — |
 | `50_handover/` | 인수인계 — 실행순서 · 후속 프로젝트 · 인계요청 · 현업요청 | `50_handover/00_README.md` |
 | `60_share/` | 공유 — 산출물 · 현업 의사결정 회신 | `60_share/00_README.md` |
 | `70_reference/` | 참고 — PoC 백업 · 레거시 샘플 · MSTR 스킬 원본 | `70_reference/00_README.md` |
-| `80_인수인계_프로젝트완료 및 유지보수용/` | 납품 패키지 (🔴 고정 · 내부 옛 폴더명이 정답) | `00_INDEX.csv` |
+| `80_인수인계_프로젝트완료 및 유지보수용/` | → `_archive/O276_project_closure/` (O276 이동) | — |
 | `85_실제 인수인계 문서/` | 납품 문서 (🔴 고정) | `00_INDEX_산출물목록.md` |
 | `90_provided_definition/` | 현업 제공 원본 (🔴 고정) | `00_README.md` |
-| `99_NEXT_SESSION_조각/` | 인수인계 라벨 파일 · 조각 (🔴 고정) | `00_인수인계_색인.md` |
+| `99_NEXT_SESSION_조각/` | → `_archive/O276_project_closure/` (O276 이동) | — |
 | `scripts/` | 게이트 · 도구 (🔴 고정) | `README_운영도구.md` |
 | `_archive/` | 스냅샷 보관소 (🔴 고정 · 무기한 보존) | `_archive/00_README.md` |
-| `tmp/` | 스크래치 (🔴 고정 · 60일 기간제 · 삭제는 승인 후) | `00_README.md` |
+| `_reuse_kit/` | 🆕 다음 프로젝트용 재사용 키트(복사본 · `{{DB}}`·`{{ACCOUNT}}` 자리표시자) | `00_INVENTORY.md` · `01_PLACEHOLDERS.md` |
+| `tmp/` | → `_archive/O276_project_closure/` (O276 이동) | — |
 | `.snowflake/` | 스킬 설치본 (🔴 고정 · `init_ihcho` 는 빌더 산출물) | — |
 
 ## 1. 최상위 폴더 (1단계 조사 기록)

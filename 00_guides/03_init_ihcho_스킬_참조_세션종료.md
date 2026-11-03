@@ -4,7 +4,7 @@ doc_role: `init_ihcho` 스킬의 **참조 문서 정본**(references/session-end
 project: GN_DW (굿네이버스)
 created: 2026-09-16
 created_by: O167
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 END-METADATA -->
 
 # `03_init_ihcho_스킬_참조_세션종료.md` — 스킬 참조 문서 정본
@@ -56,12 +56,12 @@ for t in scripts/test_*.py; do python3 "$t" >/tmp/t.out 2>&1; r=$?; [ $r -ne 0 ]
 | 정본 | 무엇 | 방법 |
 |---|---|---|
 | 원장 §1 대시보드 행 | 상태 | 조각을 `edit` → `split_doc.py <허브> --republish --expect "<라벨>"` · 🔴 **1,900자 이내** · 🔴 **열 수(헤더와 같은 파이프 수)를 맞춰라** |
-| `01_세션이력` 항목 | 서술·경위 | `split_doc.py 20_issue/01_세션이력.md --rollover --entry-file <파일>` |
+| `01_세션이력` 항목 | 서술·경위 | `split_doc.py _archive/O276_project_closure/20_issue/01_세션이력.md --rollover --entry-file <파일>` |
 | `99_NEXT_SESSION` 인수인계 절 | 다음 세션이 읽을 것 | 🆕 🟢🟢 **[O172] 도구 1회로 끝난다** = `python3 scripts/handoff_write.py --label O<번호>-<접미> --entry-file <파일>` |
 
 🆕 🟢🟢 **[2026-09-17 O172 · `R1-6-27`] 인수인계는 「라벨 파일」이다 — 종전 6단계가 1단계가 됐다.**
 
-· 규격 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0172-A.md` · 🔴 **접미 필수**(최초 단위도 `-A` ·
+· 규격 = `_archive/O276_project_closure/99_NEXT_SESSION_조각/99_NEXT_SESSION-O0172-A.md` · 🔴 **접미 필수**(최초 단위도 `-A` ·
   4자리 zero-pad · A~Z · 소진 시 2자). 🔴 **한 세션이 단위를 여러 개 쓰는 것은 정상**이다(`R1-4-3`)
   ⇒ 후속 단위는 `--next` 로 접미를 받아라(도구가 **덮지 않는다**).
 · 🔴🔴 **하지 마라(폐기된 절차)** — 아래는 O172 이전 문안이고 지금 하면 **틀린다**:
@@ -89,7 +89,7 @@ for t in scripts/test_*.py; do python3 "$t" >/tmp/t.out 2>&1; r=$?; [ $r -ne 0 ]
 **확인 방법(둘 다)**:
 1. `session_brief.py --write` 후 **열린 착수표 건수가 줄었는지** 본다. 줄지 않았다면 **닫지 못한 것이다**.
    🔴 추출기·조각 경계를 건드린 세션은 **건수 비교 대신 ② 를 근거로** 삼아라(경계가 바뀌면 수가 움직인다).
-2. `grep -n "<그 항목 표시>" 99_NEXT_SESSION_조각/*.md` 로 **취소선 표기를 눈으로 확인**한다.
+2. `grep -n "<그 항목 표시>" _archive/O276_project_closure/99_NEXT_SESSION_조각/*.md` 로 **취소선 표기를 눈으로 확인**한다.
 
 🟢 취소선 관례 = `| ~~⑥~~ | ~~옛 제목~~ ➔ 🟢 [세션 라벨] 새 처방 |`.
 🔴 **행을 지우지 마라**(좌표 인용 안정성) — 취소선 + 대체 문장으로 남긴다.
@@ -109,7 +109,7 @@ for t in scripts/test_*.py; do python3 "$t" >/tmp/t.out 2>&1; r=$?; [ $r -ne 0 ]
 
 - 대상 목록은 **문서에 적지 않는다** — 스크립트가 `scripts/*_gate.py` − `session_brief.GATES` 차집합으로 받는다.
 - 「실행」이면 `run_in_background=true` 로 띄우고 `fail=0` 을 확인한다 · FAIL 은 사유를 열어 보고만 한다(임의 시정 금지).
-- 🔴 O229 Inspection 실측 = 브리핑 전 🟢 상태에서 밖 게이트 5종 rc=1 · 1종 rc=143(근거 = `20_issue/_o229_inspection_evidence.md` D1).
+- 🔴 O229 Inspection 실측 = 브리핑 전 🟢 상태에서 밖 게이트 5종 rc=1 · 1종 rc=143(근거 = `_archive/O276_project_closure/20_issue/_o229_inspection_evidence.md` D1).
 
 ## 2. 문서 유지 도구 (정본 = `00_guides/01_문서분할_규약.md` `R1-6` 계열)
 

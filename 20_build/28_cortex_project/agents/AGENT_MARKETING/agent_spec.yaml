@@ -1,4 +1,4 @@
-# O266 개정안 = tmp/o266/live_AGENT_MARKETING.yaml + 12_agent개선과제/tools/o266_patch_marketing_spec.py
+# O266 개정안 = _archive/O276_project_closure/tmp/o266/live_AGENT_MARKETING.yaml + 12_agent개선과제/tools/o266_patch_marketing_spec.py
 models:
   orchestration: auto
 instructions:

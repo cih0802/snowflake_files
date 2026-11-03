@@ -4,7 +4,7 @@ doc_role: 운영계(ZL50263) 저가형 LLM 입력 프롬프트 — O270 원천�
 project: GN_DW (굿네이버스)
 created: 2026-10-30
 created_by: O270-F
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 END-METADATA -->
 
 # 운영계 LLM 입력 프롬프트 — O270 원천별 접근통제
@@ -36,7 +36,7 @@ END-METADATA -->
 
 1. `12_agent개선과제/O270_W8_운영계_실행카드.md` — 이 작업의 정본 순서
 2. `12_agent개선과제/O270_원천별_접근통제_작업계획.md` — 배경(C1~C9 · 「하지 마라」)
-3. `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0270-F.md` — 개발계 결과 요약
+3. `_archive/O276_project_closure/99_NEXT_SESSION_조각/99_NEXT_SESSION-O0270-F.md` — 개발계 결과 요약
 
 읽은 뒤 「읽음: 3개 파일 · 실행카드 단계 수 = N」이라고 보고하고 멈춘다.
 
@@ -121,9 +121,9 @@ END-METADATA -->
 
 ## 단계 4 — Agent 재배포(경영·회원)
 
-1. `python3 tmp/o250/deploy_agents.py pre` → 출력에 「[0] 라이브 부재 SV = 0」과 「[0-C] … OK」 3줄이 있어야 한다.
+1. `python3 _archive/O276_project_closure/tmp/o250/deploy_agents.py pre` → 출력에 「[0] 라이브 부재 SV = 0」과 「[0-C] … OK」 3줄이 있어야 한다.
    하나라도 다르면 멈춘다.
-2. 사람 승인 후 `python3 tmp/o250/deploy_agents.py deploy` → 「[5] AGENT_EXECUTIVE … tool_spec 17」 ·
+2. 사람 승인 후 `python3 _archive/O276_project_closure/tmp/o250/deploy_agents.py deploy` → 「[5] AGENT_EXECUTIVE … tool_spec 17」 ·
    「[5] AGENT_MEMBER … tool_spec 31」을 확인한다(숫자가 다르면 그대로 보고).
 3. 경영 Agent 설명 갱신 = `05_SV-Agent_ai/09_1_AGENT_생성.sql` 의 [5] 블록 중 `AGENT_EXECUTIVE` 한 문장만 실행한다.
 - 보고 후 멈춘다.

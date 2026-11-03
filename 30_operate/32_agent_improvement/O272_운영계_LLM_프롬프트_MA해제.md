@@ -4,7 +4,7 @@ doc_role: 운영계(ZL50263) 저가형 LLM 새 세션 입력 프롬프트 — OP
 project: GN_DW (굿네이버스)
 created: 2026-10-30
 created_by: O272-B
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 END-METADATA -->
 
 # 운영계 LLM 새 세션 프롬프트 — O272 OPS·SILVER managed access 해제
@@ -124,7 +124,7 @@ END-METADATA -->
   - 🔴 단계 5 의 기대 「개발계 VERSION$4 · 17」 은 **정답(O270 W3 = analyst_ad·시뮬레이터 제거)** 이었다. 운영계 19 는 드리프트다.
   - 원인(운영계 실측) = default 가 VERSION$20 에 고정돼 `ADD VERSION` 으로 만든 $21·$22·$23 이 default 가 되지 않았다(에러 없음).
   - 처방 = `05_SV-Agent_ai/53_FIX_PROD_AGENT_EXECUTIVE_DEFAULT_ZL50263.sql` [2] → `DONE — default = VERSION$23 (도구 17)`.
-  - 재발 방지 = `tmp/o250/deploy_agents.py deploy` [5] 가 「default = 최신 명명 버전」 아니면 rc 1 · `09_2` [3] 주석 정정.
+  - 재발 방지 = `_archive/O276_project_closure/tmp/o250/deploy_agents.py deploy` [5] 가 「default = 최신 명명 버전」 아니면 rc 1 · `09_2` [3] 주석 정정.
 - **O273-C — 문서 정리** = `09_2` [0] 필수 목록의 EXECUTIVE–SV_AD·SV_ML_REALTIME_SIMULATOR 주석 처리 · `08_AGENT_spec.md` O270 정정.
 - 남은 일 = `O272_롤전환_작업순서.md` 참고(운영계 O270 단계 6 게이트 재실행 · 사용자 배정 등).
 

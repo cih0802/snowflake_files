@@ -4,7 +4,7 @@ doc_role: 현업 공지문(발송용 초안) — Agent별 조회 범위 변경(�
 project: GN_DW (굿네이버스)
 created: 2026-10-30
 created_by: O270-F
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 END-METADATA -->
 
 # [공지] 분석 Agent 별 조회 범위 변경 안내

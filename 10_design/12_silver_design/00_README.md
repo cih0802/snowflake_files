@@ -12,7 +12,7 @@
 > 🔄 **[2026-09-01 DEC-48] SILVER GA4 계열 명명 반전** — `DEC-38`(GA4_* 유지)을 수퍼시드.
 > 현재 라이브 명칭 = `BIGQUERY_EVENT`·`BIGQUERY_EVENT_DIM`·`BIGQUERY_IDENTITY`·`BIGQUERY_BASIC`·
 > `BIGQUERY_DEVICE`·`BIGQUERY_TRAFFIC_SOURCE`(구 `GA4_*`). 이 폴더의 본문에 남아 있는 `GA4_*`
-> 표기는 **그 시점 기록(역사)**이며 되쓰지 않는다 — 정본 = `20_issue/30_설계_의사결정.md` DEC-48.
+> 표기는 **그 시점 기록(역사)**이며 되쓰지 않는다 — 정본 = `_archive/O276_project_closure/20_issue/30_설계_의사결정.md` DEC-48.
 
 ---
 
@@ -74,7 +74,7 @@
 
 ## 보완 — README 미기재 파일 (4-A 판정 · 2026-10-31)
 
-> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
+> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `_archive/RESTRUCTURE_20261031-pre/00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
 
 | 파일 | 크기 | 상태 | 비고 |
 |---|---|---|---|

@@ -1,0 +1,32 @@
+
+▣ .snowflake/cortex/skills/init_ihcho/SKILL.md
+   정본 = 00_guides/03_init_ihcho_스킬_본문.md · 264줄 · 20275 B
+   현행 = 264줄 · 20275 B
+   차이 = 추가 1줄 · 삭제 1줄
+      --- .snowflake/cortex/skills/init_ihcho/SKILL.md(현행)
+      +++ 정본(마커 사이)
+      @@ -46,3 +46,3 @@
+       - 🔴 **`R0-8-2` `rc` 를 파이프 뒤에서 읽지 마라** — `>/workspace/tmp/x.out 2>&1` 로 받고 `rc=$?` 를 먼저 잡는다.
+      -- 🔴 **임시 파일 = 워크스페이스 `/workspace/tmp/`**(`R0-8-3` · 세션 시작에 `mkdir -p` · `.gitignore` 대상) — 실행 출력 · 검증 결과 · 일회성 도구를 둔다.
+      +- 🔴 **임시 파일 = 워크스페이스 `/workspace/tmp/`**(`R0-8-5` · 세션 시작에 `mkdir -p` · `.gitignore` 대상) — 실행 출력 · 검증 결과 · 일회성 도구를 둔다.
+         OS `/tmp` 는 샌드박스 재시작 때 **통째로 지워진다**(경위 = 개발이력). 마운트가 느린 대량 반복 I/O 만 `/tmp` 에서 돌리고 **남길 결과는 즉시 `/workspace/tmp/` 로 옮긴다.**
+🟠 스냅샷(기존 보존 · 접미 신설) = _archive/SKILL.md.O277-B-prebuild.3  [O277-B · 20,275 B · be726520c438acbe]
+   스냅샷 = _archive/SKILL.md.O277-B-prebuild.3 (suffixed)
+   ✅ APPLIED — 264줄 · 20275 B · 되읽기 동일
+
+▣ .snowflake/cortex/skills/init_ihcho/references/session-end.md
+   정본 = 00_guides/03_init_ihcho_스킬_참조_세션종료.md · 118줄 · 10153 B
+   현행 = 118줄 · 10153 B
+   🟢 이미 동일 — 쓸 것이 없다(멱등).
+
+▣ .snowflake/cortex/skills/init_ihcho/references/doc-map.md
+   정본 = 00_guides/03_init_ihcho_스킬_본문.md [SKILL-REF references/doc-map.md] · 23줄 · 2138 B
+   현행 = 23줄 · 2138 B
+   🟢 이미 동일 — 쓸 것이 없다(멱등).
+
+▣ .snowflake/cortex/skills/init_ihcho/references/new-doc.md
+   정본 = 00_guides/03_init_ihcho_스킬_본문.md [SKILL-REF references/new-doc.md] · 22줄 · 1971 B
+   현행 = 22줄 · 1971 B
+   🟢 이미 동일 — 쓸 것이 없다(멱등).
+
+✅ 산출물 1종 갱신 완료 · 🔴 다음: python3 scripts/verify_init_ihcho_skill.py

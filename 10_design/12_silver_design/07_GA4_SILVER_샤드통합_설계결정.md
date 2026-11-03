@@ -1,7 +1,7 @@
 # GA4 일별 샤드 → SILVER 통합 설계 결정서
 
 > 🔄 **[2026-09-01 DEC-48] 명명 반전** — 본 문서의 `GA4_*` 표기는 그 시점 기록(역사)이다.
-> 라이브 명칭은 `BIGQUERY_*` 로 전환됐다(`DEC-38` 수퍼시드). 정본 = `20_issue/30_설계_의사결정.md` DEC-48.
+> 라이브 명칭은 `BIGQUERY_*` 로 전환됐다(`DEC-38` 수퍼시드). 정본 = `_archive/O276_project_closure/20_issue/30_설계_의사결정.md` DEC-48.
 
 **대상 독자**: SILVER GA4 모델 개발·운영자, GOLD FACT_BIGQUERY_BEHAVIOR 담당자
 **작성일**: 2026-07-03
@@ -140,7 +140,7 @@
 > | **GA4-PK-1** | §7-B 의 `GA4_EVENT` 복합 PK 4번째 키 `BATCH_ORDERING_ID`(NOT NULL)가 **2024 상반기를 배제**한다. 그 컬럼은 원천 `events_20240719` 부터 생겼다 | **2024-01-01~07-18 · 199일 · 48,862,926행 = 전체 17.10% 적재 불가**. 3키로 낮춰도 2024-06 기준 **3.679% 중복(238,454행)** 잔존 | 🟢 **해소** — `EVENT_SEQ` surrogate(손실 0 · 위 O87 절) |
 > | **GA4-LEN-1** | `GA4_EVENT.USER_ID VARCHAR(10)` 초과 + **CRM 조인 불가 ID 체계 혼재** | `user_id` **6종** — 7자리 CRM 399,773id · `S`+8자리 16,907id(§7-B Q1 `ONCE_MBER_NO`) · `app-`+32hex 233id · `app-`+uuid 8id · 이메일 1 · 문자열 `'null'` 1 ⇒ **12,690행 길이 초과 실패** | 🟢 **해소** — VARCHAR(64) + `ID_SCHEME` + `NOT_A_MEMBER_ID`(위 O87 절) |
 >
-> 조치 후보·상세 = `20_issue/90_해소완료_로그.md` §1-A.
+> 조치 후보·상세 = `_archive/O276_project_closure/20_issue/90_해소완료_로그.md` §1-A.
 > 🟢 **[O87] 「결정 전에는 전기간 SILVER 적재 불가」 조건은 풀렸다** — 단 **코드까지**이고
 > DDL 실행·`dbt run` 은 사용자 승인 대기다. 신규 미결 3건이 파생됐다: `GA4-SEQ-1`(순번 안정성)
 > · `GA4-DUP-1`(저장 중복 ~50GB) · `GA4-TV-1`(`smart tv` 499행 라벨).

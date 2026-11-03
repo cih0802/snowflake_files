@@ -22,7 +22,7 @@ END-METADATA -->
 > dbt·라이브 배포 실행은 내 승인 후 네가 한다(O237-D 와 같은 방식 · 배포 후 대사·Agent 스모크까지).
 > ```
 >
-> · 선행 상태 = O237 🟢(A·B·C·D 라이브 집행·스모크 통과) · 정본 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0237-D.md`.
+> · 선행 상태 = O237 🟢(A·B·C·D 라이브 집행·스모크 통과) · 정본 = `_archive/O276_project_closure/99_NEXT_SESSION_조각/99_NEXT_SESSION-O0237-D.md`.
 
 # SV·Agent kickoff — Phase-2 활성화 (2026-07-29 기준)
 
@@ -40,7 +40,7 @@ END-METADATA -->
 > | 계정 | cs94293 | **kd03246** |
 > | 산출물 | ~12번 | **13_SV_AD_배포_추가작업.sql** 추가 |
 >
-> **신규 교훈 P24~P26**(반드시 숙지 — `20_issue/10_진단_원인분석.md` §11-G)
+> **신규 교훈 P24~P26**(반드시 숙지 — `_archive/O276_project_closure/20_issue/10_진단_원인분석.md` §11-G)
 > - **P24** instruction 개정은 *추가*가 아니라 *제자리 교체*. 위임 선언("여기서 다루지 않음")에 규칙을 덧붙이면 자기모순 → LLM이 비결정적으로 무시.
 > - **P25** **배포 ≠ 발행**. `cortex_agent_save` 단독은 미발행(live 만 갱신). 순수 SQL 경로는 **5단계**(live 선복구 → MODIFY → COMMIT → live 재생성 → SET COMMENT/PROFILE). `COMMENT`·`PROFILE` 은 spec 이 아닌 DDL 속성.
 > - **P26** 멱등 가드는 관측 대상이 실제 상태를 반영하는지 **변화를 일으켜** 검증. 두 관측이 우연히 같으면 무력한 가드가 정상처럼 보인다.
@@ -68,9 +68,9 @@ END-METADATA -->
 ### P1 — Phase-2 트리거·데이터 상태 (승격 조건)
 | 문서 | 용도 |
 |---|---|
-| `20_issue/40_입고대기_원천의존.md` | 입고 트리거 **G-5(GA4 전기간)·E-6(사업목표)·E-1/E-4(비용)·Q10(캠페인 연결키)** = Phase-2 승격 조건 |
-| `20_issue/50_dbt_파이프라인_미결조치.md` | A1/A3 적재·**B계열(B1 성공/실패·B2 SPONSORSHIP/PAYMENT·B3 CAMPAIGN)** 유예 |
-| `20_issue/00_INDEX_이슈원장.md` | 이슈 E(FEP 고아 23%) 등 교차확인 |
+| `_archive/O276_project_closure/20_issue/40_입고대기_원천의존.md` | 입고 트리거 **G-5(GA4 전기간)·E-6(사업목표)·E-1/E-4(비용)·Q10(캠페인 연결키)** = Phase-2 승격 조건 |
+| `_archive/O276_project_closure/20_issue/50_dbt_파이프라인_미결조치.md` | A1/A3 적재·**B계열(B1 성공/실패·B2 SPONSORSHIP/PAYMENT·B3 CAMPAIGN)** 유예 |
+| `_archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md` | 이슈 E(FEP 고아 23%) 등 교차확인 |
 | `03_top-down_gold/07_메타.md` | **시간 가용시점 enum** — custom instruction 시간 근거 |
 
 ### P2 — 운영·검증·거버넌스

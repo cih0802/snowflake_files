@@ -51,7 +51,7 @@ ALTER AGENT GN_DW.SERVING.AGENT_MEMBER
 - **인용처 전수 회수(P62-B)**: 루트 yaml 을 「정본」이라 지목하던 4개 문서를 교정 —
   `20_build/21_env_rbac/03_GOLD_SERVING.md` · `20_build/23_sv_agent/08_AGENT_spec.md` ·
   `20_build/23_sv_agent/99_next_prompt.md` · `20_build/23_sv_agent/01_SV-Agent_작업계획.md`.
-  `20_issue/*` 와 `20_build/23_sv_agent/_archive/*` 의 언급은 **이력 기록이므로 원문 보존**한다.
+  `_archive/O276_project_closure/20_issue/*` 와 `20_build/23_sv_agent/_archive/*` 의 언급은 **이력 기록이므로 원문 보존**한다.
 
 ## 🔴 배포 경로 주의
 
@@ -71,7 +71,7 @@ _Co-authored with CoCo_
 
 ## 보완 — README 미기재 파일 (4-A 판정 · 2026-10-31)
 
-> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
+> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `_archive/RESTRUCTURE_20261031-pre/00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
 
 | 파일 | 크기 | 상태 | 비고 |
 |---|---|---|---|

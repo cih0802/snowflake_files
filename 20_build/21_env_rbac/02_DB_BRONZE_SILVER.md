@@ -265,7 +265,7 @@ bronze_load_policy:
 > `CRM_MEMBER_SPONSOR_BIZ` → `CRM_SPONSOR_RELATION` 1 · `GA4_IDENTITY` → `IDENTITY_MEMBER_XREF` 1).
 > 🔴 `AGENCY_COST` 가 2026-07-14 리뷰에서 삭제된 실제 이유는 **월 롤업(집계)** 이고, 같은 리뷰가
 > `CRM_SEND_RESULT` 의 SILVER 집계는 *"검토된 집계"* 로 **유지**했다 ⇒ 판정 기준은 「계층 내 참조인가」가
-> 아니라 **「롤업인가 · 중복 소유권인가」**였다. 규약 정본 = **DEC-37**(`20_issue/30_설계_의사결정.md`).
+> 아니라 **「롤업인가 · 중복 소유권인가」**였다. 규약 정본 = **DEC-37**(`_archive/O276_project_closure/20_issue/30_설계_의사결정.md`).
 
 ```yaml
 silver_total: 32   # CRM 22 + GA4 5 + ERP 2 + AGENCY 2 + bridge 1

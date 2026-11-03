@@ -1,0 +1,19 @@
+✅ I1 바이트 동일 — 264줄 · 20275 B
+✅ I2 frontmatter — name/description OK (description 347자)
+✅ I3 줄 수 264 ≤ 500
+✅ I4 한 줄 2000자 초과 0
+✅ I5 `R1-7-1`~`R1-7-10` 전건 등장
+✅ I6 `R3-9` 축 ㉠~㉨ 전건 등장
+✅ I7 하드코딩 수치 0
+✅ I8 .snowflake/cortex/skills/init_ihcho/references/session-end.md 바이트 동일 + 본문 포인터 실재(118줄)
+✅ I8 .snowflake/cortex/skills/init_ihcho/references/doc-map.md 바이트 동일 + 본문 포인터 실재(23줄)
+✅ I8 .snowflake/cortex/skills/init_ihcho/references/new-doc.md 바이트 동일 + 본문 포인터 실재(22줄)
+✅ I9 references/ 고아 파일 0
+✅ I10 본문 ∪ 참조 토큰 보존(유실 0)
+✅ I11 브리핑 백그라운드 기동이 §1 가드보다 앞
+✅ I12 본문·참조에 세션 라벨 0(session-end 제외)
+--------------------------------------------------------------------------
+🟢 PASS — 불변식 전건 통과 (경고 0건)
+   본문 정본 = 00_guides/03_init_ihcho_스킬_본문.md
+   명세     = 00_guides/03_init_ihcho_스킬_정본.md
+   산출물   = .snowflake/cortex/skills/init_ihcho/SKILL.md

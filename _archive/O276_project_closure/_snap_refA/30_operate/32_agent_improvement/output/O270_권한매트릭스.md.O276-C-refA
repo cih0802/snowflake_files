@@ -1,0 +1,62 @@
+<!-- LLM-METADATA
+doc_id: O270_RBAC_MATRIX
+doc_role: 자동 생성물 — 객체 × 기능 역할 권한 매트릭스(손으로 고치지 마라)
+project: GN_DW (굿네이버스)
+created: 2026-10-30
+created_by: O270-F
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+# O270 권한 매트릭스(객체 × 기능 역할)
+
+> 🔴 자동 생성물 — 생성기 = `12_agent개선과제/output/O270_gen_rbac_matrix.py` · 정본 = `output/O270_source_class.csv`
+> ✅ = SELECT 가능 · — = 권한 없음 · 팀장 = Streamlit 전용(SV·테이블·Agent 0)
+
+## 1. Agent
+
+| Agent | 마케팅 | 회원 | 경영·기획실 | 팀장 |
+|---|---|---|---|---|
+| AGENT_MARKETING | ✅ | — | — | — |
+| AGENT_MEMBER | — | ✅ | — | — |
+| AGENT_EXECUTIVE | — | — | ✅ | — |
+
+## 2. 원천 분류별 객체 수
+
+| 분류 | 객체 수 | 마케팅 | 회원 | 경영·기획실 | 팀장 |
+|---|---|---|---|---|---|
+| COMMON | 127 | ✅ | ✅ | ✅ | — |
+| AGENCY | 15 | ✅ | — | — | — |
+| ERP | 8 | ✅ | — | ✅ | — |
+| AGENCY+ERP | 2 | ✅ | — | — | — |
+
+## 3. 원천 제한 객체(공통 제외)
+
+| 계층 | 객체 | 유형 | 분류 | 마케팅 | 회원 | 경영·기획실 | 팀장 |
+|---|---|---|---|---|---|---|---|
+| GOLD | DIM_AD_CREATIVE | dbt_model | AGENCY | ✅ | — | — | — |
+| GOLD | FACT_AD_BROADCAST | dbt_model | AGENCY | ✅ | — | — | — |
+| GOLD | FACT_AD_BROADCAST_CASE | dbt_model | AGENCY | ✅ | — | — | — |
+| GOLD | FACT_AD_DIGITAL | dbt_model | AGENCY | ✅ | — | — | — |
+| GOLD | FACT_AD_INFLOW_ALLOC | dbt_model | AGENCY | ✅ | — | — | — |
+| GOLD | FACT_AD_PERFORMANCE | dbt_model | AGENCY | ✅ | — | — | — |
+| GOLD | WIDE_AD_BROADCAST | dbt_model | AGENCY | ✅ | — | — | — |
+| GOLD | WIDE_AD_BROADCAST_CASE | dbt_model | AGENCY | ✅ | — | — | — |
+| GOLD | WIDE_AD_COMBINED | dbt_model | AGENCY | ✅ | — | — | — |
+| GOLD | WIDE_AD_DIGITAL | dbt_model | AGENCY | ✅ | — | — | — |
+| GOLD | WIDE_AD_PERFORMANCE | dbt_model | AGENCY | ✅ | — | — | — |
+| SERVING | ML_REALTIME_SIMULATOR_V | VIEW | AGENCY | ✅ | — | — | — |
+| SERVING | SV_AD | SEMANTIC_VIEW | AGENCY | ✅ | — | — | — |
+| SERVING | SV_AD_INFLOW_ALLOC | SEMANTIC_VIEW | AGENCY | ✅ | — | — | — |
+| SERVING | SV_ML_REALTIME_SIMULATOR | SEMANTIC_VIEW | AGENCY | ✅ | — | — | — |
+| GOLD | FACT_MKTG_CAMPAIGN_MONTHLY_COST | dbt_model | AGENCY+ERP | ✅ | — | — | — |
+| SERVING | SV_MKTG_CAMPAIGN_COST | SEMANTIC_VIEW | AGENCY+ERP | ✅ | — | — | — |
+| GOLD | DIM_BUDGET_ITEM | dbt_model | ERP | ✅ | — | ✅ | — |
+| GOLD | FACT_BUDGET | dbt_model | ERP | ✅ | — | ✅ | — |
+| GOLD | FACT_BUDGET_YEARLY | dbt_model | ERP | ✅ | — | ✅ | — |
+| GOLD | FACT_EXPENSE_RESOLUTION | dbt_model | ERP | ✅ | — | ✅ | — |
+| GOLD | WIDE_BUDGET | dbt_model | ERP | ✅ | — | ✅ | — |
+| SERVING | SV_BUDGET | SEMANTIC_VIEW | ERP | ✅ | — | ✅ | — |
+| SERVING | SV_BUDGET_YEARLY | SEMANTIC_VIEW | ERP | ✅ | — | ✅ | — |
+| SERVING | SV_EXPENSE_RESOLUTION | SEMANTIC_VIEW | ERP | ✅ | — | ✅ | — |
+
+_Co-authored with CoCo_

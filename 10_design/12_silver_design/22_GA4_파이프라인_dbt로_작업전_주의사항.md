@@ -1,7 +1,7 @@
 # GA4 파이프라인 작업 전 주의사항 (dbt 버전)
 
 > 🔄 **[2026-09-01 DEC-48] 명명 반전** — 본 문서의 `GA4_*` 표기는 그 시점 기록(역사)이다.
-> 라이브 명칭은 `BIGQUERY_*` 로 전환됐다(`DEC-38` 수퍼시드). 정본 = `20_issue/30_설계_의사결정.md` DEC-48.
+> 라이브 명칭은 `BIGQUERY_*` 로 전환됐다(`DEC-38` 수퍼시드). 정본 = `_archive/O276_project_closure/20_issue/30_설계_의사결정.md` DEC-48.
 
 > 작성일: 2026-07-02 · 대상: Bronze_BIGQUERY → Silver GA4 dbt 파이프라인 개발자
 > 짝 문서: `08_GA4_파이프라인_SP로 작업전_주의사항.md` (Stored Procedure 버전)
@@ -33,7 +33,7 @@
 > 범위 제한 강제**(빼면 2.86억행 × VARIANT 11개 전량 스캔 → 비용 사고).
 >
 > 🔴 **SILVER 착수 전 미해소 2건** — `GA4-PK-1`(2024-01-01~07-18 · 17.10% PK 불가)
-> · `GA4-LEN-1`(`USER_ID VARCHAR(10)` 초과 12,690행). 상세 = `20_issue/90_해소완료_로그.md` §1-A.
+> · `GA4-LEN-1`(`USER_ID VARCHAR(10)` 초과 12,690행). 상세 = `_archive/O276_project_closure/20_issue/90_해소완료_로그.md` §1-A.
 > 🟢 **[2026-08-19 O87 갱신] 위 2건은 코드 레벨에서 해소됐다** — 상세는 아래 O87 절.
 
 > ## 🟢🟢 [2026-08-19 O87] §2 증분 전략·§4 모델 구조도 **폐기·대체**됐다
@@ -55,7 +55,7 @@
 >                 │  ref()
 >                 └─ IDENTITY_MEMBER_XREF  (교차소스 브리지)
 > ```
-> 근거·경계 = `07_GA4_SILVER_샤드통합 설계결정.md` 머리말 §O87 · `20_issue/30_설계_의사결정.md` DEC-37/37.
+> 근거·경계 = `07_GA4_SILVER_샤드통합 설계결정.md` 머리말 §O87 · `_archive/O276_project_closure/20_issue/30_설계_의사결정.md` DEC-37/37.
 >
 > ### 🔴 §2 「incremental + 72시간 보정 merge」는 채택되지 않았다
 > §2 는 `incremental_strategy='merge'` + `unique_key` 4키 + D-3~D-1 창을 제시하는데,

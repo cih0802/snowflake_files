@@ -33,3 +33,13 @@
 | 0 | 통과 | — |
 | 1 | 위반(또는 SQL 실패) | 출력된 파일:줄 / SV.차원 을 고치고 재실행 |
 | 2 | 실행 오류 = **미판정** | 접속·권한·경로를 확인한다. 🔴 「위반 0」으로 읽지 마라 |
+
+## 4. 🆕 [O276 · 2026-11-02] 세션 운영 게이트 — 현 프로젝트 대상 부재 · 재사용 후보
+
+- 프로젝트 종료(O276)로 세션 운영 대상(`20_issue/` · `99_NEXT_SESSION*` · `40_worklog/` · `tmp/`)이 `_archive/O276_project_closure/` 로 이동했다.
+- 그 대상을 읽는 세션 운영 도구는 **이 프로젝트에서 실행하면 「파일 없음」이 정상**이다(은퇴 아님 · 수정하지 않음):
+  - `session_brief.py` · `doc_census.py` · `doc_line_length_gate.py` · `doc_heading_gate.py` · `doc_coord_gate.py`
+  - `doc_type_gate.py` · `decision_closure_gate.py` · `split_doc.py` · `retire_sections.py`
+  - `handoff_ddl_gate.py` · `handoff_write.py` 와 각 `test_*.py`
+- 위 §1~§3 의 운영도구(SV 게이트 · SQL 실행기 · 접속 헬퍼)는 **현행 유지**다.
+- 새 프로젝트에서 재사용 = `_archive/O276_project_closure/00_REFERENCE_CLEANUP_PLAN.md` §8(재사용 키트 추출 · 결과 = `_reuse_kit/`)로 복사·일반화한다.

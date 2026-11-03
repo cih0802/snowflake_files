@@ -4,7 +4,7 @@ doc_role: ML 예측결과 Semantic View 설계 (실측 기반 · 발행 전 단�
 project: GN_DW (굿네이버스)
 created: 2026-08-14
 session: O74
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 source_of_truth_input: 99_provided_definition/20_ML_ddl.sql (3,217줄 · 전량 독해)
 END-METADATA -->
 

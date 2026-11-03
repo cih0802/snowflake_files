@@ -1,0 +1,123 @@
+<!-- LLM-METADATA
+doc_id: MSTR_MEDALLION_SUPPLEMENT_PLAN
+doc_role: MSTR 원본 SQL 기반 메달리온(silver·gold) 정의 보완 — A안 작업계획(B안 확장 전제)
+project: GN_DW (굿네이버스)
+created: 2026-10-06
+created_by: O202
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+# 00. MSTR 통한 메달리온 보완 — 작업계획 (A안 · B안 확장 전제)
+
+## 0. 계기 · 목표
+
+- 계기 = 같은 질문(2026-07 매체운영팀 회원개발)에 두 기준의 답이 크게 달랐다.
+  - 메달리온 답 = 60명 / 72건(「사단법인 캠페인 기준」 · 재현 쿼리 미확인).
+  - MSTR 답 = 5,989명 / 11,956.21건 / 119,562,055원(`F_MM_SPNSR_DVLP_SUM` 재현 일치).
+  - GOLD `FACT_MEMBER_EVENT` 를 `ORG_SK`(매체운영팀) + 개발구분 1·2·4 로 집계 = 6,448명 / 7,383건 / 128,694,055원.
+- 원인(O202 실측) = 정의 축 3개가 어긋난다.
+  - ㉠ 법인 = MSTR `CPR_DIV_CD`(사단·사복) ↔ GOLD `DIM_ORG.CORP` NULL.
+  - ㉡ 팀 귀속 = MSTR 실적부서(`ACMSLT_DEPT_CD`) ↔ 답변 경로는 캠페인 축으로 우회.
+  - ㉢ 개발(건) = MSTR `SPNSR_AMT_CNT`(금액 가중 · 소수) ↔ GOLD `DEV_CNT`(개발구분 필터와 무관하게 7,383 — 정의 확인 필요).
+- 목표(A안) = **GOLD 구조를 유지한 채** MSTR 업무 규칙과 정의가 어긋나는 지점을 찾아 맞춘다.
+- 비목표 = MSTR 객체 전량 이관(C안) · GOLD 에 없는 영역 신설(B안 — 이 계획은 B 착수에 필요한 그릇만 만든다).
+
+## 1. 입력 (정본)
+
+| 구분 | 경로 | 비고 |
+|---|---|---|
+| MSTR 원본 | `15_MSTR 이관 PoC/mstr DDL 원본/{table,view,function,sp}_script.sql` | UTF-16 · 객체 439(T119 · V184 · FN12 · SP124) |
+| 1차 이관본 | `15_MSTR 이관 PoC/snowflake 적용 ddl/01~04` | 라이브 `GN_DW.MSTR` |
+| MSTR 데이터 | `GN_DW.MSTR.F_MM_SPNSR_DVLP` · `F_MM_SPNSR_DVLP_SUM` | 🔴 값 검증 가능한 팩트는 이 2종뿐(O202 실측) |
+| GOLD 정의 | `03_top-down_gold/06_DDL.sql` · `07_메타.md` · `02_지표 분류.md` | GOLD 48 객체 |
+| dbt | `10_dbt_pipeline/models/{silver,gold}` | 실행 = 사용자(`R4-1`) |
+| silver 의존 | `03_top-down_gold/08_silver의존.md` · `11_BRONZE적재 컬럼대조.md` | B안 진입로 |
+
+## 2. A/B 경계 — B안을 위해 지금 정해 두는 것
+
+- 🟢 **매핑표 1장을 A·B 공용으로 쓴다**(`02_MSTR_GOLD_매핑표.md`).
+  - 행 = MSTR 객체(SP 기준 · 대상 테이블 포함) · 열 = 대응 GOLD 객체 · 판정 · 근거 좌표 · 처리안(A/B/제외).
+  - 판정 코드 = `일치` · `정의차`(A 대상) · `GOLD미보유`(B 대상) · `MSTR전용`(제외 · 운영 보조) · `변형본`(제외).
+- 🟢 A안은 `정의차` 만 처리한다 ⇒ `GOLD미보유` 행이 그대로 **B안 백로그**가 된다.
+- 🟢 인벤토리는 도구로 재생성한다(`tools/sp_inventory.py` → `01_MSTR_SP_인벤토리.md`) — B 에서 재사용.
+- 🟢 규칙 추출 결과는 **「규칙 카드」** 형식으로 남긴다(`03_규칙카드/`): 규칙 · 원본 좌표 · GOLD 현행 · 차이 · 처방.
+  - B 에서 새 팩트를 설계할 때 같은 카드를 설계 입력으로 쓴다.
+- 🔴 변형본(`_202004` · `_210429` · `_TEST` · `_INIT_UP0n`)은 정본 SP 와 대조만 하고 별도 행을 만들지 않는다.
+
+## 3. 대상 범위 (A안)
+
+### 3-1. 차원 — GOLD 대응이 있는 MSTR D 계열
+
+| MSTR | GOLD | 핵심 확인점 |
+|---|---|---|
+| `USP_D_CM_DEPT_INFO` · 뷰 `D_DEPT*_CD` · `D_CPR_DIV_CD` | `DIM_ORG` | 🔴 법인구분(사단·사복) · 실적부서 계층(DEPT2/3/4) |
+| `USP_D_CMPGN_CD` · `USP_D_CMPGN_EXPL_CD` · `USP_D_BRND_CD` · 뷰 `D_UP_CMPGN_CD` | `DIM_CAMPAIGN` · `DIM_MARKETING_CAMPAIGN` | 상위캠페인 · 브랜드 · 설명캠페인 |
+| `USP_D_SPNSR_BSNS_INFO` · 뷰 `D_SPNSR_BSNS_V` | `DIM_SPONSORSHIP` | 후원사업2 · 사업그룹 |
+| `USP_D_FDRM_MBER_INFO_CD` · `USP_D_ONCE_MBER_INFO_CD` · `USP_D_TNI_CU_MBER` | `DIM_MEMBER` · `DIM_MEMBER_IDENTITY` | 정기/일시 회원 속성 · 연령·성별·지역 |
+| `USP_D_MM_MBER_SPNSR_{FST,LST}_INFO` · `USP_D_MM_MBER_SPNSR_INFO` | `DIM_MEMBER_ACQUISITION` · `FACT_MEMBER_SPONSORSHIP_SPAN` | 최초·최종 후원 판정 |
+| `USP_D_MM_MBER_STRD_MT_INFO` · `USP_D_MM_MBER_SETLE_STRD_MT_INFO` | `FACT_MEMBER_MONTHLY` | 월 기준 회원 상태 |
+| `USP_D_STRD_DE_CD` · `USP_D_STRD_CAL_CD` | `DIM_DATE` · `DIM_MONTH` | 기준월·회계 캘린더 |
+| `USP_D_CMMN_DTL_CD` · 뷰 178(코드 라벨) | `DIM_CODE_GROUP` · 각 `*_NM` | 코드 라벨 정합 |
+| `USP_D_BPLC_CD` · `USP_D_RM_CHILD_RECIPT_CD` · `USP_D_NATION_CD` | `DIM_BIZ_PLACE` · `DIM_CHILD` | 사업장·아동 |
+| `USP_D_INSTT_ACNUT` · `USP_D_SETLE_CMPNY_ACNT_CD` | `DIM_PAYMENT_ACCOUNT` · `DIM_PAYMENT` | 납입 계좌·결제사 |
+| `USP_D_EVENT_CD` | `DIM_EVENT` | 행사 |
+| `USP_D_MBER_DVLP_GOAL_CD` | `FACT_TARGET_MEMBER_DEV` | 개발 목표 |
+
+### 3-2. 팩트 — 측정값 공식 대조 (우선순위 순)
+
+| 순 | MSTR | GOLD | 핵심 확인점 |
+|---|---|---|---|
+| 1 | `USP_F_MM_SPNSR_DVLP` · `_SUM` · `USP_F_MM_DEPT_ACMSLT` · `USP_F_RM_EXPL_ACMSLT_DEPT` | `FACT_MEMBER_EVENT`(DEV) · `FACT_MEMBER_DEV_ACHIEVEMENT` | 🔴 개발(건) 금액가중 · 실적부서 귀속 · 법인 · 개발구분 · 🟢 baseline 가능 |
+| 2 | `USP_F_MM_SPNSR_ACT` · `_UP` | `FACT_MEMBER_MONTHLY` · `FACT_MEMBER_EVENT`(STOP) | 활동·중단 판정 |
+| 3 | `USP_F_MM_JOIN_MBER` · `USP_F_MM_MBER_SURV` | `FACT_MEMBER_COHORT` · `DIM_MEMBER_ACQUISITION` | 가입·유지 |
+| 4 | `USP_F_PM_MBRFEE` · `USP_F_PM_NEW_OLD_MBRFEE` · `USP_F_PM_SPNSR_BSNS_MBRFEE` | `FACT_MEMBER_FEE` | 납입 · 신규/기존 |
+| 5 | `USP_F_MM_MBER_NPAY_SVC` · `USP_D_MM_MBER_NPAY_SVC` | `FACT_MEMBER_MONTHLY`(미납) | 미납 |
+| 6 | `USP_F_PM_SETLE_*` | `FACT_PAYMENT_METHOD_CHANGE` · `FACT_MEMBER_FEE` | 결제 결과 |
+| 7 | `USP_F_MSG` · `USP_F_MS_MSG_SUM` · `USP_F_MS_EMAIL` · `USP_F_PSTMTR` | `FACT_MESSAGE_DISPATCH` | 발송 |
+| 8 | `USP_F_RM_RELATNSP` · `USP_F_RM_CHILD` · `USP_F_RM_LETTER` | `FACT_RELATION_{DEV,CHANGE,ACTIVITY}` | 결연 |
+| 9 | `USP_F_EVENT` · `USP_F_MS_EVENT_SUM` | `FACT_EVENT_ATTENDANCE` | 행사 |
+
+### 3-3. 함수 · 뷰
+
+- `function_script.sql` FN 12 = 규칙 덩어리(후원사업 판정 등) ⇒ 전건 규칙 카드화(1차 이관 2건 포함).
+- `view_script.sql` 184 = 대부분 코드 라벨 뷰 ⇒ GOLD `*_NM` 라벨과 **집합 대조**(도구화 · 수작업 금지).
+
+## 4. 단계
+
+| 단계 | 할 일 | 산출물 | 정지점 |
+|---|---|---|---|
+| A0 | 인벤토리 생성 · 매핑표 초안(124 SP 전건 판정 코드 부여) | `01_MSTR_SP_인벤토리.md` 🟢 · `02_MSTR_GOLD_매핑표.md` | — |
+| A1 | 매체운영팀 건 선처리 — ㉠ 법인 ㉡ 실적부서 ㉢ 개발(건) 규칙 카드 3장 · GOLD 처방안 | `03_규칙카드/R01~R03` | 처방 확정 = 사용자 결정 |
+| A2 | 차원 대조(§3-1) — 컬럼·코드·계층 정의 | 규칙 카드 · 매핑표 판정 | — |
+| A3 | 팩트 측정값 대조(§3-2 순 1~9) | 규칙 카드 · 매핑표 판정 | 순 1 끝나면 중간 보고 |
+| A4 | 함수 12 · 라벨 뷰 184 대조(도구) | `tools/label_view_diff.py` · 결과표 | — |
+| A5 | 처방 반영안 — `06_DDL.sql` · dbt 모델 · `07_메타.md` · `02_지표 분류.md` · SV/Agent 라우팅 | 변경 diff 목록 · 현업 확인 항목(문서20 등재) | 🔴 라이브 DDL·SV 변경 승인 · 🔴 dbt = 사용자 실행 |
+| A6 | 검증 — MSTR baseline(데이터 있는 2종) 대조 · 매체운영팀 회귀 질의 · 나머지는 정의 대조로만 | `04_검증결과.md` | dbt 결과 수신 후 |
+| A7 | B안 인계 — `GOLD미보유` 행 집계 · silver 의존 확인 대상 목록 | `05_B안_백로그.md` | — |
+
+## 5. 작업량 추정 (객체 단위 · 시간 추정 없음)
+
+- 정독 대상 SP = 차원 약 20 · 팩트 정본 약 25(변형본 제외) · FN 12 ⇒ **약 57개 / 124**.
+- 도구 대조 = 라벨 뷰 184 · 대상 테이블 컬럼(table_script 119 중 대응분).
+- GOLD 수정 예상 = 테이블 15~20 · dbt 모델 같은 수준 · 메타 문서 2~3.
+- 🔴 값 검증은 MSTR 팩트 2종(개발 계열)만 가능 — 나머지 영역 「정의 일치」는 원본 대조 판정이다(값 일치 주장 금지).
+
+## 6. 결정 · 확인 필요 (착수 전/중)
+
+- 🟢 [2026-10-06 사용자 결정 · 재론 금지] 3건 확정 — 정본 = `03_규칙카드_A1.md` §0.
+  - ~~㉠ 법인 축을 어디에 둘지~~ ⇒ **MSTR 기준 = 후원사업 법인**(`DIM_SPONSORSHIP.CPR_DIV_*`) — `DIM_ORG.CORP` 보강안은 폐기(MSTR 이 부서 법인을 쓰지 않는다).
+  - ~~㉡ 개발(건) 교체 vs 병설~~ ⇒ **교체**(`DEV_CNT` = MSTR 인정금액 ÷ 10,000).
+  - ~~㉢ 합산 금지 유지 여부~~ ⇒ **유지**.
+- ~~㉠ 법인 축을 어디에 둘지 — `DIM_ORG.CORP` 보강 vs 팩트에 `CPR_DIV` 사건 시점 동결 컬럼.~~
+- ~~㉡ 개발(건) — GOLD `DEV_CNT` 를 MSTR `SPNSR_AMT_CNT` 와 같은 정의로 바꿀지, 별도 measure 로 병설할지.~~
+  - 관련 현업 요청서 = `05_SV-Agent_ai/41_현업요청서_MSTR반영_누계개발.md`(개발(건) 단위 · O202 사용자 결정으로 종결).
+- ~~㉢ 「GN_DW 지표와 MSTR 지표 합산 금지」 규칙(O201-C)과 A안 정합 — 정의를 맞춘 뒤에도 규칙을 유지할지.~~
+
+## 7. 진행 기록
+
+| 일자 | 라벨 | 내용 |
+|---|---|---|
+| 2026-10-06 | O202 | 폴더·계획 신설 · 인벤토리 도구 · `01_MSTR_SP_인벤토리.md` 생성(SP 124 = D 36 · F 74 · 기타 14 · 1차 이관 14) |
+| 2026-10-06 | O202 | 🟢 **A1 완료(파일)** — 규칙 카드 R01~R04 · dbt 5 모델 + yml 2 · SV 2 · DDL 정본 · 사전 검증 10개월 MSTR 전건 일치 · 🟠 dbt build·SV 재배포 = 사람 대기 |
+
+_Co-authored with CoCo_

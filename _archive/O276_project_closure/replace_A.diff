@@ -1,0 +1,18 @@
+--- a/70_reference/72_sample_legacy/README.md
++++ b/70_reference/72_sample_legacy/README.md
+@@ -57 +57 @@
+-> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
++> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `_archive/RESTRUCTURE_20261031-pre/00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
+--- a/90_provided_definition/00_README.md
++++ b/90_provided_definition/00_README.md
+@@ -35 +35 @@
+-   커버리지 분모를 재측정하기 전까지 숫자를 바꾸지 않는다(사유·파급 = `20_issue/20_현업확인_요청.md` **§N-5**).
++   커버리지 분모를 재측정하기 전까지 숫자를 바꾸지 않는다(사유·파급 = `_archive/O276_project_closure/20_issue/20_현업확인_요청.md` **§N-5**).
+@@ -44 +44 @@
+-> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
++> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `_archive/RESTRUCTURE_20261031-pre/00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
+--- a/90_provided_definition/07_추가_지표사전_20260813기준.md
++++ b/90_provided_definition/07_추가_지표사전_20260813기준.md
+@@ -85 +85 @@
+-**`20_issue/20_현업확인_요청.md` §N** 에 등재했다(지침 `R3-5` · 정본과 파생 분리).
++**`_archive/O276_project_closure/20_issue/20_현업확인_요청.md` §N** 에 등재했다(지침 `R3-5` · 정본과 파생 분리).

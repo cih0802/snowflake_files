@@ -1,0 +1,31 @@
+<!-- LLM-METADATA
+doc_id: PROMPT_O221
+doc_role: 다음 세션 착수 프롬프트 — 세션 O220 이 남기는 것
+project: GN_DW (굿네이버스)
+created: 2026-10-13
+created_by: O220-A
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+# 26_다음세션_착수프롬프트_O221
+
+> 작성 = O220-A (2026-10-13 · 개발계 ua91864).
+> 아래 블록을 새 세션 첫 메시지로 붙여 넣는다.
+
+```
+/init_ihcho
+개발계 = ua91864. 직전 인수인계 = 99_NEXT_SESSION_조각/99_NEXT_SESSION-O0220-A.md.
+이번 세션은 14차 Agent 개선 = 실시간 ML 시뮬레이터 확장(회원/LTV 가상 시나리오) 및 잔여 백로그 후속 검증이다. 승인이 필요한 작업은 단계마다 나에게 묻고 진행해라.
+
+0. 착수 점검(읽기 전용):
+   · 05_SV-Agent_ai/09_2_AGENT_버전업.sql [0] 사전점검이 0행인가
+   · cortex_project/agents/*/agent_spec.yaml 3종 ↔ 라이브 기본 버전 diff 0 인가
+   · BIZ_DEFINITION_CORPUS 2,158행, OPS_COLUMN_NULL_REGISTRY 166행, SV_ML_REALTIME_SIMULATOR 실재 확인
+1. 후속 및 잔여 백로그 과제 검토/착수:
+   · Step 1: 12_agent개선과제/20_O21X_잔여작업_정리.md 열린 항목(#12 eval 재측정, #14 inspection 등) 검토
+   · Step 2: 실시간 ML 시뮬레이터 시나리오 고도화 또는 모니터링 객체(08_mornitoring 05~07) 배포 검토
+   · Step 3: dbt 파이프라인 drift 점검 및 테스트 스위트 실행
+2. 끝나면 세션을 정리하고(인수인계 라벨 파일 · 세션이력 · 원장 행) 다음 세션 프롬프트를 만들어라.
+```
+
+_Co-authored with CoCo_

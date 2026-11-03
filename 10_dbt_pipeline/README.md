@@ -3,13 +3,14 @@ doc_id: DBT_PIPELINE_README
 doc_role: 폴더 안내 — 10_dbt_pipeline 역할·구성·문서 읽는 순서 (진입점)
 project: GN_DW (굿네이버스)
 created: 2026-07-16
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 END-METADATA -->
 
 # 10_dbt_pipeline — 폴더 안내 (README)
 
 > GN_DW(굿네이버스) 데이터웨어하우스의 **dbt 파이프라인 프로젝트**와 그 **운영·성능·핸드오프 문서**를 담는 폴더입니다.
-> 이슈·설계 원장은 별도 폴더 `20_issue/`에 있으며, 본 폴더 문서는 그 원장과 상호 연동됩니다.
+> 이슈·설계 원장은 별도 폴더 `_archive/O276_project_closure/20_issue/`에 있으며, 본 폴더 문서는 그 원장과 상호 연동됩니다.
+> 🆕 [O276 · 2026-11-02] `20_issue/` = `_archive/O276_project_closure/20_issue/` (프로젝트 종료 이동 · 🆕 [O277] 이 폴더의 md 4종은 새 경로로 치환 완료(원본 = `_archive/O277_dbt_md_pre/`) · SQL·YAML 주석의 `20_issue/…` 는 재배포 diff 를 피하려고 치환하지 않음).
 
 ---
 
@@ -54,14 +55,14 @@ END-METADATA -->
 
 | 문서 | 역할 |
 |---|---|
-| `20_issue/00_INDEX_이슈원장.md` | 이슈 원장 허브·상태 대시보드·크로스워크 |
-| `20_issue/10_진단_원인분석.md` | 진단패턴·핵심교훈·트랙 착수게이트 |
-| `20_issue/20_현업확인_요청.md` | 현업 회신 대기 항목·의심데이터 A~E |
-| `20_issue/30_설계_의사결정.md` | D1~D3·결정대기 GOLD·설계 트리거 |
-| `20_issue/40_입고대기_원천의존.md` | 외부 원천 하드블로커(G-5·E-1·E-4·E-6 등) |
-| `20_issue/41_입고요청서_CRM_BIZ_TARGET.md` (+`_BRONZE_DDL.sql`) | E-6 입고요청서·BRONZE DDL 제안 |
-| `20_issue/50_dbt_파이프라인_미결조치.md` | BLOCKING·DONE·warn→error 복귀 추적표 |
-| `20_issue/90_해소완료_로그.md` | 닫힌 항목 이력 |
+| `_archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md` | 이슈 원장 허브·상태 대시보드·크로스워크 |
+| `_archive/O276_project_closure/20_issue/10_진단_원인분석.md` | 진단패턴·핵심교훈·트랙 착수게이트 |
+| `_archive/O276_project_closure/20_issue/20_현업확인_요청.md` | 현업 회신 대기 항목·의심데이터 A~E |
+| `_archive/O276_project_closure/20_issue/30_설계_의사결정.md` | D1~D3·결정대기 GOLD·설계 트리거 |
+| `_archive/O276_project_closure/20_issue/40_입고대기_원천의존.md` | 외부 원천 하드블로커(G-5·E-1·E-4·E-6 등) |
+| `_archive/O276_project_closure/20_issue/41_입고요청서_CRM_BIZ_TARGET.md` (+`_BRONZE_DDL.sql`) | E-6 입고요청서·BRONZE DDL 제안 |
+| `_archive/O276_project_closure/20_issue/50_dbt_파이프라인_미결조치.md` | BLOCKING·DONE·warn→error 복귀 추적표 |
+| `_archive/O276_project_closure/20_issue/90_해소완료_로그.md` | 닫힌 항목 이력 |
 
 ---
 
@@ -108,13 +109,13 @@ _Co-authored with CoCo_
 
 ## 🔖 [2026-08-05 세션 반영] O38-E · O39 · O40 · O40-B
 
-> 정본 = `20_issue/10_진단_원인분석.md` **§22-J(O38-E) · §23(O39) · §24(O40)** · 신규 원칙 **P77~P82**.
+> 정본 = `_archive/O276_project_closure/20_issue/10_진단_원인분석.md` **§22-J(O38-E) · §23(O39) · §24(O40)** · 신규 원칙 **P77~P82**.
 
 ### 🔴 `gold.fact` 에 `on_schema_change: fail` 적용 (O40-B · P82)
 
 **왜**: 기본값 `ignore` 는 모델에 있고 대상 테이블에 없는 컬럼을 **에러도 워닝도 없이 버린다.**
-🟢 **WARN 내역 정본** = `20_issue/50_dbt_파이프라인_미결조치.md` §WARN 27건 전량 목록 ·
-근본원인 = `20_issue/00_INDEX_이슈원장.md` O41 §잔여① (고아 회원 9,247명 단일 원인 · 실결함은 `PART_STATUS` 1건뿐).
+🟢 **WARN 내역 정본** = `_archive/O276_project_closure/20_issue/50_dbt_파이프라인_미결조치.md` §WARN 27건 전량 목록 ·
+근본원인 = `_archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md` O41 §잔여① (고아 회원 9,247명 단일 원인 · 실결함은 `PART_STATUS` 1건뿐).
 
 이번에 실제로 겪었다 — O40 에서 컬럼 2종을 추가하고 build 가 `PASS=370 WARN=27 ERROR=0 SKIP=0` 으로
 끝났는데 `INSERT` 가 대상 테이블의 **56컬럼만** 써서 신규 컬럼이 생기지 않았다.

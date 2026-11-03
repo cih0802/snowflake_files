@@ -2,13 +2,13 @@
 doc_role: 상위 폴더 안내 — 60_share
 created: 2026-11-01
 created_by: O275-C
-related: 00_WORKSPACE_MAP.md · MOVE_MAP.csv
+related: 00_WORKSPACE_MAP.md · _archive/RESTRUCTURE_20261031-pre/MOVE_MAP.csv
 END-METADATA -->
 
 # 60_share — 공유
 
 > 목적 = 공유 — 산출물 공유본 · 현업 의사결정 회신.
-> 옛 경로 → 새 경로 대조 = 루트 `MOVE_MAP.csv`(요약) · `MOVE_MAP_files.csv`(파일 단위).
+> 옛 경로 → 새 경로 대조 = 루트 `_archive/RESTRUCTURE_20261031-pre/MOVE_MAP.csv`(요약) · `_archive/RESTRUCTURE_20261031-pre/MOVE_MAP_files.csv`(파일 단위).
 
 | 하위 폴더 | 옛 경로(O275 이전) | 파일 수 | 안내 파일 |
 |---|---|---|---|

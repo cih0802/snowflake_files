@@ -9,17 +9,17 @@
 --   · 이후 스펙 변경(버전업)은 `09_2_AGENT_버전업.sql` 의 AGENT_MSTR 블록으로 한다(이 파일은 최초 배포용).
 --
 -- ▶ 설계 근거(원문 인용 · 좌표) — 판정보다 먼저 기록(R1-3-7-c)
---   ① 배치안 = `99_NEXT_SESSION_조각/99_NEXT_SESSION-O0199-A.md:65-69`
+--   ① 배치안 = `_archive/O276_project_closure/99_NEXT_SESSION_조각/99_NEXT_SESSION-O0199-A.md:65-69`
 --      "MSTR Agent = 신설 4번째 · 도구 재사용 구조" · "현업 승인 후 기존 Agent 에 같은 SV 를 도구로 추가한다(SV 복사 금지)"
 --      · "같은 지표가 GN_DW 와 MSTR 에서 정의가 다를 수 있다 ⇒ 도구 description 에 「MSTR 기준」 명시 · 한 표 합산 금지 규칙"
 --      ⇒ 2026-10-03 사용자 지시(「이어서 할 순서로 진행」)로 집행.
 --   ② 소유 모델 = `02_GN_DW_building/07_ENVIRONMENT_RBAC_setup.sql:38`
 --      "GN_DW DB 트리(DB·스키마·테이블/뷰·SV·Agent·DBT PROJECT) = GN_DW_ADMIN 소유(SYSADMIN 하위)."
---   ③ 같은 사고의 재발 = `20_issue/10_진단_원인분석_조각/10_진단_원인분석-015.md:57-61`
+--   ③ 같은 사고의 재발 = `_archive/O276_project_closure/20_issue/10_진단_원인분석_조각/10_진단_원인분석-015.md:57-61`
 --      "SV 를 `ACCOUNTADMIN` 으로 생성해 소유권이 다른 7종과 어긋났다." ·
 --      "ACCOUNTADMIN 으로 만들면 소유권이 어긋나 이후 재배포가 권한 오류로 막힌다" ·
 --      "✅ `GRANT OWNERSHIP ... COPY CURRENT GRANTS` 로 교정"
---   ④ 처방 패턴 = `20_issue/10_진단_원인분석_조각/10_진단_원인분석-001.md:107`
+--   ④ 처방 패턴 = `_archive/O276_project_closure/20_issue/10_진단_원인분석_조각/10_진단_원인분석-001.md:107`
 --      "생성 후 `GRANT OWNERSHIP ON AGENT … TO ROLE GN_DW_ADMIN COPY CURRENT GRANTS`로 소유권 이전(SV owner와 정합)."
 --   ⑤ Agent 최초 생성은 09_1, 버전업은 09_2 = `05_SV-Agent_ai/09_2_AGENT_버전업.sql:236`
 --      "`09_1` 을 먼저 돌려 Agent 3종을 만든 뒤 이 파일을 실행한다"

@@ -582,7 +582,7 @@
 --   · ⚠️ 월 팩트 `PLAN` 합(44.7B)은 **2024 월 배분 0**(원천 BRONZE 월 12컬럼 전건 0) 때문이며 결함이 아니다 ⇒ 규칙 (5).
 --   ⇒ `TOTAL_EXEC_BUDGET`·`EXEC_RATE` 인용 금지 조항(아래 27행)도 함께 해제된다. 아래는 이력이다.
 -- 🔴🔴 **[2026-08-29 O118] 이 SV 는 「보류」다 — metric 을 확정하지 말고 아래를 먼저 읽어라.**
---   🟢 정본 = `04_SV_설계.md` **§0.9-D·§0.9-E** · `20_issue/30_설계_의사결정.md` **§30-G**(`DEC-44`).
+--   🟢 정본 = `04_SV_설계.md` **§0.9-D·§0.9-E** · `_archive/O276_project_closure/20_issue/30_설계_의사결정.md` **§30-G**(`DEC-44`).
 --
 --   ▶ 무엇이 문제인가 (실측)
 --     `TOTAL_EXEC_BUDGET = SUM(fbd.EXEC_BUDGET_ERP)` 가 **예산 편성 차수를 이중계상**한다.
@@ -1241,7 +1241,7 @@
 --   `04_SV_설계.md` §0.3 가산성 · §0.8 DEC-34(base 선택) · §1~6 SV구조 · **§6.9 구조적 제약**
 --   `03_SV_metric_배속.md` 지표별 분자/분모 직역 · **§8.5 미해결 + §8.5.1 근거 쿼리**
 --   `01_SV-Agent 작업계획.md` §3 3단계 · 원칙10(fan-out) · R1·R5 가산성 · 원칙6 한글 synonyms
---   `20_issue/00_INDEX_이슈원장.md` 이슈·교훈 정본(작업 완료의 정본은 원장이다 · P107)
+--   `_archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md` 이슈·교훈 정본(작업 완료의 정본은 원장이다 · P107)
 -- ============================================================================
 
 
@@ -1320,11 +1320,11 @@ SHOW GRANTS ON VIEW GN_DW.GOLD.WIDE_AD_COMBINED;
 --      · **현재 정본을 가리키는 곳**은 성격별로 교정했다 —
 --        인덱스·공통규약·전체검증 → `05_0_SV_DDL.sql` / SV 정의·배포 → `05_1`~`05_9_SV_DDL_*.sql`.
 --        대상: `02_GN_DW_building/06_RUNBOOK.md`·`08_After_Deploy_DBT.sql`·`07_ENVIRONMENT_RBAC_setup.sql` ·
---        `10_dbt_pipeline/deploy_dbt_project.sql` · `99_NEXT_SESSION.md` ·
+--        `10_dbt_pipeline/deploy_dbt_project.sql` · `_archive/O276_project_closure/99_NEXT_SESSION.md` ·
 --        `05_SV-Agent_ai/` 의 `00_README`·`01_작업계획`·`04_SV_설계`·`06_검증쿼리_VQR`·`07_평가셋_eval`·
 --        `08_AGENT_spec`·`09_1`·`09_2`·`12_paid_테스트_실행가이드`·`99_next_prompt`.
 --      · **이력 서술**은 구 파일명을 남기고 아카이브 경로를 병기했다(사실 기록이므로 보존).
---        이슈문서(20_issue/00·10·30)의 언급도 이력이므로 손대지 않는다.
+--        이슈문서(_archive/O276_project_closure/20_issue/00·10·30)의 언급도 이력이므로 손대지 않는다.
 --      · DEPRECATED 스텁(`13_SV_AD_배포_추가작업.sql`·`09_AGENT_spec_구현.sql`)은 실행 대상이 아니라
 --        회수하지 않았다(문서10 §20-G — 실행 금지 파일이다).
 -- ============================================================================

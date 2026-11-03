@@ -7,7 +7,7 @@ depends_on: 05_1~05_9_SV_DDL_*.sql(배포), 06_검증쿼리_VQR.md(VQR·custom i
 scope: Phase-1 배포 5 SV
 ground_truth_asof: **2026-08-10 (O57 전량 재실행)** — 종전 2026-07-22 스냅샷을 교체했다. 재실행 25문항 = 일치 14 · 불일치 11.
   불일치는 두 원인으로 전량 규명됐다: ㉠ O24 `DEV_CNT` 정본 교정 미반영 **7건**(폐기값 고정 = P156 재발) ㉡ 예산 3개년 적재·집행 갱신 **4건**(3계층 정확 일치 = 결함 아님).
-  경위·근거 정본 = `20_issue/00_INDEX_이슈원장.md` §O57.
+  경위·근거 정본 = `_archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md` §O57.
 END-METADATA -->
 
 # 4단계 — 평가셋 (eval set)

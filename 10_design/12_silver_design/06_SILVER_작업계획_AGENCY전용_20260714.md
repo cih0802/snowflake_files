@@ -114,7 +114,7 @@ END-METADATA -->
 
 ### 6-B. 광고 팩트군 재설계 — 8객체 (2026-07-28 순서9-I · DEC-8~11)
 
-> 근거: `03_top-down_gold/03_테이블 설계.md §3-A` · `20_issue/10_진단_원인분석.md §8-I` · `20_issue/30_설계_의사결정.md §1-A`
+> 근거: `03_top-down_gold/03_테이블 설계.md §3-A` · `_archive/O276_project_closure/20_issue/10_진단_원인분석.md §8-I` · `_archive/O276_project_closure/20_issue/30_설계_의사결정.md §1-A`
 > ⚠️ §0~§5 의 "AGENCY 3객체" 기술은 이 재설계 **이전** 상태다. 현행 = **8객체**.
 
 구성: **staging 3**(무손실 전컬럼 보존 + `AD_PERF_DK` 발급) → **코어 2** → **위성 3**

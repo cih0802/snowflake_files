@@ -83,11 +83,11 @@ SELECT COUNT(*) FROM GN_DW.GOLD.FACT_BIGQUERY_SESSION;
 --   ① 20_build/23_sv_agent/05_04_SV_DDL_SERVICE.sql (D5_GIFT_AMT · 규칙 (5) O241)
 --   ② 20_build/23_sv_agent/05_12_SV_DDL_RELATION_ACTIVITY.sql (TOTAL_GIFT_AMT 동의어 · COMMENT)
 --   ③ 20_build/23_sv_agent/05_20_SV_DDL_GA_SESSION.sql (AVG_SESSION_DURATION_SEC · 규칙 (6) · VQR)
---    [D3-②] ⑥ 동의어 배선(지표번호 토큰 '공NN'·'신규NN' 만 추가 · 판정표 tmp/o241/wiring_decisions.tsv) —
+--    [D3-②] ⑥ 동의어 배선(지표번호 토큰 '공NN'·'신규NN' 만 추가 · 판정표 _archive/O276_project_closure/tmp/o241/wiring_decisions.tsv) —
 --      아래 17파일도 각각 전체 실행(위 3파일 포함 총 20파일 · 문법 = 임시 이름 생성 검증 19/19 PASS · 05_12 는 토큰 대상 아님):
 --      05_01 · 05_02 · 05_03 · 05_06 · 05_07(CTR COMMENT 수치 제거 포함) · 05_08 · 05_09 · 05_10 · 05_11 ·
 --      05_13 · 05_15 · 05_17 · 05_18 · 05_19 · 05_24 · 05_25 · 05_26
---      롤백 = tmp/o241/bak/*.O241-before 를 정본 자리로 되돌린 뒤 재실행
+--      롤백 = _archive/O276_project_closure/tmp/o241/bak/*.O241-before 를 정본 자리로 되돌린 뒤 재실행
 --   ④ D3 확인 — 세 파일 실행 후 주석을 풀어 실행:
 -- SELECT * FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_SERVICE METRICS fse.D5_GIFT_AMT); -- 기대 1,303,750,000
 -- SELECT * FROM SEMANTIC_VIEW(GN_DW.SERVING.SV_GA_SESSION

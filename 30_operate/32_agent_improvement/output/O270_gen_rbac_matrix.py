@@ -8,7 +8,7 @@ FR = [('마케팅', 'GN_DW_FR_MARKETING', {'COMMON', 'AGENCY', 'ERP', 'AGENCY+ER
 rows = [r for r in csv.DictReader(open(W + '/12_agent개선과제/output/O270_source_class.csv', encoding='utf-8'))
         if r['layer'] in ('GOLD', 'SERVING')]
 L = ['<!-- LLM-METADATA', 'doc_id: O270_RBAC_MATRIX', 'doc_role: 자동 생성물 — 객체 × 기능 역할 권한 매트릭스(손으로 고치지 마라)',
-     'project: GN_DW (굿네이버스)', 'created: 2026-10-30', 'created_by: O270-F', 'index: 20_issue/00_INDEX_이슈원장.md', 'END-METADATA -->', '',
+     'project: GN_DW (굿네이버스)', 'created: 2026-10-30', 'created_by: O270-F', 'index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md', 'END-METADATA -->', '',
      '# O270 권한 매트릭스(객체 × 기능 역할)', '',
      '> 🔴 자동 생성물 — 생성기 = `12_agent개선과제/output/O270_gen_rbac_matrix.py` · 정본 = `output/O270_source_class.csv`',
      '> ✅ = SELECT 가능 · — = 권한 없음 · 팀장 = Streamlit 전용(SV·테이블·Agent 0)', '',

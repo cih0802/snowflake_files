@@ -1,0 +1,607 @@
+/*
+    보고서
+      5. 회비예측 > 01. 회비예측(월마감)
+      > 3. 후원사업별 감액회원 신규기존구분
+
+    목적
+      - MSTR_DW / MART 객체를 전혀 참조하지 않고 MSTR_ODS 원천만 사용
+      - MART.F_MM_SPNSR_ACT의 보고서용 6개 지표 재현
+
+    2026년 1월 DW 월마감 참고값 (@STRD_MT = '202601', @CPR_DIV_CD = 'I')
+      활동 팩트 행       : 689,677
+      활동회원 수        : 616,418
+      활동 후원 건수     : 1,316,513.49050015
+      감액 팩트 행       : 1,316
+      감액회원 수        : 1,316
+      감액 건수          : 2,923.3702
+
+    중요
+      - 감액 건수는 행 수가 아니라 ABS(감액금액 / 10000.0)의 합계다.
+      - 신규/기존은 회원 최초등록일과 후원 최초등록일의 연도가 모두
+        기준연도와 같은 경우만 '1'(신규), 나머지는 '2'(기존)다.
+      - VM_PM_SETLE_INFO의 현재/이력을 그대로 조인하지 않는다.
+        회원+법인별 SETLE_KEY 내림차순 1건만 사용한다.
+      - 월 시점 비교식과 핵심 집계식은 기존 DW 함수/프로시저와 동일하게 유지했다.
+      - 기존 감액 함수는 SPNSR_NO 동률의 대표행 선택 기준이 없어서 실행마다
+        법인/후원사업 귀속이 달라질 수 있다. 동률일 때는 가장 최근 발생일과
+        가장 큰 SER_NO, SPNSR_BSNS_NO 순으로 선택해 ODS 결과를 결정적으로 만든다.
+
+    과거 DW와의 구조적 차이
+      - DW는 월마감 당시의 팩트/부서를 저장하지만 이 쿼리는 현재 ODS로 과거를 재계산한다.
+      - ODS 원천과 후원 마스터에는 과거 수정 상태를 복원할 수정일/이력 정보가 없다.
+      - 따라서 월마감 후 원천 분할·수정 및 부서 변경분은 과거 DW와 정확히 같아질 수 없다.
+*/
+
+USE MSTR_ODS;
+GO
+
+SET NOCOUNT ON;
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+DECLARE @STRD_MT       CHAR(6)    = '202601';
+DECLARE @CPR_DIV_CD    VARCHAR(10) = 'I';
+DECLARE @DEBUG         BIT         = 0;  -- 1: 202601/I 참고 대사 결과도 출력
+DECLARE @YEAR_START_MT CHAR(6)    = LEFT(@STRD_MT, 4) + '01';
+DECLARE @MONTH_31      CHAR(8)    = @STRD_MT + '31';
+DECLARE @MONTH_END     DATE       = DATEADD(DAY, -1, DATEADD(MONTH, 1, CONVERT(DATE, @STRD_MT + '01')));
+DECLARE @SETLE_CUTOFF  DATE       = DATEADD(DAY, 1, DATEADD(MONTH, 1, CONVERT(DATE, @STRD_MT + '01')));
+
+IF @STRD_MT NOT LIKE '[12][0-9][0-9][0-9][01][0-9]'
+   OR RIGHT(@STRD_MT, 2) NOT BETWEEN '01' AND '12'
+BEGIN
+    THROW 50001, N'@STRD_MT는 YYYYMM 형식의 유효한 기준년월이어야 합니다.', 1;
+END;
+
+DROP TABLE IF EXISTS #DEPT_MAP;
+DROP TABLE IF EXISTS #DEPT4_DIM;
+DROP TABLE IF EXISTS #CPR_DIM;
+DROP TABLE IF EXISTS #BUSINESS_DIM;
+DROP TABLE IF EXISTS #MEMBER_MONTH;
+DROP TABLE IF EXISTS #SETLE_MONTH;
+DROP TABLE IF EXISTS #ACTIVE_MEMBER;
+DROP TABLE IF EXISTS #DECREASE_FACT;
+DROP TABLE IF EXISTS #ACTIVE_FACT;
+DROP TABLE IF EXISTS #MONTH_DECREASE;
+DROP TABLE IF EXISTS #YTD_DECREASE;
+DROP TABLE IF EXISTS #MONTH_ACTIVE;
+
+/* -------------------------------------------------------------------------
+   1. 실적부서 -> DEPT4 매핑
+      MART.D_CM_DEPT_INFO + MART.D_DEPT_CD의 보고서용 최소 재현
+   ------------------------------------------------------------------------- */
+SELECT
+    E.DEPT_ID AS SRC_DEPT_ID,
+    D.DEPT_ID AS DEPT2_ID,
+    C.DEPT_ID AS DEPT3_ID,
+    B.DEPT_ID AS DEPT4_ID
+INTO #DEPT_MAP
+FROM dbo.TM_CM_DEPT_INFO A
+JOIN dbo.TM_CM_DEPT_INFO B
+  ON B.ACMSLT_UPPER_DEPT_ID = A.DEPT_ID
+JOIN dbo.TM_CM_DEPT_INFO C
+  ON C.ACMSLT_UPPER_DEPT_ID = B.DEPT_ID
+JOIN dbo.TM_CM_DEPT_INFO D
+  ON D.ACMSLT_UPPER_DEPT_ID = C.DEPT_ID
+JOIN dbo.TM_CM_DEPT_INFO E
+  ON E.ACMSLT_UPPER_DEPT_ID = D.DEPT_ID
+WHERE A.UPPER_DEPT_ID = 'ZV000000'
+  AND C.DEPT_ID <> 'ZC000029';
+
+INSERT INTO #DEPT_MAP
+(
+    SRC_DEPT_ID,
+    DEPT2_ID,
+    DEPT3_ID,
+    DEPT4_ID
+)
+VALUES ('Z~', 'Z~', 'Z~', 'Z~');
+
+CREATE INDEX IX_DEPT_MAP_SRC
+    ON #DEPT_MAP (SRC_DEPT_ID);
+
+/* MART.D_DEPT4_CD 재현: 결과 표시용 명칭/정렬순서 */
+SELECT
+    B.DEPT_ID AS DEPT4_ID,
+    B.DEPT_NM AS DEPT4_NM,
+    B.SORT_ORDR
+INTO #DEPT4_DIM
+FROM dbo.TM_CM_DEPT_INFO A
+JOIN dbo.TM_CM_DEPT_INFO B
+  ON B.ACMSLT_UPPER_DEPT_ID = A.DEPT_ID
+WHERE A.UPPER_DEPT_ID = 'ZV000000'
+  AND A.USE_YN = 'Y';
+
+INSERT INTO #DEPT4_DIM
+(
+    DEPT4_ID,
+    DEPT4_NM,
+    SORT_ORDR
+)
+VALUES ('Z~', N'없음', 999);
+
+CREATE INDEX IX_DEPT4_DIM_ID
+    ON #DEPT4_DIM (DEPT4_ID);
+
+/* MART.D_CPR_DIV_CD 재현 */
+SELECT DISTINCT
+    D.DTL_CD_ID AS CPR_DIV_CD,
+    D.DTL_CD_NM AS CPR_DIV_NM,
+    D.SORT_ORDR
+INTO #CPR_DIM
+FROM dbo.TC_CMMN_CD C
+JOIN dbo.TC_CMMN_DTL_CD D
+  ON C.CD_ID = D.CD_ID
+WHERE D.CD_ID = 'CM019';
+
+CREATE INDEX IX_CPR_DIM_ID
+    ON #CPR_DIM (CPR_DIV_CD);
+
+/* -------------------------------------------------------------------------
+   2. 후원사업 차원
+      MART.D_SPNSR_BSNS_INFO의 법인 변환을 동일하게 적용
+   ------------------------------------------------------------------------- */
+SELECT
+    S.SPNSR_BSNS_ID,
+    S.SPNSR_BSNS_NM,
+    S.SPNSR_BSNS_ABRV_CD,
+    S.SORT_ORDR,
+    CASE
+        WHEN S.CPR_DIV_CD = '1' THEN 'I'
+        WHEN S.CPR_DIV_CD = '2' THEN 'S'
+        ELSE S.CPR_DIV_CD
+    END AS CPR_DIV_CD
+INTO #BUSINESS_DIM
+FROM dbo.TM_CM_SPNSR_BSNS_INFO S;
+
+CREATE INDEX IX_BUSINESS_DIM_ID
+    ON #BUSINESS_DIM (SPNSR_BSNS_ID);
+
+/* -------------------------------------------------------------------------
+   3. 기준월 회원 시점정보 중 보고서에 필요한 컬럼
+      D_MM_MBER_STRD_MT_INFO는 회원 최초등록일을 그대로 사용한다.
+   ------------------------------------------------------------------------- */
+SELECT
+    M.MBER_NO,
+    M.FRST_REGIST_DT
+INTO #MEMBER_MONTH
+FROM dbo.TM_MM_FDRM_MBER_INFO M
+WHERE CONVERT(CHAR(6), M.FRST_REGIST_DT, 112) <= @STRD_MT;
+
+CREATE INDEX IX_MEMBER_MONTH_NO
+    ON #MEMBER_MONTH (MBER_NO);
+
+/* -------------------------------------------------------------------------
+   4. 기준월 결제정보
+      dbo.VM_PM_SETLE_INFO와 동일한 현재/이력 UNION ALL 후,
+      회원+법인별 SETLE_KEY가 가장 큰 행 1건만 선택한다.
+
+      @SETLE_CUTOFF는 기존 DW 프로시저의
+      DATEADD(DD, 1, DATEADD(MM, 1, @STRD_MT + '01'))을 그대로 유지한다.
+   ------------------------------------------------------------------------- */
+SELECT
+    X.MBER_NO,
+    X.CPR_DIV_CD
+INTO #SETLE_MONTH
+FROM
+(
+    SELECT
+        U.MBER_NO,
+        U.CPR_DIV_CD,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY U.MBER_NO, U.CPR_DIV_CD
+            ORDER BY U.SETLE_KEY DESC
+        ) AS RNUM
+    FROM
+    (
+        SELECT
+            C.SETLE_KEY,
+            C.MBER_NO,
+            C.CPR_DIV_CD,
+            C.FRST_REGIST_DT
+        FROM dbo.TM_PM_SETLE_INFO C
+
+        UNION ALL
+
+        SELECT
+            H.SETLE_KEY,
+            H.MBER_NO,
+            H.CPR_DIV_CD,
+            H.REGIST_DT AS FRST_REGIST_DT
+        FROM dbo.TH_PM_SETLE_INFO_HIST H
+    ) U
+    WHERE U.FRST_REGIST_DT <= @SETLE_CUTOFF
+) X
+WHERE X.RNUM = 1;
+
+CREATE INDEX IX_SETLE_MONTH_MEMBER_CPR
+    ON #SETLE_MONTH (MBER_NO, CPR_DIV_CD);
+
+/* -------------------------------------------------------------------------
+   5. 기준월 활동회원 목록
+      dbo.FN_MM_ACT_DATE(@STRD_MT)를 ODS 원천으로 재현
+   ------------------------------------------------------------------------- */
+;WITH LAST_DSCNTC AS
+(
+    SELECT
+        D.MBER_NO,
+        D.SPNSR_DSCNTC_DE,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY D.MBER_NO
+            ORDER BY D.SPNSR_DSCNTC_DE DESC
+        ) AS RNUM
+    FROM dbo.TM_MM_FDRM_MBER_SPNSR_DSCNTC D
+    WHERE D.SPNSR_DSCNTC_DE <= @MONTH_31
+),
+LAST_RE_SPNSR AS
+(
+    SELECT
+        R.MBER_NO,
+        R.RE_SPNSR_DE,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY R.MBER_NO
+            ORDER BY R.RE_SPNSR_DE DESC
+        ) AS RNUM
+    FROM dbo.TM_MM_FDRM_MBER_RE_SPNSR R
+    WHERE R.RE_SPNSR_DE <= @MONTH_31
+),
+LAST_ACTIVITY_DATE AS
+(
+    SELECT
+        D.MBER_NO,
+        D.SPNSR_DSCNTC_DE,
+        R.RE_SPNSR_DE,
+        CASE
+            WHEN R.RE_SPNSR_DE IS NULL
+                THEN DATEADD(DAY, -1, CONVERT(DATE, D.SPNSR_DSCNTC_DE, 112))
+            WHEN D.SPNSR_DSCNTC_DE > R.RE_SPNSR_DE
+                THEN DATEADD(DAY, -1, CONVERT(DATE, D.SPNSR_DSCNTC_DE, 112))
+            WHEN R.RE_SPNSR_DE < CONVERT(CHAR(8), @MONTH_END, 112)
+                THEN @MONTH_END
+            ELSE CONVERT(DATE, R.RE_SPNSR_DE, 112)
+        END AS ACTUAL_DT
+    FROM LAST_DSCNTC D
+    LEFT JOIN LAST_RE_SPNSR R
+      ON D.MBER_NO = R.MBER_NO
+     AND R.RNUM = 1
+    WHERE D.RNUM = 1
+),
+HAS_LIVE_SPONSOR AS
+(
+    SELECT DISTINCT
+        S.MBER_NO
+    FROM dbo.TM_MM_FDRM_MBER_SPNSR S
+    JOIN dbo.TM_MM_FDRM_MBER_SPNSR_BSNS B
+      ON S.SPNSR_NO = B.SPNSR_NO
+    WHERE CONVERT(CHAR(8), S.FRST_REGIST_DT, 112) <= @MONTH_31
+      AND ISNULL(B.SPNSR_DSCNTC_DE, '99991231') > @MONTH_31
+)
+SELECT
+    M.MBER_NO
+INTO #ACTIVE_MEMBER
+FROM dbo.TM_MM_FDRM_MBER_INFO M
+JOIN HAS_LIVE_SPONSOR L
+  ON M.MBER_NO = L.MBER_NO
+LEFT JOIN LAST_ACTIVITY_DATE A
+  ON M.MBER_NO = A.MBER_NO
+WHERE @MONTH_END BETWEEN CONVERT(DATE, M.FRST_REGIST_DT)
+                     AND CONVERT(DATE, ISNULL(A.ACTUAL_DT, '9999-12-31'));
+
+CREATE INDEX IX_ACTIVE_MEMBER_NO
+    ON #ACTIVE_MEMBER (MBER_NO);
+
+/* -------------------------------------------------------------------------
+   6. 당월/당해연도 감액 팩트
+      FN_MM_SPNSR_DVLP의 감액 분기
+        - 개발구분 2,3을 회원+월로 합산
+        - 월 합계가 음수인 회원만 감액
+        - 회원+월별 SPNSR_NO 내림차순 첫 행에 전체 감액금액 귀속
+   ------------------------------------------------------------------------- */
+;WITH DECREASE_SOURCE AS
+(
+    SELECT
+        LEFT(A.OCCRRNC_DE, 6) AS STRD_MT,
+        A.OCCRRNC_DE,
+        A.SPNSR_NO,
+        A.SPNSR_BSNS_NO,
+        A.SER_NO,
+        A.MBER_NO,
+        A.ACMSLT_DEPT_CD,
+        A.SPNSR_BSNS_ID,
+        SUM(A.SPNSR_AMT) OVER
+        (
+            PARTITION BY A.MBER_NO, LEFT(A.OCCRRNC_DE, 6)
+        ) AS MAMT,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY A.MBER_NO, LEFT(A.OCCRRNC_DE, 6)
+            ORDER BY
+                A.SPNSR_NO DESC,
+                A.OCCRRNC_DE DESC,
+                A.SER_NO DESC,
+                A.SPNSR_BSNS_NO DESC
+        ) AS SNUM
+    FROM dbo.TM_MM_FDRM_MBER_DVLP_AMT A
+    WHERE A.DVLP_DIV_CD IN ('2', '3')
+      AND LEFT(A.OCCRRNC_DE, 6) BETWEEN @YEAR_START_MT AND @STRD_MT
+)
+SELECT
+    D.STRD_MT,
+    D.SPNSR_NO,
+    D.SPNSR_BSNS_NO,
+    D.MBER_NO,
+    D.SPNSR_BSNS_ID,
+    B.CPR_DIV_CD,
+    MAP.DEPT4_ID,
+    CASE
+        WHEN CONVERT(CHAR(4), M.FRST_REGIST_DT, 112) = LEFT(@STRD_MT, 4)
+         AND CONVERT(CHAR(4), S.FRST_REGIST_DT, 112) = LEFT(@STRD_MT, 4)
+            THEN '1'
+        ELSE '2'
+    END AS NEW_OLD_DIV_CD,
+    D.MAMT AS SPNSR_AMT,
+    D.MAMT / 10000.0 AS SPNSR_AMT_CNT
+INTO #DECREASE_FACT
+FROM DECREASE_SOURCE D
+JOIN #MEMBER_MONTH M
+  ON D.MBER_NO = M.MBER_NO
+JOIN #BUSINESS_DIM B
+  ON D.SPNSR_BSNS_ID = B.SPNSR_BSNS_ID
+JOIN dbo.TM_MM_FDRM_MBER_SPNSR S
+  ON D.MBER_NO = S.MBER_NO
+ AND D.SPNSR_NO = S.SPNSR_NO
+LEFT JOIN #DEPT_MAP MAP
+  ON ISNULL(D.ACMSLT_DEPT_CD, 'Z~') = MAP.SRC_DEPT_ID
+WHERE D.MAMT < 0
+  AND D.SNUM = 1;
+
+CREATE INDEX IX_DECREASE_FACT_GROUP
+    ON #DECREASE_FACT
+       (STRD_MT, CPR_DIV_CD, SPNSR_BSNS_ID, NEW_OLD_DIV_CD, DEPT4_ID);
+
+/* -------------------------------------------------------------------------
+   7. 기준월 활동 팩트
+      FN_MM_SPNSR_ACT의 활동 분기 + USP_F_MM_SPNSR_ACT의 보고서용 컬럼 재현
+   ------------------------------------------------------------------------- */
+;WITH ACTIVE_HISTORY AS
+(
+    SELECT
+        A.OCCRRNC_DE,
+        A.SPNSR_NO,
+        A.SPNSR_BSNS_NO,
+        A.SER_NO,
+        A.MBER_NO,
+        A.SPNSR_BSNS_ID,
+        SUM(A.SPNSR_AMT) OVER
+        (
+            PARTITION BY A.SPNSR_NO, A.SPNSR_BSNS_NO
+        ) AS SUM_AMT,
+        ROW_NUMBER() OVER
+        (
+            PARTITION BY A.SPNSR_NO, A.SPNSR_BSNS_NO
+            ORDER BY A.OCCRRNC_DE DESC, A.SER_NO DESC
+        ) AS RNUM
+    FROM dbo.TM_MM_FDRM_MBER_DVLP_AMT A
+    WHERE A.OCCRRNC_DE <= @MONTH_31
+)
+SELECT
+    @STRD_MT AS STRD_MT,
+    A.SPNSR_NO,
+    A.SPNSR_BSNS_NO,
+    A.MBER_NO,
+    A.SPNSR_BSNS_ID,
+    ISNULL(P.CPR_DIV_CD, 'I') AS CPR_DIV_CD,
+    MAP.DEPT4_ID,
+    CASE
+        WHEN CONVERT(CHAR(4), M.FRST_REGIST_DT, 112) = LEFT(@STRD_MT, 4)
+         AND CONVERT(CHAR(4), S.FRST_REGIST_DT, 112) = LEFT(@STRD_MT, 4)
+            THEN '1'
+        ELSE '2'
+    END AS NEW_OLD_DIV_CD,
+    A.SUM_AMT AS SPNSR_AMT,
+    A.SUM_AMT / 10000.0 AS SPNSR_AMT_CNT
+INTO #ACTIVE_FACT
+FROM ACTIVE_HISTORY A
+JOIN #ACTIVE_MEMBER AM
+  ON A.MBER_NO = AM.MBER_NO
+JOIN #MEMBER_MONTH M
+  ON A.MBER_NO = M.MBER_NO
+JOIN #BUSINESS_DIM B
+  ON A.SPNSR_BSNS_ID = B.SPNSR_BSNS_ID
+LEFT JOIN #SETLE_MONTH P
+  ON A.MBER_NO = P.MBER_NO
+ AND B.CPR_DIV_CD = P.CPR_DIV_CD
+JOIN dbo.TM_MM_FDRM_MBER_SPNSR S
+  ON A.MBER_NO = S.MBER_NO
+ AND A.SPNSR_NO = S.SPNSR_NO
+LEFT JOIN #DEPT_MAP MAP
+  ON ISNULL(S.ACMSLT_DEPT_CD, 'Z~') = MAP.SRC_DEPT_ID
+WHERE A.RNUM = 1
+  AND A.SUM_AMT > 0;
+
+CREATE INDEX IX_ACTIVE_FACT_GROUP
+    ON #ACTIVE_FACT
+       (STRD_MT, CPR_DIV_CD, SPNSR_BSNS_ID, NEW_OLD_DIV_CD, DEPT4_ID);
+
+/* -------------------------------------------------------------------------
+   8. MSTR의 세 집계 재현
+   ------------------------------------------------------------------------- */
+SELECT
+    D.SPNSR_BSNS_ID,
+    D.NEW_OLD_DIV_CD,
+    D.DEPT4_ID,
+    D.CPR_DIV_CD,
+    D.STRD_MT,
+    COUNT(DISTINCT D.MBER_NO) AS WJXBFS1,
+    SUM(ABS(D.SPNSR_AMT_CNT)) AS WJXBFS2
+INTO #MONTH_DECREASE
+FROM #DECREASE_FACT D
+WHERE D.STRD_MT = @STRD_MT
+GROUP BY
+    D.SPNSR_BSNS_ID,
+    D.NEW_OLD_DIV_CD,
+    D.DEPT4_ID,
+    D.CPR_DIV_CD,
+    D.STRD_MT;
+
+/* D_STRD_ADD_MT_CD와 동일한 당해연도 1월~기준월 누계 */
+SELECT
+    D.SPNSR_BSNS_ID,
+    D.NEW_OLD_DIV_CD,
+    D.DEPT4_ID,
+    D.CPR_DIV_CD,
+    @STRD_MT AS STRD_MT,
+    COUNT(DISTINCT D.MBER_NO) AS WJXBFS1,
+    SUM(ABS(D.SPNSR_AMT_CNT)) AS WJXBFS2
+INTO #YTD_DECREASE
+FROM #DECREASE_FACT D
+WHERE D.STRD_MT BETWEEN @YEAR_START_MT AND @STRD_MT
+GROUP BY
+    D.SPNSR_BSNS_ID,
+    D.NEW_OLD_DIV_CD,
+    D.DEPT4_ID,
+    D.CPR_DIV_CD;
+
+SELECT
+    A.SPNSR_BSNS_ID,
+    A.NEW_OLD_DIV_CD,
+    A.DEPT4_ID,
+    A.CPR_DIV_CD,
+    A.STRD_MT,
+    COUNT(DISTINCT A.MBER_NO) AS WJXBFS1,
+    SUM(A.SPNSR_AMT_CNT) AS WJXBFS2
+INTO #MONTH_ACTIVE
+FROM #ACTIVE_FACT A
+GROUP BY
+    A.SPNSR_BSNS_ID,
+    A.NEW_OLD_DIV_CD,
+    A.DEPT4_ID,
+    A.CPR_DIV_CD,
+    A.STRD_MT;
+
+/* -------------------------------------------------------------------------
+   결과 1. 최종 보고서 결과
+   ------------------------------------------------------------------------- */
+SELECT
+    COALESCE(MD.STRD_MT, YD.STRD_MT, MA.STRD_MT) AS STRD_MT,
+    LEFT(@STRD_MT, 4) + '-' + RIGHT(@STRD_MT, 2) AS STRD_NM,
+    COALESCE(MD.CPR_DIV_CD, YD.CPR_DIV_CD, MA.CPR_DIV_CD) AS CPR_DIV_CD,
+    CPR.CPR_DIV_NM,
+    COALESCE(MD.SPNSR_BSNS_ID, YD.SPNSR_BSNS_ID, MA.SPNSR_BSNS_ID) AS SPNSR_BSNS_ID,
+    BSNS.SPNSR_BSNS_NM,
+    BSNS.SORT_ORDR,
+    COALESCE(MD.NEW_OLD_DIV_CD, YD.NEW_OLD_DIV_CD, MA.NEW_OLD_DIV_CD) AS NEW_OLD_DIV_CD,
+    CASE COALESCE(MD.NEW_OLD_DIV_CD, YD.NEW_OLD_DIV_CD, MA.NEW_OLD_DIV_CD)
+        WHEN '1' THEN N'신규'
+        WHEN '2' THEN N'기존'
+    END AS NEW_OLD_DIV_NM,
+    COALESCE(MD.DEPT4_ID, YD.DEPT4_ID, MA.DEPT4_ID) AS DEPT4_ID,
+    D4.DEPT4_NM,
+    D4.SORT_ORDR AS SORT_ORDR0,
+    MD.WJXBFS1 AS WJXBFS1,  -- 당월 감액회원 수
+    MD.WJXBFS2 AS WJXBFS2,  -- 당월 감액 건수
+    YD.WJXBFS1 AS WJXBFS3,  -- 당해연도 누계 감액회원 수
+    YD.WJXBFS2 AS WJXBFS4,  -- 당해연도 누계 감액 건수
+    MA.WJXBFS1 AS WJXBFS5,  -- 기준월 활동회원 수
+    MA.WJXBFS2 AS WJXBFS6   -- 기준월 활동 후원 건수
+FROM #MONTH_DECREASE MD
+FULL OUTER JOIN #YTD_DECREASE YD
+  ON MD.CPR_DIV_CD = YD.CPR_DIV_CD
+ AND MD.DEPT4_ID = YD.DEPT4_ID
+ AND MD.NEW_OLD_DIV_CD = YD.NEW_OLD_DIV_CD
+ AND MD.SPNSR_BSNS_ID = YD.SPNSR_BSNS_ID
+ AND MD.STRD_MT = YD.STRD_MT
+FULL OUTER JOIN #MONTH_ACTIVE MA
+  ON COALESCE(MD.CPR_DIV_CD, YD.CPR_DIV_CD) = MA.CPR_DIV_CD
+ AND COALESCE(MD.DEPT4_ID, YD.DEPT4_ID) = MA.DEPT4_ID
+ AND COALESCE(MD.NEW_OLD_DIV_CD, YD.NEW_OLD_DIV_CD) = MA.NEW_OLD_DIV_CD
+ AND COALESCE(MD.SPNSR_BSNS_ID, YD.SPNSR_BSNS_ID) = MA.SPNSR_BSNS_ID
+ AND COALESCE(MD.STRD_MT, YD.STRD_MT) = MA.STRD_MT
+LEFT JOIN #CPR_DIM CPR
+  ON COALESCE(MD.CPR_DIV_CD, YD.CPR_DIV_CD, MA.CPR_DIV_CD) = CPR.CPR_DIV_CD
+LEFT JOIN #BUSINESS_DIM BSNS
+  ON COALESCE(MD.SPNSR_BSNS_ID, YD.SPNSR_BSNS_ID, MA.SPNSR_BSNS_ID) = BSNS.SPNSR_BSNS_ID
+LEFT JOIN #DEPT4_DIM D4
+  ON COALESCE(MD.DEPT4_ID, YD.DEPT4_ID, MA.DEPT4_ID) = D4.DEPT4_ID
+WHERE COALESCE(MD.CPR_DIV_CD, YD.CPR_DIV_CD, MA.CPR_DIV_CD) = @CPR_DIV_CD
+ORDER BY
+    COALESCE(MD.CPR_DIV_CD, YD.CPR_DIV_CD, MA.CPR_DIV_CD),
+    BSNS.SORT_ORDR,
+    D4.SORT_ORDR,
+    COALESCE(MD.NEW_OLD_DIV_CD, YD.NEW_OLD_DIV_CD, MA.NEW_OLD_DIV_CD);
+
+/* -------------------------------------------------------------------------
+   디버그 결과 2. 2026년 1월 DW 월마감 참고값과 현재 ODS 재계산값
+
+   두 값은 계산 검증을 위한 참고값이며 반드시 같아야 하는 값이 아니다.
+   월마감 이후 ODS 원천/부서 변경과 감액 대표행 동률 때문에 차이가 날 수 있다.
+   ------------------------------------------------------------------------- */
+IF @DEBUG = 1 AND @STRD_MT = '202601' AND @CPR_DIV_CD = 'I'
+BEGIN
+SELECT
+    @STRD_MT AS STRD_MT,
+    @CPR_DIV_CD AS CPR_DIV_CD,
+    CAST(689677 AS BIGINT) AS DW_SNAPSHOT_ACTIVE_ROW_CNT,
+    CAST(SUM(CASE WHEN F.ACT_DSCNTC_DIV_CD = '1' THEN 1 ELSE 0 END) AS BIGINT) AS ODS_CURRENT_ACTIVE_ROW_CNT,
+    CAST(616418 AS BIGINT) AS DW_SNAPSHOT_ACTIVE_MBER_CNT,
+    COUNT(DISTINCT CASE WHEN F.ACT_DSCNTC_DIV_CD = '1' THEN F.MBER_NO END) AS ODS_CURRENT_ACTIVE_MBER_CNT,
+    CAST(1316513.49050015 AS DECIMAL(38, 14)) AS DW_SNAPSHOT_ACTIVE_AMT_CNT,
+    SUM(CASE WHEN F.ACT_DSCNTC_DIV_CD = '1' THEN F.SPNSR_AMT_CNT ELSE 0 END) AS ODS_CURRENT_ACTIVE_AMT_CNT,
+    CAST(1316 AS BIGINT) AS DW_SNAPSHOT_DECREASE_ROW_CNT,
+    CAST(SUM(CASE WHEN F.ACT_DSCNTC_DIV_CD = '4' THEN 1 ELSE 0 END) AS BIGINT) AS ODS_CURRENT_DECREASE_ROW_CNT,
+    CAST(1316 AS BIGINT) AS DW_SNAPSHOT_DECREASE_MBER_CNT,
+    COUNT(DISTINCT CASE WHEN F.ACT_DSCNTC_DIV_CD = '4' THEN F.MBER_NO END) AS ODS_CURRENT_DECREASE_MBER_CNT,
+    CAST(2923.3702 AS DECIMAL(38, 4)) AS DW_SNAPSHOT_DECREASE_AMT_CNT,
+    SUM(CASE WHEN F.ACT_DSCNTC_DIV_CD = '4' THEN ABS(F.SPNSR_AMT_CNT) ELSE 0 END) AS ODS_CURRENT_DECREASE_AMT_CNT
+FROM
+(
+    SELECT
+        '1' AS ACT_DSCNTC_DIV_CD,
+        A.MBER_NO,
+        A.CPR_DIV_CD,
+        A.SPNSR_AMT_CNT
+    FROM #ACTIVE_FACT A
+    WHERE A.STRD_MT = @STRD_MT
+
+    UNION ALL
+
+    SELECT
+        '4' AS ACT_DSCNTC_DIV_CD,
+        D.MBER_NO,
+        D.CPR_DIV_CD,
+        D.SPNSR_AMT_CNT
+    FROM #DECREASE_FACT D
+    WHERE D.STRD_MT = @STRD_MT
+) F
+WHERE F.CPR_DIV_CD = @CPR_DIV_CD;
+END;
+
+/* 디버그: 1월은 당월 감액과 연 누계 감액이 반드시 동일해야 한다. */
+IF @DEBUG = 1 AND RIGHT(@STRD_MT, 2) = '01'
+BEGIN
+    SELECT
+        COALESCE(SUM(CASE WHEN DIFF_TYPE = 'MONTH_ONLY' THEN 1 ELSE 0 END), 0) AS MONTH_ONLY_KEY_CNT,
+        COALESCE(SUM(CASE WHEN DIFF_TYPE = 'YTD_ONLY' THEN 1 ELSE 0 END), 0) AS YTD_ONLY_KEY_CNT,
+        COALESCE(SUM(CASE WHEN DIFF_TYPE = 'VALUE_DIFF' THEN 1 ELSE 0 END), 0) AS VALUE_DIFF_KEY_CNT
+    FROM
+    (
+        SELECT
+            CASE
+                WHEN M.STRD_MT IS NULL THEN 'YTD_ONLY'
+                WHEN Y.STRD_MT IS NULL THEN 'MONTH_ONLY'
+                WHEN M.WJXBFS1 <> Y.WJXBFS1 OR M.WJXBFS2 <> Y.WJXBFS2 THEN 'VALUE_DIFF'
+                ELSE 'SAME'
+            END AS DIFF_TYPE
+        FROM #MONTH_DECREASE M
+        FULL OUTER JOIN #YTD_DECREASE Y
+          ON M.CPR_DIV_CD = Y.CPR_DIV_CD
+         AND M.DEPT4_ID = Y.DEPT4_ID
+         AND M.NEW_OLD_DIV_CD = Y.NEW_OLD_DIV_CD
+         AND M.SPNSR_BSNS_ID = Y.SPNSR_BSNS_ID
+         AND M.STRD_MT = Y.STRD_MT
+        WHERE COALESCE(M.CPR_DIV_CD, Y.CPR_DIV_CD) = @CPR_DIV_CD
+    ) V
+    WHERE V.DIFF_TYPE <> 'SAME';
+END;

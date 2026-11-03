@@ -3,14 +3,14 @@ doc_id: GN_DW_SOURCE_GAP_ANALYSIS
 doc_role: 원천 결손(Gap) 분석 요약 — STM 상태 기반 결손·CDC·이벤트로깅 식별 (현업/IT 공유)
 project: GN_DW (굿네이버스)
 created: 2026-07-16
-companion: 30_output_share/04_컬럼계보매핑.* (STM 정본) · 20_issue/00_INDEX_이슈원장.md (이슈 정본)
-grounded_on: 20_issue/{00_INDEX,10_진단,30_설계,40_입고대기,50_dbt}.md
+companion: 30_output_share/04_컬럼계보매핑.* (STM 정본) · _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md (이슈 정본)
+grounded_on: _archive/O276_project_closure/20_issue/{00_INDEX,10_진단,30_설계,40_입고대기,50_dbt}.md
 END-METADATA -->
 
 # GN_DW 원천 결손(Gap) 분석 요약
 
 > **목적**: Gold 스키마를 채우기 위해 필요한 데이터가 현재 Bronze(원천 적재)에 **누락**되어 있는지, 그리고 추가 **CDC(변경 데이터 캡처)** 나 **이벤트 로깅 요청**이 필요한지 식별한다.
-> **읽는 법**: STM(`04_컬럼계보매핑`)의 컬럼 상태(OK/PARTIAL/WAIT)를 원천 결손 관점으로 재분류한 요약. 상세 이력·판정은 `20_issue/` 이슈 원장 참조.
+> **읽는 법**: STM(`04_컬럼계보매핑`)의 컬럼 상태(OK/PARTIAL/WAIT)를 원천 결손 관점으로 재분류한 요약. 상세 이력·판정은 `_archive/O276_project_closure/20_issue/` 이슈 원장 참조.
 > **상태**: 🔴 하드블로커(외부 입고 필수) · 🟡 현업 회신 대기 · 🟢 내부 해소 · ⚫ 제외
 
 ---

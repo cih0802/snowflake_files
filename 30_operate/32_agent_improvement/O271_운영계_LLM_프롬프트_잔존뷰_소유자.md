@@ -4,7 +4,7 @@ doc_role: 운영계(ZL50263) 저가형 LLM 입력 프롬프트 — O270 1단계 
 project: GN_DW (굿네이버스)
 created: 2026-10-30
 created_by: O271-B
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 END-METADATA -->
 
 # 운영계 LLM 입력 프롬프트 — O271 잔존 뷰 정리 · 소유자 이전

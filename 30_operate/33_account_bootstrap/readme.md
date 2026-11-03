@@ -19,7 +19,7 @@
 
 🟢 **[O146] `10`·`11` 은 `07_O작업정리/` 를 폐기하며 이관됐다**(바이트 동일 복사 후 헤더 보강 · MD5 대조).
 🔴 **`07_O작업정리/` 를 다시 만들지 마라** — 그 폴더의 진행 원장은 닫혔고
-잔여 이슈는 `20_issue/`·`99_NEXT_SESSION` 으로 갔다.
+잔여 이슈는 `_archive/O276_project_closure/20_issue/`·`99_NEXT_SESSION` 으로 갔다.
 
 ---
 
@@ -46,12 +46,12 @@
 08_cortex_project/ — Agent spec YAML + 매니페스트
 작업 중 확인한 중요 사항: 런북(30_operate/33_account_bootstrap/_archive/PAID_재현_런북_20260722.md)이 작성된 2026-07-22 이후 일부 파일이 분할/개명되었습니다(예: 05_SV_DDL.sql 단일 파일 → 05_1~05_10 개별 SV 파일로 분할, 09_AGENT_spec_구현.sql → 09_1+09_2로 분해). 00_INDEX.md에 이 점을 명시했고, 최신(2026-08-25 기준) 파일로 채웠습니다.
 
-또한 워크스페이스에는 다른 목적의 "재현" 시나리오도 존재합니다 — 40_worklog/41_handoff/의 A_PRODUCER/B_BROKER/C_CONSUMER 스크립트는 실제 운영 데이터(BRONZE·SILVER·ML)를 Direct Share+CSV로 다른 리전 계정에 옮기는 데이터 이관용이며, 이번 요청 범위(구조 재현)에는 포함하지 않았습니다. 필요하시면 이것도 별도로 정리해 드릴 수 있습니다.
+또한 워크스페이스에는 다른 목적의 "재현" 시나리오도 존재합니다 — _archive/O276_project_closure/40_worklog/41_handoff/의 A_PRODUCER/B_BROKER/C_CONSUMER 스크립트는 실제 운영 데이터(BRONZE·SILVER·ML)를 Direct Share+CSV로 다른 리전 계정에 옮기는 데이터 이관용이며, 이번 요청 범위(구조 재현)에는 포함하지 않았습니다. 필요하시면 이것도 별도로 정리해 드릴 수 있습니다.
 
 
 ## 보완 — README 미기재 파일 (4-A 판정 · 2026-10-31)
 
-> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
+> 기존 본문은 수정하지 않고 아래에 덧붙였습니다. 상태 기준은 루트 `_archive/RESTRUCTURE_20261031-pre/00_WORKSPACE_RESTRUCTURE_PLAN.md` §4-A.
 
 | 파일 | 크기 | 상태 | 비고 |
 |---|---|---|---|

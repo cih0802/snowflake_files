@@ -26,7 +26,8 @@ END-METADATA -->
 | `O92B_pre_rebalance/` | 세션 `O92B` 일괄 작업 백업 |
 | `O92_pre_rebalance/` | 세션 `O92` 일괄 작업 백업 |
 | `O96_99NEXT_presplit/` | 세션 `O96` 일괄 작업 백업 |
-| `RESTRUCTURE_20261031-pre/` | O275 재편 백업(4A README · 4B MOVE_MAP v1 · 4C 치환 원본 · residual 정정 원본) — 되돌리기 정본 |
+| `RESTRUCTURE_20261031-pre/` | O275 재편 백업(4A README · 4B MOVE_MAP v1 · 4C 치환 원본 · residual 정정 원본) — 되돌리기 정본 · 🆕 [O276] 재편 산출물 `00_WORKSPACE_RESTRUCTURE_PLAN.md` · `MOVE_MAP.csv` · `MOVE_MAP_files.csv` 도 여기로 옮겼다 |
+| `O276_project_closure/` | 🆕 [O276] 프로젝트 종료(2026-11-01) · 이름 유지 보관(`20_issue/` · `99_NEXT_SESSION.md` + `_조각/` · `40_worklog/` · `80_…/` · `tmp/` · `999_temp.txt` · 중복 `09_STREAMLIT/analyst-selfservice-streamlit.md`) · 대응표 `CLOSURE_MOVE_MAP.csv` · 참조 행렬 `_refmatrix_pre.tsv` · 계획·결과 = 같은 폴더 `00_REFERENCE_CLEANUP_PLAN.md`(🆕 2026-11-02 완료 후 루트에서 이동) |
 
 ## 3. 원본 문서별 스냅샷 수 (상위 40)
 

@@ -34,7 +34,7 @@
 --     `SCHEMA_ID=44`(created 2026-08-18 20:50:41.247) → **DELETED 21:27:04.683** → `SCHEMA_ID=105`(21:34:28.101) 로 재생성됐고,
 --     그 결과 SILVER 는 `OWNERSHIP` 1건만 남아 ENGINEER grant·FUTURE grant 가 **0건**이 됐다.
 --     대조 증거 = 같은 기간 드롭되지 않은 `GOLD`(64)·`OPS`(65)는 FUTURE grant **35건**을 그대로 유지했다.
---   ⇒ 이 사고로 `dbt build` 가 `003001 (42501)` 로 차단됐다(정본 = `20_issue/50_dbt_파이프라인_미결조치.md` §O90·§O91).
+--   ⇒ 이 사고로 `dbt build` 가 `003001 (42501)` 로 차단됐다(정본 = `_archive/O276_project_closure/20_issue/50_dbt_파이프라인_미결조치.md` §O90·§O91).
 --   WARN: **`ON ALL TABLES` 는 시점 grant 다** — 부여 당시 존재한 테이블에만 걸린다. 그래서 §D 는
 --      항상 `ALL` + `FUTURE` 를 **쌍으로** 부여하며, 그 쌍조차 **스키마 자체가 재생성되면 무효**다.
 --    재발 방지 2원칙: ㉠ **적재·부여 완료 후 스키마 재생성 금지**(O86 `DDL-ORDER-1` 과 동일 계열)

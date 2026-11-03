@@ -11,7 +11,7 @@ inputs:
   # 🔴 [O76-B A3 정정] `04_SV_설계.md` 는 최초 이 목록에 있었으나 **한 번도 읽지 않았다**(812줄) ⇒ 삭제.
   #   읽지 않은 문서를 입력으로 선언하면 문서의 출처 자체가 거짓이 된다.
   - 30_output_share/09_보고서필드_조립가능성.{md,csv}          # 조립가능성 판정 정본
-  - 20_issue/00_INDEX_이슈원장.md                              # 데이터 게이트
+  - _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md                              # 데이터 게이트
 spec_canonical: cortex_project/agents/AGENT_MARKETING/agent_spec.yaml
 deploy_status: 미배포 (설계까지 · 사용자 결정 2026-08-14)
 END-METADATA -->
@@ -281,7 +281,7 @@ FBQ BigQuery 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한�
   `99_NEXT` §4 의 `ADD VERSION FROM` 규약과 충돌하므로 **경로 충돌을 사용자에게 먼저 확인**한다 · 잔여 ⑪).
 * ⚠️ **파일 경로 규약이 충돌한다** — 스킬은 `cortex_project/<agent>.agent.yaml` 을 표준으로 두지만
   이 워크스페이스 배포 절차는 `cortex_project/agents/<NAME>/agent_spec.yaml` 을 요구한다(`99_NEXT` §4).
-  ⇒ **워크스페이스 규약을 따랐다**(`init_ihcho`: 지시 충돌 시 `20_issue/` 우선) · 스킬 호출 시 `file_path` 를 명시한다.
+  ⇒ **워크스페이스 규약을 따랐다**(`init_ihcho`: 지시 충돌 시 `_archive/O276_project_closure/20_issue/` 우선) · 스킬 호출 시 `file_path` 를 명시한다.
 * **실행 환경** = `warehouse: GN_DW_ANALYTICS_WH`(기존 2 Agent 와 동일)
 * **`data_to_chart`** 는 기존 2 Agent 와 동일 정책(response instruction 의 시각화 규칙으로 처리)
 * 🔴🔴 **[2026-08-14 O76-B A11 정정] 최초 이 항목은 「기존 정본 문안을 재사용하고 보강분만 덧붙인다」고 적었다. 실제와 다르다.**
@@ -304,7 +304,7 @@ FBQ BigQuery 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한�
 | `analyst_ga_demographic` | `SV_GA_DEMOGRAPHIC`(05_22) | 성별·연령대별 방문(GA4 추정값) | 없음 |
 | `analyst_expense_resolution` | `SV_EXPENSE_RESOLUTION`(05_23) | 부서별·과목별·재원별 지출결의 | `AGENT_EXECUTIVE` |
 
-- 🟢 「같은 SV = 같은 주장」(P212): 기존 공유 도구(ad·budget·budget_yearly·member_event·member_cohort·member_sponsor_biz)의 7차 보강 문장은 **SV 단위로 한 문장을 3종에 동일 적용**했다(`tmp/o213_y4_agent_patch.py` EXT 표).
+- 🟢 「같은 SV = 같은 주장」(P212): 기존 공유 도구(ad·budget·budget_yearly·member_event·member_cohort·member_sponsor_biz)의 7차 보강 문장은 **SV 단위로 한 문장을 3종에 동일 적용**했다(`_archive/O276_project_closure/tmp/o213_y4_agent_patch.py` EXT 표).
 - 🔴 신규 교차 금지 = ga_session ↔ ga_behavior(grain) · GA ↔ 서치콘솔 ↔ 인구통계(원천·모수) · 지출결의 ↔ 예산(원천·범위).
 
 ---
@@ -381,7 +381,7 @@ FBQ BigQuery 1일 샤드만)하여 오답 방지를 위해 Phase-2로 유예한�
 
 ## 6. 배포 절차 (⛔ 이번 세션 미실행 — 사용자 승인 후)
 
-> 🔴 `99_NEXT_SESSION.md` §4 의 절차를 그대로 따른다. **`cortex_agent_save`/`cortex_agent_deploy` 를 쓰지 않는다**
+> 🔴 `_archive/O276_project_closure/99_NEXT_SESSION.md` §4 의 절차를 그대로 따른다. **`cortex_agent_save`/`cortex_agent_deploy` 를 쓰지 않는다**
 > (live 버전을 만들어 `ADD VERSION FROM` 을 거부시킨다).
 
 1. 정본 = `cortex_project/agents/AGENT_MARKETING/agent_spec.yaml` (파일명 반드시 `agent_spec.yaml`)

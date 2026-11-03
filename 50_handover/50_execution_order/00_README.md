@@ -2,7 +2,7 @@
 doc_role: 배포 실행순서 4종 진입점(통합 색인) — 본문은 각 파일이 정본
 created: 2026-11-01
 created_by: O275-C
-related: 00_WORKSPACE_MAP.md §5 · 80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/
+related: 00_WORKSPACE_MAP.md §5 · _archive/O276_project_closure/80_인수인계_프로젝트완료 및 유지보수용/01_실행순서_배포SQL/
 END-METADATA -->
 
 # 50_execution_order — 배포 실행순서 (4종 통합 진입점)
@@ -22,8 +22,8 @@ END-METADATA -->
 
 ## 🔴 경로 표기 주의
 
-- 🆕 [O275-C · 사용자 결정 2026-11-01] 본문의 경로는 **새 배치로 치환됐다**(4종 233건 · `tmp/restructure/o275c_execorder_fix.py` · 스냅샷 `_archive/*.O275-C-pre-bodypath`).
-  - 옛 경로를 만나면 `MOVE_MAP_files.csv` 의 `old_path` 로 새 위치를 찾는다.
+- 🆕 [O275-C · 사용자 결정 2026-11-01] 본문의 경로는 **새 배치로 치환됐다**(4종 233건 · `_archive/O276_project_closure/tmp/restructure/o275c_execorder_fix.py` · 스냅샷 `_archive/*.O275-C-pre-bodypath`).
+  - 옛 경로를 만나면 `_archive/RESTRUCTURE_20261031-pre/MOVE_MAP_files.csv` 의 `old_path` 로 새 위치를 찾는다.
 - 🔴 80·85 패키지 사본은 아직 **옛 이름**이다 — 재배치 대상 문서가 전부 재배치 완료된 뒤 따로 수정한다(사용자 결정). 그때까지 80 패키지 안에서는 `01_실행순서_배포SQL/05_SV-Agent_ai/…` 가 정답이다.
 
 _Co-authored with CoCo · O275-C_

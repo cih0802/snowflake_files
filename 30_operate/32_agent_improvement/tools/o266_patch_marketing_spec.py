@@ -1,5 +1,5 @@
 # O266 — AGENT_MARKETING spec 개정 생성기(현업 피드백 1~4)
-# 입력 = tmp/o266/live_AGENT_MARKETING.yaml (개발계 ZS83821 VERSION$3 export · 정본 cortex_project 와 불일치 키 0 실측)
+# 입력 = _archive/O276_project_closure/tmp/o266/live_AGENT_MARKETING.yaml (개발계 ZS83821 VERSION$3 export · 정본 cortex_project 와 불일치 키 0 실측)
 # 출력 = cortex_project/agents/AGENT_MARKETING/agent_spec.yaml (정본 갱신 · 적용 = o217_agent_io.py apply)
 # 원칙: 정해진 치환·추가만 한다 · 치환 대상이 없으면 실패(조용한 무변경 금지) · 재실행해도 중복 추가하지 않는다
 # Co-authored with CoCo
@@ -81,7 +81,7 @@ def main():
     # ④ response — 표 형식 고정
     d["instructions"]["response"] = d["instructions"]["response"].rstrip() + RESP_ADD
     with open(OUT, "w", encoding="utf-8") as f:
-        f.write("# O266 개정안 = tmp/o266/live_AGENT_MARKETING.yaml + 12_agent개선과제/tools/o266_patch_marketing_spec.py\n")
+        f.write("# O266 개정안 = _archive/O276_project_closure/tmp/o266/live_AGENT_MARKETING.yaml + 12_agent개선과제/tools/o266_patch_marketing_spec.py\n")
         yaml.safe_dump(d, f, allow_unicode=True, sort_keys=False, width=200)
     print("ok 도구 수 =", len(d["tools"]), "→", OUT)
 

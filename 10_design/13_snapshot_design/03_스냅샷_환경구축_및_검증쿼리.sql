@@ -11,7 +11,7 @@
 -- project: GN_DW (굿네이버스)
 -- created: 2026-09-09
 -- created_by: TRIALADMIN
--- index: 20_issue/00_INDEX_이슈원장.md
+-- index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 -- source_refs:
 --   - 06_snapshot/01_스냅샷_아키텍처_및_네이밍룰.md
 --   - 06_snapshot/02_스냅샷_파이프라인_구축_작업계획.md

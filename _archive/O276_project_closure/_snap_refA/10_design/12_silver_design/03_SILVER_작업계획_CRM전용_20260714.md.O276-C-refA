@@ -1,0 +1,273 @@
+<!-- LLM-METADATA
+doc_id: SILVER_CRM_WORKPLAN
+doc_role: silver_work_plan (CRM-only subset / 실행 단위)
+project: GN_DW (굿네이버스)
+created: 2026-06-29
+scope: CRM 단독 — BRONZE_CRM 입고분으로 즉시 완성 가능한 SILVER 객체
+  (작성 시점 BRONZE_CRM 41 → 🔴 2026-09-15 CRM 개편으로 **50테이블**. 원천 수치는 §7 참조)
+status: ✅ S-1~S-5 완료 — GN_DW.SILVER CRM 21/21 테이블 생성·적재 + S-5 GOLD 역산 검증 완료(2026-07-14, Q5·Q6·G1·G2 포함). 적재 SQL=08_SILVER_테이블DDL_20260714.sql + 09_SILVER_적재쿼리_20260714.sql.
+master_plan: 04_silver_design/02_SILVER_작업계획_BRONZE-GOLD연결 20260714.md  # 매핑 인덱스(정본, 33객체·트랙 A~D·S-1~S-7)
+relation: 본 문서 = master_plan §1-1 CRM 21 + 트랙 A + 단계 S-1~S-5 의 분리 실행본
+on_completion: 본 문서의 CRM 21객체(S-1~S-5) 완료 후, GA4/ERP/AGENCY BRONZE 입고 시 → master_plan 으로 복귀하여 트랙 B(GA4)·C(ERP)·D(AGENCY) 및 S-6·S-7(신원브리지) 이어서 진행.
+out_of_scope: GA4 5 · ERP 3 · AGENCY 3 · 신원브리지(IDENTITY_MEMBER_XREF) 1 · DIM_DATE(생성) · FSE/FEP의 ADMIN 보강분
+inputs(bronze): 99_provided_definition/09_bronze_crm_ddl.sql(타입 정본) · BRONZE_CRM 테이블 정보.MD · 컬럼/테이블정의 CSV(20260629)
+  · 🔴 2026-09-15 CRM 개편 반영 정본 = 50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql (신규 4 · 삭제 2 · 컬럼 ±1)
+inputs(gold): 03_top-down_gold/03_테이블 설계.md(24테이블 정본) · 02_지표 분류.md
+END-METADATA -->
+
+# SILVER 작업계획 — CRM 전용 (실행 단위)
+
+> ⚠️ **본 문서는 마스터 플랜의 CRM 분리 실행본**이다. 전체 SILVER 설계(33객체·4원천·트랙 A~D·S-1~S-7)는
+> **`02_SILVER_작업계획_BRONZE-GOLD연결 20260714.md`(master_plan, 매핑 인덱스)** 가 정본.
+>
+> **▶ 진행 규칙 (LLM 지침)**
+> 1. ~~현 상황 = BRONZE_CRM 41테이블만 입고.~~ → 🔴 **[2026-09-16 O162 정정] BRONZE_CRM = 50테이블**
+>    (2026-09-15 CRM 개편 · 신규 4 · 삭제 2). 본 문서의 **CRM SILVER 객체(S-1~S-5)** 는 적재 완료 상태이며,
+>    개편분 반영은 **§7 신설 절**이 소관이다. 41 기준으로 쓰인 아래 본문 수치는 §7 을 함께 읽어라.
+> 2. 본 문서 완료 후 **GA4·ERP·AGENCY BRONZE가 입고되면 → master_plan 으로 복귀**하여 트랙 B/C/D 와 S-6·S-7(신원 브리지)을 이어서 진행한다.
+> 3. 객체 명칭·그레인 원칙·정제 규칙은 master_plan 과 동일(불일치 시 master_plan 우선).
+
+---
+
+## 0. 범위
+
+- **만들 것**: ~~`GN_DW.SILVER` 의 **CRM 21개 객체** (BRONZE_CRM 41 중 사용 38 → 정제·통합 21).~~
+  → 🔴 **[2026-09-16 O162 정정]** BRONZE_CRM **50** 이고 SILVER CRM 모델 실재는 **24개**다
+  (`10_dbt_pipeline/models/silver/crm/*.sql` 실측 · S-1~S-5 이후 신설 3 = `CRM_BIZ_TARGET` ·
+  `CRM_MARKETING_CAMPAIGN` · `CRM_MEMBER_SPONSOR_SPAN`). 개편 반영 후 목표 구성은 **§7-3**.
+- **이로써 빌드되는 GOLD**: 15테이블 (DATE 생성 포함). 잔여 9는 타 원천 입고 후(master_plan).
+- **단계**: S-1 → S-5. (S-6 GA4/ERP/AGENCY, S-7 신원브리지는 **범위 외** → master_plan)
+- **범위 외(이번엔 미생성)**: GA4 5 · ERP 3 · AGENCY 3 · `IDENTITY_MEMBER_XREF` 1 · `DIM_DATE`(생성) · FSE/FEP의 ADMIN 보강.
+
+---
+
+## 1. 생성할 CRM 21개 객체
+
+> ~~BRONZE 41 → 사용 38(아래) + 미포함 3~~(`TM_RM_BPLC_MNG`·`TM_RM_CHILD_MSTR_INFO`·`TM_RM_RELATNSP_CHG_INFO`, GOLD 미참조).
+> 🔴 **[2026-09-16 O162] 이 표는 2026-07-14 판(BRONZE 41 기준)이다.** 아래 3행이 개편으로 바뀌었고
+> 신규 4테이블은 아직 어느 SILVER 객체에도 배선되지 않았다 ⇒ **§7 을 정본으로 함께 읽어라.**
+> 그레인 원칙: 채널분리(이메일/문자/우편)·정기/일시는 구조적 UNION으로 통합, 상이한 비즈니스 사건은 분리.
+
+| # | 도메인 | SILVER 객체 | BRONZE 원천 | 그레인(예상·S-1 확정) | 충족 GOLD |
+|---|---|---|---|---|---|
+| 1 | 회원 | `CRM_MEMBER` | `TM_MM_FDRM_MBER_INFO` ∪ `TM_MM_ONCE_MBER_INFO` | 1 회원(MEMBER_DK), 정기/일시 MEMBER_TYPE | DIM_MEMBER, DIM_MEMBER_IDENTITY(CRM) |
+| 2 | 회원 | `CRM_MEMBER_STATUS_HIST` | `TH_MM_FDRM_MBER_STNG_DTLS` | 상태변경 1건 (SCD2, EFFECTIVE_FROM/TO·IS_CURRENT) | DIM_MEMBER, FMM 시점지표, FME |
+| 3 | 약정/사건 | `CRM_MEMBER_DEV` | `TM_MM_FDRM_MBER_DVLP_AMT` | 회원×개발(약정) 실적 | FMM, FME |
+| 4 | 약정/사건 | `CRM_MEMBER_AMT_CHANGE` | `TM_MM_FDRM_MBER_IRSD` | 증액/감액 사건 | FMM, FME |
+| 5 | 약정/사건 | `CRM_MEMBER_DISCONTINUE` | `TM_MM_FDRM_MBER_SPNSR_DSCNTC` | 중단 사건 | FMM, FME |
+| 6 | 약정/사건 | `CRM_MEMBER_RESPONSOR` | `TM_MM_FDRM_MBER_RE_SPNSR` | 재후원 사건 | FME |
+| 7 | 약정/사건 | `CRM_MEMBER_SPONSOR_BIZ` | `TM_MM_FDRM_MBER_SPNSR_BSNS` | 회원×후원사업 | FMM/FME 후원사업 귀속 |
+| 8 | 약정/사건 | `CRM_SPONSOR_RELATION` | `TM_RM_RELATNSP_MSTR_INFO` | 결연(회원×아동) | DIM_MEMBER_IDENTITY 아동 |
+| 9 | 납입결제 | `CRM_PAYMENT_BILLING` | `TM_PM_MBRFEE_ACMSLT` ∪ `TM_PM_DNTN_DTLS` | 납입+청구(회비+기부금) | FMM 납입/청구 |
+| 10 | 납입결제 | `CRM_PAYMENT_METHOD` | `TM_PM_SETLE_INFO` ∪ `TH_PM_SETLE_INFO_HIST` | 결제수단 | DIM_PAYMENT |
+| 11 | 마스터 | `CRM_CAMPAIGN` | `TM_CM_CMPGN_MNG`(+`MKTG_CHANNEL` 신규) ∪ `TM_CM_BRND_MNG` ∪ ~~`TM_CM_MKTNG_CMPGN_MNG`~~ → 🔴 `TC_MKTNG_DTL_CD`(C001/C002/U001) | 1 캠페인 | DIM_CAMPAIGN |
+| 12 | 마스터 | `CRM_SPONSORSHIP` | `TM_CM_SPNSR_BSNS_INFO` | 1 후원사업 | DIM_SPONSORSHIP |
+| 13 | 마스터 | `CRM_ORG` | `TM_CM_DEPT_INFO` | 1 조직노드 (SCD2) | DIM_ORG |
+| 14 | 마스터 | `CRM_DEV_TARGET` | `TM_CM_MBER_DVLP_GOAL` | 월×조직×개발구분 | FTG-D |
+| 15 | 발송 | `CRM_SEND_REQUEST` | `SND_REQ_MST` ∪ `TM_MS_EMAIL_SNDNG` ∪ `TM_MS_MSG_AT_SNDNG` ∪ `TM_MS_PSTMTR_SNDNG` | 발송요청(채널통합) | DIM_SERVICE, FSE |
+| 16 | 발송 | `CRM_SEND_MEMBER` | `SND_MEMBER_LIST`(🔴 `OPEN_DT` 삭제) ∪ `TD_MS_EMAIL_SNDNG_DTLS` ∪ `TD_MS_MSG_AT_SNDNG_DTLS` ∪ `TD_MS_PSTMTR_SNDNG_DTL` **+ 신규 `SND_MEMBER_OPEN_LOG`·`SND_MEMBER_MAIL_LINK_LOG`**(§7-2) | 발송×회원 | FSE |
+| 17 | 발송 | `CRM_SEND_RESULT` | `TD_MS_EMAIL_LQY_SNDNG` ∪ `TD_MS_MSG_AT_LQY_SNDNG` ∪ `TD_MS_PSTMTR_LQY_SNDNG` | 발송×채널 성과 | FSE |
+| 18 | 행사 | `CRM_EVENT` | `TM_MS_EVENT` ∪ `TM_MS_CRMN` | 1 행사 | DIM_EVENT |
+| 19 | 행사 | `CRM_EVENT_PARTICIPATION` | `TD_MS_EVENT_PRTCPNT_DTL` ∪ `TD_MS_CRMN_PRTCPNT` | 행사×참여자 | FEP |
+| 20 | 결연활동 | `CRM_RELATION_ACTIVITY` | `TM_RM_RELATNSP_LETTER_INFO` ∪ `TM_RM_RELATNSP_GFTMNEY_INFO` | 서신·선물금 | FSE(서신/선물금참여) |
+| 21 | 코드 | `CRM_CODE` | `TC_CMMN_CD` ∪ `TC_CMMN_DTL_CD` (+MM293~MM297 5종 코드 추가 · DTL_CD 값 변경 · §7-1) | 코드그룹×코드 | DIM_REASON + 전 객체 라벨 |
+| 22 | 코드 | `CRM_MKTNG_CODE` | `TC_MKTNG_DTL_CD`(마케팅 통합 코드 · CD_ID 3종: C001/C002/U001) | 코드그룹×상세코드 | DIM_CAMPAIGN 마케팅캠페인·채널·UTM 라벨 |
+| 23 | 발송 | `CRM_SEND_MEMBER_OPEN_LOG` | `SND_MEMBER_OPEN_LOG`(메일 오픈 로그 8컬럼) | 1오픈로그(LOG_SEQ) | FSE 오픈 분석 |
+| 24 | 발송 | `CRM_SEND_MEMBER_LINK_LOG` | `SND_MEMBER_MAIL_LINK_LOG`(메일 링크 클릭 로그 13컬럼) | 1클릭로그(LOG_SEQ) | FSE 링크 클릭 분석 |
+| 25 | 회원 | `CRM_MEMBER_CONVERT_HIST` | `TM_MM_FDRM_MBER_DT_DTLS`(일시→정기 전환 5컬럼) | 회원×전환(MBER_NO×ONCE_MBER_NO) | DIM_MEMBER 전환속성 |
+
+---
+
+## 2. 빌드되는 GOLD 15테이블
+
+- **CRM 단독 완결 (후속 원천 보강 없음, 9)**: DIM_MEMBER · DIM_CAMPAIGN · DIM_SPONSORSHIP · DIM_ORG · DIM_PAYMENT · DIM_REASON / FMM · FME · FTG-D
+- **CRM으로 생성·적재 + 후속 보강 있음 (5)**: DIM_SERVICE(+ADMIN 앱푸시 채널) · DIM_EVENT(+ADMIN 온라인행사) · FSE(+ADMIN 앱푸시 발송) · FEP(+ADMIN 조회수) · DIM_MEMBER_IDENTITY(+GA 신원 매핑) — **CRM분으로 구조·적재 완료, 보강은 입고 시 행/컬럼 추가(차단 아님)**
+- **생성(원천 무관, 1)**: DIM_DATE — GOLD/util에서 생성(SILVER 객체 아님)
+
+> 잔여 GOLD 8테이블(DIM_AD_CREATIVE·DIM_BIGQUERY_SOURCE·DIM_BIGQUERY_EVENT·DIM_DEVICE·DIM_BUDGET_ITEM·FBQ·FAD·FBD)은 BigQuery·ERP·AGENCY 입고 후 → master_plan 트랙 B/C/D.
+> **FTG-B(사업목표)는 원천=CRM 확정(2026-07-20 정정)** → 신규 CRM 테이블 `SILVER.CRM_BIZ_TARGET`(BRONZE_CRM.CRM_BIZ_TARGET 입고 후). 기존 CRM 21(S-1~S-5, 적재완료)과 별개인 **신규 입고 대상**(E-6 대기). 단위=건(#152~155).
+
+---
+
+## 3. 단계별 작업 (S-1 ~ S-5)
+
+| 단계 | 산출물 | 내용 |
+|---|---|---|
+| **S-1** | 엔티티 설계서 21개 (`S1_CRM_entity_design_legacy/`) | 객체별 grain·PK·컬럼선별·타입·정제규칙·증분키 확정 |
+| **S-2** | DDL 초안 | `CREATE TABLE GN_DW.SILVER.CRM_*` 21개 (Snowflake 컴파일 검증) |
+| **S-3** | 정제 매핑표 | BRONZE 컬럼 → SILVER 컬럼 1:1 (타입캐스팅·코드→라벨·NULL표준화·메타 4컬럼) |
+| **S-4** | 정제 프로시저 | `SP_REFINE_CRM_*` (`CREATE OR REPLACE TABLE` 멱등) |
+| **S-5** | GOLD 역산 검증 | §2 의 15 GOLD 테이블 컬럼 대비 누락·불일치 점검 |
+
+---
+
+## 4. S-1 착수 전 선결 (CRM 내부) — **6개 전건 해소 ✅** (Q4·Q13·Q14·Q15 + Q5·Q6)
+
+| Q | 무엇 | 영향 객체 |
+|---|---|---|
+| Q4 ✅ | **MM010 확정** — 12상태(1=활동회원·2~6 신규미납·7~11 장기미납·12 후원중단). 라벨 조인 **(CD_ID,DTL_CD_ID) 복합** | `CRM_MEMBER_STATUS_HIST` (SCD2) |
+| Q5 ✅ | **해소·적재완료(2026-07-14)** — 정의서 확정 + 실측: SND_*(SEQ_NO PK)→SND_MEMBER_LIST(REQ_SEQ_NO FK, orphan 0) / TM_MS_*(SNDNG_KEY) **키 도메인 완전 분리(overlap 0)** → 두 독립 시스템. `CRM_SEND_*`=4채널(EMAIL/MSG_AT/PSTMTR/SND) UNION, **SEND_CHANNEL을 PK 포함**. → 상세 `05_이슈해결 §3` | `CRM_SEND_REQUEST`/`_MEMBER`/`_RESULT` |
+| Q6 ✅ | **해소·적재완료(2026-07-14)** — SEX: 1→M·2→F·공백/NULL→NULL·3~8→U(현업확인). 수신동의: 정기 콤마셋 정규화(공백제거·DISTINCT·정렬)·일시 Y/N 통과. UNION(FDRM∪ONCE)·충돌 0. → 상세 `05_이슈해결 §3` | `CRM_MEMBER` |
+| Q13 ✅ | **폭발 없음** — `DVLP_AMT` 자연키 유일=스파인 + `SPNSR_BSNS` N:1 **LEFT JOIN**(multi_key=0, 미매칭 74행 보존), 결연 별도 | 약정/사건 5종 |
+| Q14 ✅ | **납입 SUM 중복 확인** — `MBRFEE_KEY`=PK. 동일 납입 복수 적상행 5.4% → **납입은 납입건 dedup 집계·청구는 행 기준**. 기부금=납입만(`DNTN_KEY`=PK) | `CRM_PAYMENT_BILLING` |
+| Q15 ✅ | **실측 완료** — `SPNSR_BSNS_ID`=후원사업(=DIM_SPONSORSHIP 키; 당시 29개 → **06-30 마스터 실측 50, AC-2 재확인**), `SPNSR_BSNS_NO`=약정/관계 번호(약 215만). NO→ID 다대일. 결연은 NO만 → 정제 시 `SPNSR_BSNS`에서 NO→ID 크로스워크(적재 시 `CRM_MEMBER_SPONSOR_BIZ` 조인). ⚠️NO 20건 모호 클렌징 | `CRM_SPONSOR_RELATION` |
+
+> **나머지 Q (master_plan §5)**:
+> - **CRM 관련·빌드 중 해소(선결 아님)**: Q2·Q3(캠페인 코드↔라벨, `CRM_CAMPAIGN`) · **Q7 ✅원천 확정**(조직 역할 3종 `ACT_DEPT_CD`·`ACMSLT_DEPT_CD`·`REGIST_DEPT_CD` DDL 존재 — FMM/FME 설계 반영만) · Q8(EVENT_TYPE 코드체계, `CRM_MEMBER_*` 사건/FME) · Q11(`EHGT` 의미, `CRM_RELATION_ACTIVITY`) · Q12(컬럼집합 불일치 검증) — S-1~S-3 진행 중 데이터로 확정.
+> - **타 원천 의존(범위 외)**: Q1(GA 신원) · Q9(GA/AGENCY 출처) · Q10(ERP 세세목) → 입고 후 master_plan.
+
+---
+
+## 5. 공통 정제 규칙 (전 객체 적용)
+
+- **타입 정본** = `09_bronze_crm_ddl.sql`. 컬럼집합 불일치는 입고팀 확인.
+- **코드 → 라벨 병행보존**: `CRM_CODE`(`TC_CMMN_DTL_CD`, CD_ID+DTL_CD_ID) 조인으로 `_NM` 생성. 하드코딩(예 `SNDNG_RST_CD` 0/1/4/5)은 CASE 매핑.
+- **NULL/날짜/숫자/문자 표준화**: 빈문자·`'NULL'`·`'-'`→NULL · `YYYYMMDD`→DATE · 콤마/통화기호 제거 · TRIM·UTF-8 · 컬럼명 UPPER_SNAKE_CASE.
+- **금액 원단위 보존** (`(건)=SUM(금액)/10000` 변환은 GOLD에서).
+- **메타 4컬럼**: `_SOURCE_SYSTEM`(=CRM) · `_SOURCE_TABLE` · `_LOADED_AT` · `_BATCH_ID`.
+- **SCD2는 상태만**(성별·지역·신규기존은 SCD1). 집계·교차소스 조인 금지(GOLD에서).
+
+---
+
+## 6. 완료 정의 & 다음
+
+- **완료 현황(2026-07-14)**: ✅ **S-1~S-5 완료** — `GN_DW.SILVER` CRM **21/21 테이블 생성 + 정제 적재**(멱등 `INSERT OVERWRITE`). 적재 SQL 정본 = `08_SILVER_테이블DDL_20260714.sql`(CREATE TABLE ×21) + `09_SILVER_적재쿼리_20260714.sql`(INSERT·발송 PK ALTER). (구 `silver_stepbystep_ddl.sql`은 분할 후 `_archive` 이관.) Q4·Q13·Q14·Q15 + **Q5·Q6 전건 해소** 반영. 각 테이블 행수 = BRONZE 원천 일치(UNION·dedup 검증).
+  - 현업확인 잔여(차단 아님): ~~Q2·Q3 캠페인 코드값 라벨~~ · Q8 EVENT_DIV/CRMN_DIV 코드체계(원천 코드그룹 부재) · ~~Q16 캠페인↔마케팅캠페인~~ → **아래 [2026-07-16] 참조로 Q2·Q3·Q16 해소**.
+  - **데이터로 해소(2026-07-14)**: SEX=CM013·MBER_DIV_NM=MM018·SETLE_NM=PM040 라벨 100% 채움.
+  - ✅ **[2026-07-16 BRONZE 재입고] Q2·Q3·Q16 해소 — 캠페인 분류 4축 라벨화**(정본 결정 = `20_issue/30_설계_의사결정.md §10 DEC-17`)
+    - 계기: 현업 샘플 대조로 `TM_CM_CMPGN_MNG` 말단 5컬럼 전건 NULL 발견 → 원천 재입고(배치 `20260716_152613`). **근본원인 = 원천 스냅샷 낡음(적재 결함 아님)**.
+    - `CRM_CAMPAIGN` **5컬럼 증설**(19→23): `MBER_INFLOW_PATH_CD` + 라벨 4종(`CMPGN_CTGR_NM`·`MBER_INFLOW_PATH_NM`·`CMPGN_TYPE1_NM`·`CMPGN_TYPE2_NM`). 코드+라벨 병행보존(master §3).
+    - 코드사전 조인 = `ref('CRM_CODE')` 4회(MM294 카테고리 56 · MM293 인입경로 16 · MM295 국내/통합/해외 3 · MM296 굿즈/기타/사례/사업 4). 캠페인측 코드가 NUMBER 라 `TRY_TO_NUMBER(DTL_CD_ID)` 정규화 비교 — **`(CD_ID, TRY_TO_NUMBER(DTL_CD_ID))` 유일·비숫자 0 실측 → fan-out 0**.
+    - 실측 검증(2026-07-16): 출력 36,143 = PK distinct 36,143(fan-out 0) · 라벨 채움 카테고리 33,892 / 인입경로 33,915 / 유형1 33,175 / 유형2 33,915 / 마케팅캠페인 33,915(고아 0) / 브랜드 34,686.
+    - ⚠️ **고아 코드 2건**은 라벨 NULL 유지(창작 금지) + `severity: warn` 관측: `CMPGN_CTGR_CD=58`(23행) · `CMPGN_TYPE1_BSN=4`(740행). → DEC-17-B.
+    - ⚠️ **`MKTG_CMPGN_NM` 은 `_NM` 접미이나 실제 FK 코드**(→`TM_CM_MKTNG_CMPGN_MNG.MK_CMPGN_CD`, 323종). 원천명 유지 + COMMENT 경고.
+    - ⚠️ **`CRM_CODE` 도 함께 갱신됨**(MM293 15→16 · MM294 54→56). 구 배치 잔재였으므로 캠페인 라벨은 `CRM_CODE` 재적재 **이후**에만 완전하다(dbt DAG 가 순서 보장).
+    - ⚠️ BRONZE 재입고는 **4테이블만**(코드사전 2 + 캠페인 2). 나머지 39테이블은 구 배치(`~20260710`) — 회원·납입계 갱신은 별도 트랙(DEC-17-C).
+- **S-5 GOLD 역산 검증 완료(2026-07-14)**: CRM 유래 GOLD 15테이블 중 13 즉시 충족 + **갭 2건 해소** — (G1) `DIM_MEMBER.REGION`(`AREA_CD`/CM018·`AREA_NM`)·`AGE_BAND`(`AGE`)를 `CRM_MEMBER_DEV`·`CRM_MEMBER_AMT_CHANGE`에 projection(재적재, 행수 불변) · (G2) `DIM_SERVICE.SEND_TYPE 대/중/소`(`SEND_GBN_TOP/MID/BOT`+`_NM`)를 `CRM_SEND_REQUEST` SND 채널에 채움. → `DIM_MEMBER`·`DIM_SERVICE` 완전 충족. 반영 SQL = `09_SILVER_적재쿼리_20260714.sql`.
+- **🔎 아키텍처 리뷰 이력(2026-07-14)**: CRM 21테이블 전수 비판적 점검 → **데이터 결함 0(수정 불요)**.
+  - PK 유일성 21/21 = **중복 0** · PK 컬럼(날짜·키 파생) NULL **전부 0**(사일런트 NULL 없음) · **SILVER→SILVER 파생 없음**(단방향 준수).
+  - SILVER 집계 1건 = `CRM_SEND_RESULT`(채널 LQY→`SNDNG_KEY` SUM). **검토 결과 정당**: EMAIL/PSTMTR/SND는 원천 rows=keys(no-op), MSG_AT만 3,032키(0.19%) 실합산. ① 원천=BRONZE(단방향) ② 월/코호트 롤업 아님(엔티티-grain 통합) ③ 결과 1,611,758 = 원천 distinct 키 합 **정확 일치**(누출 0) → AGENCY_COST 안티패턴과 상이, **유지**(검토된 집계로 명시).
+- **다음(LLM)**: ✅ 트랙 B/C/D(GA4·ERP·AGENCY) 적재완료 · ✅ S-6·S-7(신원 브리지, master §6) 완료 · ✅ 전체 통합검증(09 STEP 8) 완료 · ✅ 파이프라인(순서 7)·GOLD 배포·적재(순서 8) **2026-07-20 완료**(Unknown 멤버는 `SK=0` 센티넬로 구현, 초안 `-1` 폐기). **잔여 = Semantic View 매핑 + 사업목표(`CRM_BIZ_TARGET`) 데이터 입고.**
+  - **착수 순서(정본 = master §7)**: 블로커 triage → **GA4(1차) → S-7 브리지 → ERP(2차) → AGENCY(3차)** → 전체 통합검증 → 파이프라인 일괄 → GOLD 배포. **(전 단계 2026-07-20 완료; CRM은 트랙 A로 완료.)**
+
+---
+
+## 🔖 [2026-08-05 세션 반영] O38-E · O39 · O40 · O40-B
+
+> 정본 = `20_issue/10_진단_원인분석.md` **§22-J(O38-E) · §23(O39) · §24(O40)** · 신규 원칙 **P77~P82**.
+> 이 문서 소관 사실만 발췌했고, 수치는 전부 2026-08-05 실측이다.
+
+### 🔴 `PAYMENT_TYPE` 이 회비/기부금 판별의 **정본 판별자**다 (O40)
+
+이 테이블은 두 원천의 UNION 이며 **컬럼 채움 양상이 전혀 다르다.**
+
+| `PAYMENT_TYPE` | 행수 | `RQEST_AMT`(청구) | `PAY_AMT`(납입) | `MBRFEE_MT` | `MBRFEE_DIV_CD` |
+|---|---|---|---|---|---|
+| 회비 (`TM_PM_MBRFEE_ACMSLT`) | **46,391,620** | 891,959,790,888 | 768,800,286,349 | 채움 | 채움 |
+| 기부금 (`TM_PM_DNTN_DTLS`) | **1,130,252** | 🔴 **전건 NULL** | 126,412,695,459 | 🔴 전건 NULL | 🔴 전건 NULL |
+| 합계 | 47,521,872 | | | | |
+
+🔴 **기부금에는 청구 개념이 구조적으로 없다.** 이 테이블에서 만드는 **비율의 분자·분모는 반드시
+`PAYMENT_TYPE` 으로 스코프를 맞춰야 한다**(P63·P81). 맞추지 않아 GOLD 납부율이 전 기간 **100.36%**,
+미납금액이 **음수(−32억)** 가 됐다(O40).
+
+🟢 **판별자 등가성 실측**: `PAYMENT_TYPE='회비'` 46,391,620행 = `MBRFEE_DIV_CD` 비NULL 46,391,620행
+(**정확 일치**) · 기부금은 비NULL **0행**. 둘은 등가지만 의도가 명시적인 **`PAYMENT_TYPE` 을 쓴다.**
+⚠️ 회원유형(`MEMBER_TYPE='ONCE'`)으로 대체하지 말 것 — 축이 다르고 **마스터부재 314행**이 어느 쪽에도
+들어가지 않아 정의가 새어 나간다(실측 40,000원 어긋남).
+
+### 미납 정의 (DEC-3 정본)
+미납 = `PAY_STAT_CD IN ('F', NULL)` 행의 **`RQEST_AMT`**(청구액) — `PAY_AMT` 가 아니다.
+미납은 "청구했으나 들어오지 않은 금액"이다. 2025 실측 **29,251,314,636** · 1,523,686건.
+`PAY_STAT_CD` 실제값 3종: `S`(성공 9,176,989) · `F`(실패 1,494,512) · NULL(29,174) — 2025 기준.
+
+### ⚠️ 「마감」 개념이 없다
+최종 납입일 실측 **2026-07-01**, **2025년분 회비 2,454건 46,485,890원이 2025-12-31 이후 납입**됐다.
+회비월은 **202911** 까지 존재(미래 편성분). → 연도 실적은 **적재 시점 스냅샷**이며 확정치가 아니다.
+
+---
+
+## 7. [2026-09-16 O162] CRM 원천 개편 반영 (BRONZE_CRM 46 → 50)
+
+> **원천 정본** = `50_handoff/04_데이터마이그 GN_DW_BRONZE_DDL.sql`(2026-09-15 O161 반영분) +
+> 현업 공유 메시지 3건(캠페인 정리·7~8월 백업 적재·8월 마감 전환).
+> 🔴 **이 절은 「무엇이 바뀌었나 + 무엇을 고쳐야 하나」만 담는다.** SILVER 모델 재작성은 착수 전이다.
+> 🔴 **컬럼정의서 CSV 에 신규 6테이블이 전건 0건**이므로(O161 실측) 컬럼 의미는 **현업 확인 대상**이다.
+
+### 7-0. 개편 요약 (신규 4 · 삭제 2 · 컬럼 +1/−1)
+
+| 구분 | 대상 | 내용 |
+|---|---|---|
+| 신규 | `TC_MKTNG_DTL_CD` (16컬럼) | 마케팅 통합 코드. `CD_ID` 3종 = `C001` 마케팅캠페인명 · `C002` 채널 · `U001` UTM |
+| 신규 | `SND_MEMBER_OPEN_LOG` (8컬럼) | 메일 오픈 로그 |
+| 신규 | `SND_MEMBER_MAIL_LINK_LOG` (13컬럼) | 메일 링크 클릭 로그 |
+| 신규 | `TM_MM_FDRM_MBER_DT_DTLS` (5컬럼) | 일시 → 정기 회원 전환(**회비이관 시에만** 기록) |
+| 삭제 | `TM_CM_MKTNG_CMPGN_MNG` · `TM_CM_MKTNG_UTM` | → `TC_MKTNG_DTL_CD` **1개로 통합** |
+| 컬럼 + | `TM_CM_CMPGN_MNG.MKTG_CHANNEL` | 캠페인채널 정보(36 → 37컬럼) · `TC_MKTNG_DTL_CD` `C002` 대응 |
+| 컬럼 − | `SND_MEMBER_LIST.OPEN_DT` | 오픈 이력이 위 신규 로그 2테이블로 **확장 이관**(77 → 76컬럼) |
+
+### 7-1. 코드 체계 — 두 계통이 분리됐다 (🔴 설계 영향 최대)
+
+- `TC_MKTNG_DTL_CD` 는 **기존 코드 테이블(`TC_CMMN_CD`/`TC_CMMN_DTL_CD`)과 연관성이 없다**(현업 명시).
+  ⇒ 🔴 **`CRM_CODE` 에 UNION 으로 섞지 마라.** 섞으면 `CD_ID` 네임스페이스가 충돌하고
+  「코드사전 1개」라는 소비 측 가정이 조용히 깨진다.
+- 구조가 **코드/상세코드 2단**(`CD_ID`+`DTL_CD_ID`)이므로 종전 `MK_CMPGN_CD`·`MK_UTM` **단일 코드 조인과 형태가 다르다.**
+- 🟢 **조치 확정 = 별도 SILVER 객체 `CRM_MKTNG_CODE` 신설**(§1 표 22행).
+  근거 = ㉠ 코드 기준이 늘 때마다 이 테이블에만 `CD_ID` 가 추가되므로 **증분 지점이 1곳**이고
+  ㉡ 기존 `CRM_CODE` 와 분리해야 두 계통의 무관함이 구조로 표현된다.
+  ㉢ DDL 및 dbt 모델을 신설하고 `CRM_CAMPAIGN` 등에서 이를 참조한다.
+- 다른 5축은 **기존 계통 유지** — `TC_CMMN_CD`/`TC_CMMN_DTL_CD` 에 `MM293`(개발인입경로) ·
+  `MM294`(캠페인 카테고리) · `MM295`(캠페인유형1 국내해외) · `MM296`(캠페인유형2 사업사례) ·
+  `MM297`(공통브랜드) 추가. 🔴 **`CD_ID` 만 동일하고 `DTL_CD_ID` 값은 바뀌었다** ⇒
+  DEC-17 의 라벨 조인은 코드값 재실측 없이 재사용하면 안 된다(고아 코드 2건 판정도 재측정 대상).
+- ⚠️ `MKTG_UTM` 컬럼은 **전건 NULL** 로 적재됐다(현업 명시) ⇒ UTM 라벨은 `U001` 경유로만 얻는다.
+
+### 7-2. 발송 오픈 이력 — 컬럼 1개에서 테이블 2개로 확장
+
+- 종전 `CRM_SEND_MEMBER.OPEN_DT` 는 `SND_MEMBER_LIST.OPEN_DT` **1컬럼**이 원천이었다.
+- 개편 후 원천은 **오픈(`SND_MEMBER_OPEN_LOG`)과 링크 클릭(`SND_MEMBER_MAIL_LINK_LOG`) 2테이블**이다.
+- 🟢 **조치 확정**:
+  ㉠ `CRM_SEND_MEMBER` 의 `OPEN_DT` 는 `SND_MEMBER_OPEN_LOG` 에서 회원×발송별 최초 오픈일시 `MIN(OPEN_DT)` 로 축약 적재하여 상위 GOLD(`FACT_MESSAGE_DISPATCH`) 인터페이스를 보존한다.
+  ㉡ 세부 로그 분석을 위해 SILVER 에 `CRM_SEND_MEMBER_OPEN_LOG`(8컬럼) 및 `CRM_SEND_MEMBER_LINK_LOG`(13컬럼) 신규 테이블을 신설한다.
+- 🟢 **효과** — 종전에 없던 **링크 클릭**이 처음 들어온다 ⇒ FSE 의 오픈/클릭 분해가 가능해진다.
+
+### 7-3. 일시 → 정기 전환 (`TM_MM_FDRM_MBER_DT_DTLS`)
+
+- 5컬럼 · **회비이관 시에만** 기록되는 부분집합이다.
+- 🟢 **조치 확정**: SILVER 에 `CRM_MEMBER_CONVERT_HIST` 신규 테이블을 신설하여 전환 이력을 무손실 보존한다.
+- 🔴 **회원 전환을 이 테이블만으로 세지 마라** — 「회비이관 없는 전환」이 있으면 **과소계상**된다.
+  ⇒ `CRM_MEMBER`(FDRM ∪ ONCE) 의 회원번호 체계(`S` 접두)와 대조해 커버리지를 먼저 실측한다.
+- 배선 후보 = `CRM_MEMBER` 속성(전환일·전환여부) 연결. (FME 사건화는 O24 이중계상 방지를 위해 보류 유지).
+
+### 7-4. dbt 영향 실측 분모 (2026-09-16 · `rc=0`)
+
+> 🔴 O161 이 「분모 실측 미착수」로 남긴 항목을 실측했다. 재작성은 **여전히 미착수**다.
+
+| 축 | 분모 | 실측 |
+|---|---|---|
+| `TM_CM_MKTNG` 참조 | `10_dbt_pipeline/models/` | **16건 / 8파일** |
+| `OPEN_DT` 참조 | `10_dbt_pipeline/models/` | **6건 / 2파일** |
+
+- `TM_CM_MKTNG` 8파일 = `silver/_sources.yml`(2 · 원천 선언) · `silver/crm/CRM_CAMPAIGN.sql`(5) ·
+  `silver/crm/CRM_MARKETING_CAMPAIGN.sql`(2 · **모델 전체가 삭제된 원천 전용**) ·
+  `silver/crm/CRM_MEMBER_DEV.sql`(2 · 주석·컬럼) · `silver/crm/_crm_schema.yml`(1) ·
+  `gold/dim/DIM_CAMPAIGN.sql`(1) · `gold/wide/WIDE_MEMBER_EVENT.sql`(1) · `gold/wide/_wide_schema.yml`(1).
+  🔴 **`CRM_MARKETING_CAMPAIGN` 은 원천이 사라져 그대로는 빌드가 깨진다** ⇒ `TC_MKTNG_DTL_CD` `C001` 기준
+  재작성 또는 **폐기** 판단이 필요하다(폐기 시 소비처 확인 선행).
+- `OPEN_DT` 2파일 = `silver/crm/CRM_SEND_MEMBER.sql`(3) · `gold/fact/FACT_MESSAGE_DISPATCH.sql`(3).
+  후자는 `MIN(OPEN_DT)` 로 **오픈 추적 시작시점**을 잡고 오픈 여부를 판정한다 ⇒ §7-2 축약 규칙과 직결.
+- 🔴 **dbt 명령은 에이전트가 실행하지 않는다**(`R4-1`). 재작성 후 사용자가 `dbt parse`·`dbt build` 를 돌린다.
+
+### 7-5. 현업 확인 대상 (신규 · 차단 여부 표기)
+
+| # | 질문 | 차단 |
+|---|---|---|
+| M-1 | `TC_MKTNG_DTL_CD` 16컬럼의 의미·`CD_ATRB1~3` 용도 (컬럼정의서 0건) | 🔴 재작성 차단 |
+| M-2 | `C001` 값이 종전 `MK_CMPGN_CD` 323종과 **동일 도메인**인가(과거 캠페인 라벨 연속성) | 🔴 차단 |
+| M-3 | `MM293~MM297` 의 변경된 `DTL_CD_ID` 대응표(구↔신) | 🟠 라벨 재검증 필요 |
+| M-4 | 오픈·클릭 로그의 회원×발송 중복 허용 여부(재오픈 기록되는가) | 🟠 grain 결정 선행 |
+| M-5 | `TM_MM_FDRM_MBER_DT_DTLS` 가 전환 **전건**인가, 회비이관 건만인가 | 🟠 커버리지 |
+| M-6 | `MKTG_UTM` 전건 NULL 이 **영구**인가 임시인가 | 🟡 |
+
+
+_Co-authored with CoCo_

@@ -4,7 +4,7 @@ doc_role: 신규 19종 테이블 파생 컬럼 COMMENT 초안 — 모델 로직 
 project: GN_DW (굿네이버스)
 created: 2026-09-30
 created_by: O191
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 END-METADATA -->
 
 # 신규 19종 — 파생 컬럼 COMMENT 초안

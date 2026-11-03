@@ -262,7 +262,7 @@ GRANT USAGE ON AGENT GN_DW.SERVING.AGENT_MARKETING TO ROLE GN_DW_SERVICE;
 --     · 제거는 `REMOVE AGENT` 가 아니라 **`DROP AGENT`**.
 --     · SHOW 결과 컬럼명은 소문자 → RESULT_SCAN 에서 큰따옴표 필수.
 --     · `FOR rec IN (…) DO` 커서 변수는 스크립팅 표현식에서 참조 불가 → 루프 대신 명시 분기.
---     근거·검증 상세 = 08 §4.4 · 20_issue/10_진단_원인분석.md §11-D (교훈 P26)
+--     근거·검증 상세 = 08 §4.4 · _archive/O276_project_closure/20_issue/10_진단_원인분석.md §11-D (교훈 P26)
 -- ============================================================================
 USE ROLE ACCOUNTADMIN;
 

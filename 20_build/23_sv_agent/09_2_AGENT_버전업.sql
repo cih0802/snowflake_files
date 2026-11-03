@@ -356,7 +356,7 @@ $$;
 --      🔴 [O273-B · 2026-10-30 운영계 ZL50263 실측] **단, default 가 고정돼 있으면 옮겨지지 않는다.**
 --        AGENT_EXECUTIVE default = VERSION$20 고정 ⇒ ADD VERSION 으로 만든 $21·$22·$23 모두 is_default=false
 --        (O270 도구 제거판 미반영 · 에러 없음). 고정 원인 = SET DEFAULT_VERSION 이력으로 추정(미확인).
---        ⇒ **[5] 에서 「default = 최신 명명 버전」 을 반드시 판정**한다(`tmp/o250/deploy_agents.py deploy` = 불일치 시 rc 1)
+--        ⇒ **[5] 에서 「default = 최신 명명 버전」 을 반드시 판정**한다(`_archive/O276_project_closure/tmp/o250/deploy_agents.py deploy` = 불일치 시 rc 1)
 --        ⇒ 불일치 처방 = `53_FIX_PROD_AGENT_EXECUTIVE_DEFAULT_ZL50263.sql` [2] 방식(조건 검사 후 SET DEFAULT_VERSION).
 --        O184 실측(자동 default)은 「고정 이력 없는 Agent」 에서만 참이다.
 --      [2026-09-28 O184 해소] 아래 모순은 **「자동 is_default」가 옳다**로 종결 — 실측(xf98254)

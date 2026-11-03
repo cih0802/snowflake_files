@@ -1,0 +1,869 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""doc_census.py — 문서군 규모를 **실측**하고, 문서에 손으로 적힌 수와 **대조**한다.
+
+[2026-08-28 O106 신설 · `R1-6-16`·`R2-8-4-c` 의 집행 장치]
+
+🔴 왜 필요한가 (실측 근거 · 이 도구의 존재 이유)
+--------------------------------------------------------------------------
+「조각 수」를 손으로 적은 자리가 **3곳**이고 O106 착수 시점 실측에서
+**9문서 중 8문서 · 총 15건**이 stale 이었다. 세 곳이 **서로 다른 값**을 적고 있었다:
+
+    문서            실측  §0분할표  §0유형등재표  init_ihcho
+    00_INDEX          7      5         5           5
+    02_상태상세        8      4         7           —
+    20_현업확인        7      7 ✓       5           —
+    30_설계            9      7         7           —
+    50_dbt            18     12        13          12
+    01_세션이력        35     26        31          26
+    99_NEXT           13      6         8           6
+
+🔴 **이 문제는 이미 두 번 「경고」로 처방됐고 두 번 다 재발했다.**
+  · O83-H 가 분할표 **8행 전건 과소**를 교정하고 *"다음 세션에는 또 어긋난다 ⇒ 재라"* 를 적었다.
+  · O90 이 유형등재표 **4건**을 교정하고 *"인용하지 말고 실측하라"* 를 적었다.
+  ⇒ **경고를 적은 그 표가 다시 stale 이 됐다.** 진단은 끝났고 **집행 장치가 없었을 뿐이다.**
+
+🟢 그래서 이 도구는 두 가지를 한다
+--------------------------------------------------------------------------
+1. **실측 출력** — 인용할 수를 여기서 얻는다(문서에서 읽지 않는다).
+2. **stale 대조(blocking 가능)** — 문서에 적힌 수를 찾아 실측과 비교한다.
+   ⇒ 손으로 적은 수가 남아 있으면 **게이트가 잡는다.** 경고문에 의존하지 않는다.
+
+🔴 이 도구가 하지 않는 것
+--------------------------------------------------------------------------
+· **DB 를 보지 않는다.** 파일시스템만 읽는다(이 계정은 문서작업용 · `92_실측필요_후속작업.md`).
+· 문서를 **고치지 않는다.** 대조 결과만 낸다(수정은 `fix_stale_counts.py`).
+
+사용
+--------------------------------------------------------------------------
+    python3 scripts/doc_census.py              # 인벤토리 + stale 대조
+    python3 scripts/doc_census.py --strict      # stale 1건이라도 있으면 exit 1
+    python3 scripts/doc_census.py --json        # 기계 판독(session_brief.py 가 소비)
+    python3 scripts/doc_census.py --read-budget # 세션 시작 독해량만
+"""
+
+import argparse
+import io
+import json
+import os
+import re
+import sys
+
+#   🆕 [2026-09-17 O173] cold prefetch 용(없으면 직렬로 되돌아간다 · 판정은 동일하다).
+try:
+    from concurrent.futures import ThreadPoolExecutor
+except ImportError:                                            # pragma: no cover
+    ThreadPoolExecutor = None
+
+ROOT = __import__('kit_paths').ROOT  # [kit] 루트 = kit_paths.py
+DOC_DIR = os.path.join(ROOT, '01_project_control')
+
+# 🔴🔴 [O106 5차 자기시정] **이 한 줄이 없으면 형제 모듈 import 가 실패한다.**
+#   `/workspace` 는 **심링크**라 `python3 scripts/doc_census.py` 로 실행할 때
+#   스크립트 디렉터리가 `sys.path` 에 들어오지 않는다
+#   ⇒ `from doc_type_gate import …` 가 `ModuleNotFoundError` 를 내고,
+#     유형 판정이 **조용히 기본값(갱신형)으로 떨어져** `01_세션이력`(append형)을 🟠 로 오탐했다.
+#   🔴 **import 경로로 부르면 정상**이라 「같은 함수가 다른 값을 낸다」로만 보였다.
+#   `doc_type_gate.py`·`session_brief.py` 도 같은 이유로 이 줄을 갖고 있다 — 워크스페이스 관례다.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+MAX_BYTES = 40 * 1024
+MIN_FREE = 0.20
+
+# ── 분할 문서 = (허브 상대경로, 조각 위치) ────────────────────────────────
+#   조각 위치 = 'sibling'(형제 파일 `-001.md`) | 폴더명(예: '01_세션이력_조각')
+#   🔴 이 목록은 손으로 유지한다. glob 전체를 넣으면 산출물·백업이 섞여
+#     게이트가 상시 빨강이 된다(`P130`). 신규 분할 문서를 만들면 여기 등재한다.
+FAMILIES = [
+    ('01_project_control/00_INDEX_이슈원장.md', '00_INDEX_이슈원장_조각'),
+    ('01_project_control/01_세션이력.md', '01_세션이력_조각'),
+    ('01_project_control/02_상태상세_대시보드_갱신형.md', '02_상태상세_대시보드_갱신형_조각'),
+    ('01_project_control/03_이슈상세.md', '03_이슈상세_조각'),
+    ('01_project_control/10_진단_원인분석.md', '10_진단_원인분석_조각'),
+    ('01_project_control/20_현업확인_요청.md', '20_현업확인_요청_조각'),
+    ('01_project_control/30_설계_의사결정.md', '30_설계_의사결정_조각'),
+    ('01_project_control/50_dbt_파이프라인_미결조치.md', '50_dbt_파이프라인_미결조치_조각'),
+    ('01_project_control/90_해소완료_로그.md', '90_해소완료_로그_조각'),
+    ('01_project_control/99_NEXT_SESSION.md', '01_project_control/99_NEXT_SESSION_조각'),
+    # 🆕 [2026-08-29 O112 · 사용자 결정 ㉠] 여유 부족(6,035 B · 20% 미달)으로 분할했다.
+    #   🔴 `01_project_control/` 밖 문서라 `R1-6-18 ④` 대로 **분모 4곳을 손으로** 편입해야 한다
+    #   (여기 · `doc_type_gate.EXTRA_DOCS` · `doc_heading_gate.DOCS`+골든 · `doc_line_length_gate.CANON`).
+    ('00_guides/01_문서분할_규약.md', '01_문서분할_규약_조각'),
+    # 🆕 [2026-10-24 O261 · 사용자 승인] 여유 부족(33,527 B · 20% 미달)으로 분할 ⇒ SINGLES 에서 이동.
+    ('30_operate/33_account_bootstrap/11_O누적작업_점검_재현_절차.md', '11_O누적작업_점검_재현_절차_조각'),
+]
+
+# ── 미분할 상시 독해 문서 ────────────────────────────────────────────────
+SINGLES = [
+    '00_guides/00_작업지침_세션운영규칙.md',
+    '00_guides/02_파일쓰기_안전규약.md',
+    #   🆕 [2026-09-21 O173] `R3` 무변경 이관 신설(처방 = O172-C-4 ㉠안 · 미분할).
+    '00_guides/04_단계종료_게이트.md',
+    '00_guides/03_init_ihcho_스킬_정본.md',   # 🆕 [O167] 미분할 · 스킬 정본
+    '00_guides/03_init_ihcho_스킬_본문.md',   # 🆕 [O167] 스킬 본문(빌더 추출 대상)
+    '00_guides/03_init_ihcho_스킬_참조_세션종료.md',   # 🆕 [O167] 스킬 참조(references/session-end.md 정본)
+    '00_guides/03_init_ihcho_스킬_개발이력.md',   # 🆕 [O194] 스킬 개발이력(append · 경위 이관처)
+    '01_project_control/31_코드군_매핑등재부.md',
+    '01_project_control/32_컬럼개명표.md',
+    '01_project_control/40_입고대기_원천의존.md',
+    '01_project_control/91_사고사례집.md',
+    '01_project_control/92_실측필요_후속작업.md',
+    '01_project_control/00_BRIEF.md',
+    #   🆕 [2026-09-16 O165-B 편입] Inspection 절차 정본 — `R1-6-18 ④` 분모 4곳 중 네 번째.
+    #     🔴 O165 는 `doc_heading_gate.DOCS` 한 곳만 넣었다 ⇒ 이 문서의 크기·줄수가
+    #       **stale 검사 밖**이었다(이 도구가 막으려던 바로 그 상태 · 위 `FAMILIES` 주석 참조).
+    #   🔴 [2026-10-24 O261] 분할 ⇒ 위 FAMILIES 로 이동(SINGLES 에서 제거).
+]
+
+# ── 「조각 수」를 손으로 적은 자리 = 대조 분모 ────────────────────────────
+#   🔴 분모가 좁으면 게이트가 착시가 된다(`P106`) ⇒ 적힌 곳을 전부 넣는다.
+COUNT_SOURCES = [
+    '01_project_control/00_INDEX_이슈원장.md',          # §0 분할표 + §0 유형등재표(조각에 있다)
+    '00_guides/01_문서분할_규약.md',
+    '00_guides/00_작업지침_세션운영규칙.md',
+    '.snowflake/cortex/skills/init_ihcho/SKILL.md',
+]
+
+# 세션 시작에 「반드시」 읽는 문서 — 이 목록이 독해 예산의 정본이다.
+SESSION_START = [
+    '00_guides/00_작업지침_세션운영규칙.md',
+    '01_project_control/00_BRIEF.md',
+]
+
+# 손으로 적힌 수의 형태. 🔴 `(\d+)개` 는 「조각 N개」 이외에도 쓰이므로
+#   **조각 문맥 토큰이 같은 줄에 있을 때만** 후보로 본다.
+CTX = ('조각', '-001', '형제', '폴더')
+PATS = [
+    re.compile(r'\((\d+)\s*개\)'),
+    re.compile(r'조각\s*\*{0,2}(\d+)\s*개'),
+    re.compile(r'(\d+)\s*조각'),
+    re.compile(r'조각\s+(\d+)\b'),
+    re.compile(r'`-001`\s*~\s*`-0*(\d+)`'),
+    re.compile(r'`-001`\s*~\s*`-(\d+)`'),
+]
+
+# 🔴🔴 [O106 2차 자기시정] **과거 기록은 stale 이 아니다.**
+#   `90` 을 FAMILIES 에 넣자 원장 대시보드 행 2개가 오탐으로 잡혔다:
+#     · *"`R1-1` 원장 **7조각 중 2개만** 읽고 착수"*  ← 그때의 위반 기록
+#     · *"사용자 승인 `--rebalance` **7→8조각**으로 자리 확보"* ← 그때의 조치 기록
+#   둘 다 **과거 상태의 서술**이라 「현재와 다르다」가 정상이다.
+#   ⇒ 「분할 전 줄/바이트는 의도적 고정」과 같은 축이다(원장 §0 명시).
+HISTORY = re.compile(r'\d+\s*→\s*\d+\s*조각|조각\s*중\s|분할 전|구 행범위|presplit|prerebalance')
+
+# 🔴🔴 [O106 2차 자기시정] **긴 행에서는 「같은 줄」이 귀속 근거가 못 된다.**
+#   원장 §1 행은 최대 **1,644자**이고 그 안에 문서명이 여러 개 나온다
+#   ⇒ 「가장 긴 stem」으로 골랐더니 무관한 문서(`90`)에 귀속됐다.
+#   ⇒ **수치 바로 앞 NEAR 자 안에서 가장 가까운 문서명**에 귀속한다.
+NEAR = 80
+
+# 🔴 [O106 3차 자기시정 · `test_doc_census.py` 가 적발] 「같은 줄 문서명 1개」 폴백은
+#   **짧은 줄에서만** 유효하다. 긴 행(원장 §1 = 최대 1,644자)에서는 수치와 문서명이
+#   수백 자 떨어져 있어도 폴백이 발동해 **무관한 문서에 귀속**했다.
+#   ⇒ 폴백에 **줄 길이 가드**를 둔다. 긴 행은 근접 귀속만 허용한다.
+SHORT_LINE = 300
+
+# ── [O106] 바이트·분할여부 축 ───────────────────────────────────────────
+#   🔴🔴 **왜 추가했나**: 첫 판본은 **조각 수만** 봤고, 그 결과 등재표 「처리」 열의
+#     **바이트 수치와 `미분할` 표기가 검사 밖**이었다. O106 종료 점검에서 3건이 나왔다:
+#       · `40_입고대기_원천의존` 기재 12,684B ↔ 실측 18,784B
+#       · `01_문서분할_규약`     기재 17,131B ↔ 실측 21,231B
+#       · `90_해소완료_로그`     기재 「미분할」 ↔ **O106 이 분할했다**(그 세션이 만든 stale)
+#     🔴 조각 수 축만 닫고 「stale 0」이라 보고한 것은 **분모가 좁은 게이트**(`P106`)다 —
+#       이 도구가 막으려던 바로 그 상태를 도구 자신이 갖고 있었다.
+#   ⇒ 같은 근접 귀속 규칙으로 **바이트**와 **`미분할` 표기**도 대조한다.
+BYTE_PATS = [
+    re.compile(r'\(([\d,]{4,})\s*B\)'),          # 미분할(14,891B)
+    re.compile(r'([\d,]{4,})\s*B\b'),            # … 21,231B …
+]
+UNSPLIT = re.compile(r'(?<!~)미분할')          # 🔴 `~~미분할~~`(취소선 = 과거 기록)은 제외
+# 바이트 축의 과거 기록 제외 — 「N B → M B」 같은 변화 서술과 분할 당시 기록.
+BYTE_HISTORY = re.compile(r'B\s*→|→\s*[\d,]+\s*B|분할 전|원문 줄|구 행범위|B\)\(')
+
+# 🔴 [O106 8차 자기시정] **목표치·상한은 현재 크기 주장이 아니다.**
+#   `00_BRIEF` 행의 *"목표 ≤32,768B(축3 여유 20%)"* 가 「기재 32,768 ↔ 실측 11,213」로 오탐됐다.
+#   ⇒ 수치 **바로 앞**에 목표·상한 표지가 있으면 판정하지 않는다.
+BYTE_TARGET = re.compile(r'(목표|상한|이내|최대|이하|≤|<=|<)\s*[~약]?\s*$')
+
+
+def row_key_stem(line, keys):
+    """표 행이면 **첫 셀(행 키)** 에서 문서 stem 을 찾는다. 표가 아니면 None.
+
+    🔴🔴 [O106 7차 자기시정] `미분할`·바이트 축을 근접/이월 귀속으로 판정했더니
+      등재표에서 **오탐 5건**이 났다. 원인 = 등재표 행은
+      `| \\`문서명.md\\` | 유형 | 근거(장문) | 처리 |` 구조라 **문서명과 「미분할」이 80자 넘게 떨어져**
+      근접 귀속이 실패하고 **직전 행의 carry 로 흘렀다**(`90_해소완료_로그` 가 3행에 번졌다).
+      ⇒ 표 행에서는 **첫 셀이 곧 그 행의 주체**다 ⇒ 첫 셀로 귀속한다(가장 강한 신호).
+    """
+    s = line.strip()
+    if not s.startswith('|'):
+        return None
+    first = s.strip('|').split('|')[0]
+    hits = sorted([k for k in keys if k in first], key=len, reverse=True)
+    return hits[0] if hits else None
+
+
+#: 🆕 🟢🟢 [2026-09-17 O173] **프로세스 1회 바이트 캐시** — 성능 처방이자 일관성 처방이다.
+#:   실측(O173 착수) = 브리핑 게이트 6종 137.0초 중 `doc_census` 가 **115.5초(84%)**.
+#:   원인은 알고리즘이 아니라 **I/O 횟수**였다 — `census()` 가 같은 파일을
+#:   ㉠ `nbytes_of`(바이트) ㉡ `read_text`(텍스트)로 **두 번** 열고,
+#:   append형은 `watch_b` 에서 꼬리 조각을 **세 번째로** 또 열었다.
+#:   `/workspace` 는 POSIX 파일시스템이 아니라 **스테이지 마운트**라 open/read 지연이
+#:   로컬 대비 수십 배다 ⇒ **읽기 횟수가 곧 벽시계 시간**이다.
+#: 🔴 `O143` 불변식을 깨지 않는다 — 바이트 수는 여전히 **읽은 결과**이고
+#:   `os.path.getsize`(stat)에 의존하지 않는다(블록 반올림 오탐 경로를 밟지 않는다).
+#:   ⇒ 텍스트는 그 **같은 바이트열을 디코드**해 얻으므로 두 축이 어긋날 수 없다(`R3-9 ㉡`).
+_BLOB = {}
+
+
+def read_bytes(p):
+    """파일 바이트열(프로세스 내 1회만 읽는다)."""
+    b = _BLOB.get(p)
+    if b is None:
+        with io.open(p, 'rb') as fh:
+            b = fh.read()
+        _BLOB[p] = b
+    return b
+
+
+#: 🆕 🟢🟢 [2026-09-17 O173] **cold prefetch 병렬화** — 이 도구의 지배 비용을 직접 때린다.
+#:   🔴 실측이 가설을 두 번 뒤집었으므로 근거를 남긴다:
+#:     ㉠ 1차 = cold `doc_census` **115.52초** · warm **0.30초** · distinct **241파일 / 4.74MB**
+#:        ⇒ 파일당 고정 지연 **~0.48초** · 실효 41KB/s.
+#:     ㉡ 「이중 읽기가 원인」 가설은 **틀렸다** — warm 에서 구/신 패턴 비교가 1.7x·0.07초뿐이었다
+#:        (cold 에서 두 번째 읽기는 어차피 warm 이므로 cold 비용을 줄이지 못한다).
+#:     ㉢ 「대역폭 바운드」 가설도 **틀렸다** — 평균 530KB 대용량 파일에서는 그렇게 보였으나,
+#:        이 문서군은 평균 20KB 다 ⇒ **지연 바운드**다.
+#:     ㉣ 진짜 cold 소파일 실측 = 60파일 직렬 36.38초 ↔ 16워커 병렬 9.79초 = **3.7x**
+#:        (병렬군이 바이트를 **더 많이** 읽고도 빨랐다 ⇒ 교란이 결론을 돕지 않는다).
+#: 🔴 워커 수를 늘려 더 얻을 수 있는지는 **판정 보류**다 — 측정이 자기 분모를 소모한다
+#:   (한 번 읽은 파일은 warm 이 되어 재실험이 불가능하다). 실측된 16 을 쓴다.
+#: 🔴 판정 결과는 바뀌지 않는다 — prefetch 는 `_BLOB` 을 채울 뿐이고 **읽는 내용이 같다**.
+#:   실패한 파일은 캐시에 넣지 않으므로 기존 예외 경로(`read_bytes`)가 그대로 살아난다.
+PREFETCH_WORKERS = 16
+
+
+def prefetch(paths):
+    """`_BLOB` 을 **병렬로** 채운다(스테이지 cold 지연을 중첩시킨다).
+
+    🔴 실패를 삼키는 것이 안전하다 — 여기서 못 읽은 파일은 `read_bytes` 가 다시 열고,
+      그때 나는 예외가 **원래의 예외**다(여기서 던지면 호출부의 예외 처리가 어긋난다).
+    """
+    todo = [p for p in dict.fromkeys(paths) if p not in _BLOB]
+    if len(todo) < 2 or ThreadPoolExecutor is None:
+        return
+
+    def grab(p):
+        try:
+            with io.open(p, 'rb') as fh:
+                return p, fh.read()
+        except (IOError, OSError):
+            return p, None
+
+    with ThreadPoolExecutor(max_workers=PREFETCH_WORKERS) as ex:
+        for p, b in ex.map(grab, todo):
+            if b is not None:
+                _BLOB[p] = b
+
+
+def read_text(p):
+    """파일 텍스트. 🔴 **universal newlines 를 명시적으로 재현한다.**
+
+    🆕 🔴 [2026-09-17 O173] 종전은 `io.open(encoding='utf-8')` 텍스트 모드였고,
+      그것은 파이썬이 **`\\r\\n`·단독 `\\r` 를 `\\n` 으로 번역**한다(`newline=None` 기본값).
+      바이트열을 그냥 `decode` 하면 그 번역이 사라져 **CRLF 파일의 문자 수가 달라진다**
+      ⇒ 여유·독해예산 판정이 조용히 어긋난다.
+      🔎 실측(O173 시점) = `.md` 354개 전건에 `\\r` **0건**이라 지금은 값이 같다.
+      🔴 그러나 「지금 같다」는 근거가 아니다 — 외부에서 CRLF 파일 1개가 들어오면 갈라진다
+      ⇒ **값이 같은 동안에 형태를 맞춰 둔다**(`R3-9 ㉡` 같은 것을 다르게 재는 지점 제거).
+    """
+    return read_bytes(p).decode('utf-8', 'replace') \
+        .replace('\r\n', '\n').replace('\r', '\n')
+
+
+def nbytes_of(p):
+    """파일의 **실제 바이트 수**. 🔴 `os.path.getsize`(stat)를 쓰지 않는다.
+
+    🆕 🔴🔴 [2026-09-08 O143 교체 · 실관측 기반]
+      착수 1차 브리핑이 `31_코드군_매핑등재부.md` 를 **stale 1건**으로 보고했다:
+      「기재 14,891 ↔ 실측 14,896」. 그런데 실제 파일은 **14,891 B** 이고
+      **14,896 은 14,891 의 16바이트 블록 반올림값**이다(`cortex ws ls` 도 14,896 을 낸다).
+      ⇒ 기재가 맞고 **「실측」이 틀렸다.**
+      🔴 위험한 것은 오탐 그 자체가 아니라 **오탐이 유도하는 조치**다 —
+        세션이 이 경고를 믿고 기재를 14,896 으로 「교정」하면 **정본이 거짓이 된다.**
+      🔎 지침 `R2-5` 는 「`ws ls` size 는 블록 반올림값이므로 바이트 대조는 해시로」라고
+        이미 경고하는데, 이 함수가 `os.path.getsize` 로 **같은 함정을 밟고 있었다.**
+      ⚠️ 기전은 유력추정이다 — 이 워크스페이스의 `/workspace` 는 스테이지 마운트이고,
+        파일을 아직 읽지 않은(cold) 상태의 `stat` 이 스테이지의 블록 반올림 크기를 낸 것으로
+        보인다. **읽으면 정확해지므로 사후 재현이 불가능하다**(실측: 이 세션 시점에
+        `.md` 314개 전건에서 stat == 실제였다 — 전부 이미 materialize 된 뒤였다).
+      ⇒ 🟢 그래서 기전을 규명하는 대신 **측정 자체를 stat 비의존으로 바꾼다.**
+        읽은 바이트 수는 마운트 상태와 무관하게 정확하므로 이 판정은 기전과 무관하게 옳다.
+      🔴 이것이 `R3-9 ㉡`(같은 것을 다르게 재는 지점)의 실물이다 —
+        `wc -c`·`read_bytes` 는 14,891 을 내고 `getsize`·`ws ls` 는 14,896 을 냈다.
+      🆕 🟢 [2026-09-17 O173] 읽기는 `read_bytes()` 캐시를 경유한다 — **여전히 읽은 결과**이고
+        stat 에 의존하지 않으므로 위 판정은 그대로 성립한다(변한 것은 읽는 **횟수**뿐이다).
+    """
+    return len(read_bytes(p))
+
+
+def chunk_paths(hub_rel, where):
+    """허브의 조각 파일 경로 목록(정렬).
+
+    🔴🔴 [2026-08-28 O107] `where` 가 `'sibling'` 이면 **허브의 `SPLIT-OUTDIR` 마커를 먼저 본다.**
+      근거 = 조각 위치의 **정본은 마커**다(`R1-6-10` · `doc_heading_gate`·`index_row_gate`·
+      `doc_type_gate` 는 이미 마커를 읽는다). 이 함수만 호출자가 준 문자열을 믿으면
+      **폴더로 이전한 문서를 「조각 0개」로 보고**하고, 그 값을 쓰는 `session_brief` 는
+      **허브만 읽어 착수표·인수인계를 조용히 비운다**(세션 시작이 깨진다).
+      ⇒ 선언(`FAMILIES`)과 실제(마커)가 어긋나면 **실제를 따르고**, 불일치는 stale 대조가 잡는다.
+
+    🆕 🔴🔴 [2026-09-17 O172 · 사용자 결정 ⓐ] **폴더 분기를 패턴으로 좁힌다.**
+      🔴 종전 = `f.endswith(ext)` ⇒ 폴더의 **모든 `.md`** 를 조각으로 셌다.
+        ⇒ `split_doc` 은 `-%03d` 로 **구성해** 열거하므로 두 축이 **다르게 셌다**
+        (실측 = `99_NEXT_SESSION` split_doc **35** ↔ 이 함수 **36** — 차이는 사이드카
+        `00_선택표.md` 다). 🔴 이것이 `R3-9 ㉡`·`J8`「같은 것을 다르게 재지 마라」의 실물이고,
+        라벨 파일을 폴더에 두면 그 오차가 **세션마다 +1 로 누적**된다.
+      🟢 ⇒ 조각의 정의를 **파일명 패턴**으로 고정한다 = `<stem>-\\d{3}<ext>`.
+        사이드카(`00_선택표.md`)와 라벨 파일(`-O0172-A.md`)은 **조각이 아니다.**
+    """
+    hub = os.path.join(ROOT, hub_rel)
+    stem, ext = os.path.splitext(hub)
+    out = []
+    if where == 'sibling':
+        marked = outdir_marker(hub)
+        if marked:
+            where = marked
+    if where == 'sibling':
+        n = 1
+        while True:
+            c = '%s-%03d%s' % (stem, n, ext)
+            if not os.path.exists(c):
+                break
+            out.append(c)
+            n += 1
+    else:
+        d = os.path.join(os.path.dirname(hub), where)
+        if os.path.isdir(d):
+            rx = chunk_rx(os.path.basename(stem), ext)
+            out = [os.path.join(d, f) for f in sorted(os.listdir(d))
+                   if rx.match(f)]
+    return out
+
+
+# 🆕 🔴🔴 [2026-09-17 O172 신설 · 사용자 결정 ⓐⓑ] **파일명 규격 3종을 한 곳에서 정의한다.**
+#   🔴 왜 한 곳인가 = 열거 축이 갈라지면 「같은 것을 다르게 재는」 결함이 난다(`R3-9 ㉡`).
+#     실측 = 이 워크스페이스에 조각 열거 코드가 **4곳**(이 파일 · `split_doc` · `doc_heading_gate` ·
+#     `index_row_gate`)이고, 그중 둘은 `-%03d` 구성 · 둘은 `listdir` 였다.
+#   규격 =
+#     · **조각**      `<stem>-001.md`      — `split_doc` 이 만드는 순서 무변경 분할물
+#     · **라벨 파일** `<stem>-O0172-A.md`  — 세션 라벨 1단위 = 1파일(append 성격)
+#     · **사이드카**  `00_*.md`            — 자동 생성 색인(선택표 등)
+#   🔴 **ⓑ 접미는 항상 붙인다** — 최초 단위도 `-A` 다(무접미 금지).
+#     🔎 왜 = 무접미와 `-B` 가 섞이면 ㉠ 파일명 폭이 흔들려 정렬이 깨지고
+#       ㉡ 「무접미가 1번인가」를 매번 판정해야 한다. 규격화하면 **정렬 = 발생 순서**다.
+#     🔎 A~Z 로 충분한가 = 실측(이력·원장·`99_NEXT` 전량 스캔) 최대는 **21단위**
+#       (`O59` = 무접미 + A~T)이므로 26 자리로 담기지만 **여유가 5뿐**이다
+#       ⇒ 🟢 소진 시 **2자 확장**(`-AA`·`-AB`)을 허용하고 정렬은 **길이 우선**으로 둔다
+#       (`sorted` 가 `-Z` < `-AA` 를 그렇게 낸다 — 길이가 짧은 쪽이 먼저다).
+LABEL_SUFFIX = r'[A-Z]{1,2}'
+
+
+def chunk_rx(stem_base, ext='.md'):
+    """`<stem>-001.md` 형태 **조각만** 매치하는 정규식."""
+    return re.compile(r'^%s-\d{3}%s$' % (re.escape(stem_base), re.escape(ext)))
+
+
+def label_rx(stem_base, ext='.md'):
+    """`<stem>-O0172-A.md` 형태 **라벨 파일만** 매치하는 정규식(접미 필수)."""
+    return re.compile(r'^%s-O(\d{4})-(%s)%s$'
+                      % (re.escape(stem_base), LABEL_SUFFIX, re.escape(ext)))
+
+
+def label_paths(hub_rel, where):
+    """허브에 딸린 **라벨 파일** 경로 목록(O번호 → 접미 순 정렬).
+
+    🔴 조각과 **분모가 다르다** — 조각은 순서 무변경 분할물이고 라벨 파일은 append 단위다.
+    🟢 정렬 키 = (O번호, 접미 길이, 접미) ⇒ `O0059-Z` < `O0059-AA` < `O0060-A`.
+    """
+    hub = os.path.join(ROOT, hub_rel)
+    stem, ext = os.path.splitext(hub)
+    if where == 'sibling':
+        where = outdir_marker(hub) or 'sibling'
+    d = os.path.dirname(hub) if where == 'sibling' \
+        else os.path.join(os.path.dirname(hub), where)
+    if not os.path.isdir(d):
+        return []
+    rx = label_rx(os.path.basename(stem), ext)
+    hit = []
+    for f in os.listdir(d):
+        m = rx.match(f)
+        if m:
+            hit.append((int(m.group(1)), len(m.group(2)), m.group(2),
+                        os.path.join(d, f)))
+    return [h[3] for h in sorted(hit)]
+
+
+OUTDIR_RX = re.compile(r'<!--\s*SPLIT-OUTDIR:\s*(.+?)\s*-->')
+
+
+def outdir_marker(hub_abs):
+    """허브에 기록된 조각 폴더명(없으면 None). `split_doc.hub_outdir` 와 같은 규칙이다."""
+    if not os.path.exists(hub_abs):
+        return None
+    try:
+        #   🆕 🟢 [O173] 캐시 경유 — 허브는 `census()` 에서도 읽으므로 중복 I/O 가 사라진다.
+        m = OUTDIR_RX.search(read_text(hub_abs))
+    except (IOError, OSError, UnicodeDecodeError):
+        return None
+    return m.group(1) if m else None
+
+
+def kinds_from_registry():
+    """문서 유형을 **원장 §0 등재표**에서 읽는다(정본 공유).
+
+    🔴🔴 [O106 4차 자기시정] 첫 판본은 유형을 몰라서 **모든 문서의 여유를 `max` 로** 쟀다.
+      그런데 `doc_type_gate` 는 **append형은 꼬리만** 본다(비꼬리 조각은 불변이 정상이므로).
+      ⇒ `01_세션이력`(비꼬리 조각 38,225B · 꼬리 27,649B)이 여기서는 🟠, 저기서는 통과였다.
+      🔴 이것이 `R3-9` 가 경고한 **「게이트끼리 판정 기준이 어긋난 지점」**이고
+        O83-H 에서 실제로 결함 2건을 낸 유형이다 ⇒ **정본을 공유해 축을 맞춘다.**
+    🔴🔴 [O106 5차 자기시정] 첫 판본은 실패를 `except Exception: return {}` 로 **조용히 삼켰다.**
+      그 결과 유형 조회가 실패한 실행에서 **전 문서가 「갱신형」으로 표시**되고
+      `01_세션이력`(append형)이 🟠 로 오탐됐다 — 그런데 **import 경로로 부르면 정상**이라
+      「같은 함수가 다른 값을 낸다」는 현상으로만 보였다.
+      🔴 **조용한 실패는 이 워크스페이스가 반복해 당한 유형**이다(`P106` 「게이트가 침묵」).
+      ⇒ 실패하면 **stderr 에 경고를 내고** 표에도 `유형?` 로 표시한다.
+    """
+    try:
+        from doc_type_gate import parse_registry, index_logical
+        reg = parse_registry(index_logical())
+        out = {os.path.splitext(os.path.basename(k))[0]: v[0]
+               for k, v in reg.items()}
+        if not out:
+            sys.stderr.write('🟠 유형 등재표가 비었다 — 유형 판정을 신뢰하지 마라\n')
+        return out
+    except Exception as e:
+        sys.stderr.write('🔴 유형 등재표 로드 실패(%s: %s) — 유형·여유 판정이 무효다\n'
+                         % (type(e).__name__, e))
+        return {}
+
+
+def census():
+    """실측 인벤토리. 반환 = {'families': [...], 'singles': [...]}"""
+    kinds = kinds_from_registry()
+    #   🆕 🟢 [O173] 읽을 파일을 **먼저 전부 모아 병렬 prefetch** 한다 — cold 지연을 중첩시킨다.
+    #   🔴 이 블록은 판정에 관여하지 않는다(캐시만 채운다) ⇒ 값은 prefetch 유무와 무관하다.
+    warm = []
+    for hub_rel, where in FAMILIES:
+        hub = os.path.join(ROOT, hub_rel)
+        if os.path.exists(hub):
+            warm.append(hub)
+            warm.extend(chunk_paths(hub_rel, where))
+    for rel in SINGLES:
+        p = os.path.join(ROOT, rel)
+        if os.path.exists(p):
+            warm.append(p)
+    prefetch(warm)
+    fams = []
+    for hub_rel, where in FAMILIES:
+        hub = os.path.join(ROOT, hub_rel)
+        if not os.path.exists(hub):
+            continue
+        chunks = chunk_paths(hub_rel, where)
+        allp = [hub] + chunks
+        sizes = [nbytes_of(p) for p in allp]
+        chars = sum(len(read_text(p)) for p in allp)
+        mx = max(sizes) if sizes else 0
+        stem = os.path.splitext(os.path.basename(hub_rel))[0]
+        kind = kinds.get(stem, '갱신형')
+        # append형은 **꼬리만** 자란다 ⇒ 감시 대상도 꼬리다(`doc_type_gate` 와 동일 축).
+        watch_b = nbytes_of(chunks[-1]) if (kind == 'append형' and chunks) else mx
+        fams.append({
+            'hub': hub_rel,
+            'stem': stem,
+            'kind': kind,
+            'where': where,
+            'chunks': len(chunks),
+            'files': len(allp),
+            'bytes': sum(sizes),
+            'chars': chars,
+            'max_bytes': mx,
+            'watch': watch_b,
+            'free': MAX_BYTES - watch_b,
+            'tight': (kind != '정적') and (MAX_BYTES - watch_b) < MAX_BYTES * MIN_FREE,
+        })
+    sing = []
+    for rel in SINGLES:
+        p = os.path.join(ROOT, rel)
+        if not os.path.exists(p):
+            continue
+        b = nbytes_of(p)
+        stem = os.path.splitext(os.path.basename(rel))[0]
+        kind = kinds.get(stem, '갱신형')
+        sing.append({
+            'path': rel,
+            'stem': stem,
+            'kind': kind,
+            'bytes': b,
+            'chars': len(read_text(p)),
+            'free': MAX_BYTES - b,
+            'tight': (kind != '정적') and (MAX_BYTES - b) < MAX_BYTES * MIN_FREE,
+        })
+    return {'families': fams, 'singles': sing}
+
+
+def family_files_text(hub_rel, where):
+    """허브+조각 전체 텍스트(대조 소스가 분할돼 있을 때 쓴다)."""
+    hub = os.path.join(ROOT, hub_rel)
+    parts = [(hub, read_text(hub))]
+    for c in chunk_paths(hub_rel, where):
+        parts.append((c, read_text(c)))
+    return parts
+
+
+def attribute(line, hits, carry, carry_age, pos, actual):
+    """수치 위치 `pos` 를 어느 문서에 귀속할지 판정. 불가면 None."""
+    window = line[max(0, pos - NEAR):pos]
+    near = [(window.rfind(s), s) for s in actual if s in window]
+    if near:
+        return max(near)[1]
+    if len(hits) == 1 and len(line) <= SHORT_LINE:
+        return hits[0]
+    # 🔴🔴 [2026-08-28 O108] **이월 귀속에도 줄 길이 가드가 필요하다**(인수 `99_NEXT §0-MMM ▣QQQ ⑥㉠`).
+    #   O106 이 「같은 줄 문서명 1개」 폴백에만 `SHORT_LINE` 을 걸었고 **carry 축에는 걸지 않았다**
+    #   ⇒ 원장 §1 에 문서명을 언급한 행을 넣자, **뒤따르는 1,458~1,911자 행의 무관한 수치**가
+    #     그 문서의 「조각 수 기재」로 오인돼 stale 3건이 떴다(내가 적은 조각 수는 **0건**).
+    #   🔴 O107 은 이것을 **표기를 바꿔 회피**했고 규칙은 그대로 남겼다 — 그래서 재발했다.
+    #   ⇒ 설계 원칙(`SHORT_LINE` 주석)이 이미 「**긴 행은 근접 귀속만 허용한다**」이므로
+    #     carry 도 같은 가드를 받는다. 긴 행의 수치를 **직전 행의 문서**에 귀속하는 것은 추측이다.
+    if not hits and carry_age <= 2 and len(line) <= SHORT_LINE:
+        return carry
+    return None
+
+
+def scan_text(text, actual, relname='SYNTH.md', sizes=None, split=None):
+    """한 파일 텍스트에서 stale 후보를 찾는다(순수 함수 · 테스트 대상).
+
+    `actual` = {stem: 조각수} · `sizes` = {stem: 바이트} · `split` = {stem: 분할됨(bool)}
+
+    🔴 [O106 자기시정 6회] 이 함수는 **재현율·정밀도·분모**를 동시에 만족해야 한다.
+      · 재현율: 첫 판본은 「같은 줄 문서명 1개」만 봐서 **17건 중 13건**만 잡았다(`P106`).
+      · 정밀도: 분모를 넓히자 원장 §1 긴 행(최대 **1,644자**)에서 **오탐 2건**이 났다
+        (`7→8조각` · `7조각 중 2개만` = **과거 기록**).
+      · 분모: **조각 수만** 보고 「stale 0」이라 보고했는데 등재표의 **바이트·`미분할` 표기**가
+        검사 밖이라 **3건이 남아 있었다**(그중 1건은 O106 자신이 만든 stale).
+      ⇒ `HISTORY` 제외 + **근접 귀속** + **바이트·분할여부 축**을 함께 둔다.
+    """
+    sizes = sizes or {}
+    split = split or {}
+    found = []
+    carry, carry_age = None, 99
+    for i, line in enumerate(text.split('\n'), 1):
+        hits = sorted([s for s in actual if s in line], key=len, reverse=True)
+        if hits:
+            carry, carry_age = hits[0], 0
+        else:
+            carry_age += 1
+
+        def add(axis, stem, written, got):
+            found.append({'file': relname, 'line': i, 'doc': stem, 'axis': axis,
+                          'written': written, 'actual': got,
+                          'text': line.strip()[:110]})
+
+        # ── 축 A: 조각 수 ────────────────────────────────────────────────
+        if any(t in line for t in CTX) and not HISTORY.search(line):
+            for rx in PATS:
+                for m in rx.finditer(line):
+                    stem = attribute(line, hits, carry, carry_age, m.start(), actual)
+                    if stem and int(m.group(1)) != actual[stem]:
+                        add('조각수', stem, int(m.group(1)), actual[stem])
+
+        # ── 축 B: 바이트 ────────────────────────────────────────────────
+        if sizes and not BYTE_HISTORY.search(line):
+            row = row_key_stem(line, sizes)
+            for rx in BYTE_PATS:
+                for m in rx.finditer(line):
+                    if BYTE_TARGET.search(line[max(0, m.start() - 12):m.start()]):
+                        continue           # 목표·상한 표기 ⇒ 현재 크기 주장이 아니다
+                    stem = row or attribute(line, hits, carry, carry_age,
+                                            m.start(), sizes)
+                    if stem is None or stem not in sizes:
+                        continue
+                    got = int(m.group(1).replace(',', ''))
+                    if got != sizes[stem]:
+                        add('바이트', stem, got, sizes[stem])
+
+        # ── 축 C: `미분할` 표기 ─────────────────────────────────────────
+        #   🔴 이 축은 **표 행의 첫 셀로만** 귀속한다 — 근접/이월 귀속은 오탐 5건을 냈다.
+        if split:
+            m = UNSPLIT.search(line)
+            if m:
+                stem = row_key_stem(line, split)
+                if stem is not None and split.get(stem):
+                    add('미분할표기', stem, 0, 1)
+
+    # 🔴 [O106] **중복 제거는 이 함수 안에서** 한다 — `PATS` 두 정규식이 같은 자리를
+    #   물어 같은 항목이 2번 나왔다(`test_doc_census.py` 가 적발).
+    seen, out = set(), []
+    for f in found:
+        k = (f['line'], f['doc'], f['axis'], f['written'])
+        if k not in seen:
+            seen.add(k)
+            out.append(f)
+    return out
+
+
+def stale_check(inv):
+    """문서에 적힌 조각 수·바이트·`미분할` 표기 ↔ 실측 대조."""
+    actual, sizes, split = {}, {}, {}
+    for f in inv['families']:
+        keys = [f['stem']] + ([f['where'].rstrip('/')] if f['where'] != 'sibling' else [])
+        for k in keys:
+            actual[k] = f['chunks']
+            split[k] = f['chunks'] > 0          # 분할된 문서에 「미분할」은 stale 이다
+    for s in inv['singles']:
+        sizes[s['stem']] = s['bytes']
+        split[s['stem']] = False
+
+    found = []
+    for src in COUNT_SOURCES:
+        p = os.path.join(ROOT, src)
+        if not os.path.exists(p):
+            continue
+        # 대조 소스 자신이 분할돼 있으면 조각까지 본다
+        where = dict(FAMILIES).get(src)
+        files = family_files_text(src, where) if where else [(p, read_text(p))]
+        for fp, text in files:
+            found.extend(scan_text(text, actual, os.path.relpath(fp, ROOT),
+                                   sizes=sizes, split=split))
+    seen, out = set(), []
+    for f in found:
+        k = (f['file'], f['line'], f['doc'], f['axis'], f['written'])
+        if k not in seen:
+            seen.add(k)
+            out.append(f)
+    return out
+
+
+def read_budget(inv):
+    """세션 시작 필수 독해량 실측 + 「전량 독해 규약대로면」 비교값."""
+    must = []
+    for rel in SESSION_START:
+        p = os.path.join(ROOT, rel)
+        if os.path.exists(p):
+            must.append((rel, nbytes_of(p), len(read_text(p))))
+    tot_b = sum(x[1] for x in must)
+    tot_c = sum(x[2] for x in must)
+    everything = sum(f['chars'] for f in inv['families']) + \
+        sum(s['chars'] for s in inv['singles'])
+    return {'must': must, 'bytes': tot_b, 'chars': tot_c, 'all_chars': everything}
+
+
+def split_denominator_check():
+    """분할 문서가 **다른 도구의 분모에서 「미분할」로 취급되고 있지 않은가**.
+
+    🔴🔴 [2026-08-29 O112-B 신설] 왜 필요한가 — **문서를 쪼개면 분모가 조용히 깨진다.**
+    O112 가 `00_guides/01_문서분할_규약.md` 를 분할하며 실측한 사고 2건:
+      · `clause_order_gate` 가 **`조문 0개`를 찍고도 ✅** 를 냈다(허브는 목차만 담는다 · 총계 95 → 70).
+      · `fix_stale_counts` 가 그 문서를 **`FLAT_SOURCES`(미분할)** 로 계속 취급해 **본문을 건너뛰었다.**
+    🔴 두 번 다 **사람이 「분모 4곳 편입」 체크리스트를 이행했는데도** 남았다
+      (`R1-6-18 ④` 는 4곳만 열거하고 실제 의존 지점은 그보다 많다).
+    ⇒ 체크리스트를 **기계 판정으로 바꾼다.** 판정식은 「같은 것을 다르게 재는 지점」이 어긋났는가다(`R3-9 ㉡`).
+
+    검사 축:
+      ㉠ 모든 조각이 `doc_line_length_gate` 의 glob 분모에 들어오는가(줄길이·표 검사 밖이면 손실이 보이지 않는다).
+      ㉡ 분할 허브가 `fix_stale_counts.FLAT_SOURCES` 에 남아 있지 않은가(남으면 본문 미스캔).
+      ㉢ 조문 문서(`clause_order_gate.DOCS`)라면 논리 문서에서 조문이 **1개 이상** 잡히는가.
+      🆕 ㉣ **미분할 문서가 분모 4곳에 전건 편입돼 있는가**(2026-09-16 O166-C 신설 · O165 `D11` 후속 처방).
+    🔴 축이 늘면 여기 추가하라 — 이 함수가 「분할 후 점검」의 정본이다.
+
+    🆕 🔴🔴 [2026-09-16 O166-C] **축㉣ 를 왜 신설했나 — 이 함수는 「분할 문서」만 보고 있었다.**
+      🔎 실사고(O165 `D11`) = Inspection 절차서(**미분할** 정본)를 `doc_heading_gate.DOCS` **한 곳만**
+        편입하고 나머지 3곳(원장 §0 유형 등재표 · `doc_type_gate.EXTRA_DOCS` ·
+        `doc_line_length_gate.CANON`)을 빠뜨렸다 ⇒ 그 문서의 **한 줄 2000자 · 바이트 상한 · 크기 stale**
+        3축이 **전부 검사 밖**이었고, 제목 축 하나만 지켜졌다.
+      🔴 그때 이 함수는 **아무것도 말하지 않았다** — `FAMILIES`(분할)만 순회하므로
+        **미분할 문서는 원리적으로 볼 수 없었다.** ⇒ O165 가 *"사람이 `grep` 으로 잡았다"* 고 적은 그 상태다.
+      🟢 판정식 = **`doc_heading_gate.DOCS` 에 있는 미분할 문서가 다른 3곳에도 있는가**(부재 0 이어야 한다).
+        🔴 기준 분모를 `DOCS` 로 잡는 이유 = 제목 축은 **거의 항상 먼저 편입**되므로(O165 가 그랬다)
+        「제목만 있고 나머지가 없다」가 **실제 결함 형태**다. 역방향(다른 곳에만 있는 문서)은
+        `doc_type_gate` 축1(유형 미선언)과 `doc_census` SINGLES stale 이 이미 본다.
+    """
+    fails = []
+    try:
+        import doc_line_length_gate as LL
+        covered = set(LL.expand_globs())
+    except Exception as e:                                   # pragma: no cover
+        covered = None
+        fails.append('doc_line_length_gate 분모를 읽지 못했다: %s' % e)
+    try:
+        import fix_stale_counts as FS
+        flat = set(FS.FLAT_SOURCES)
+    except Exception as e:                                   # pragma: no cover
+        flat = set()
+        fails.append('fix_stale_counts 분모를 읽지 못했다: %s' % e)
+    try:
+        import clause_order_gate as CO
+        clause_docs = set(CO.DOCS)
+    except Exception as e:                                   # pragma: no cover
+        clause_docs = set()
+        fails.append('clause_order_gate 분모를 읽지 못했다: %s' % e)
+
+    for hub, where in FAMILIES:
+        chunks = [os.path.relpath(p, ROOT) for p in chunk_paths(hub, where)]
+        if covered is not None:
+            miss = [c for c in chunks if c not in covered]
+            if miss:
+                fails.append('%s — 조각 %d개가 `doc_line_length_gate` 분모 밖이다: %s'
+                             % (hub, len(miss), miss[0]))
+        if hub in flat:
+            fails.append('%s — 분할됐는데 `fix_stale_counts.FLAT_SOURCES` 에 있다'
+                         '(본문을 건너뛴다 ⇒ `HUB_SOURCES` 로 옮겨라)' % hub)
+        if hub in clause_docs:
+            try:
+                import clause_order_gate as CO
+                if not CO.collect(CO.ROOT / hub):
+                    fails.append('%s — `clause_order_gate` 가 조문 0개로 본다'
+                                 '(논리 문서를 안 읽는다)' % hub)
+            except Exception as e:                           # pragma: no cover
+                fails.append('%s — clause_order_gate.collect 실패: %s' % (hub, e))
+
+    # ── 🆕 축㉣ [2026-09-16 O166-C] 미분할 문서의 분모 4곳 대조 (O165 `D11` 후속 처방) ──
+    #   🔴 기준 분모 = `doc_heading_gate.DOCS` 중 **분할되지 않은 것**(허브는 `FAMILIES` 가 이미 본다).
+    #   🟢 원장 §0 유형 등재표는 `doc_type_gate` 축1(유형 미선언)이 이미 blocking 으로 본다 ⇒ 여기서 중복하지 않는다
+    #      (`R3-9 ㉡` — 같은 것을 두 곳에서 다르게 재지 않는다).
+    #
+    #   🔴🔴 **[O166-C 자기시정 1] 초판이 오탐 6건을 냈다 — 「등재 목록」과 「분모」를 혼동했다.**
+    #     🔎 실측 = 초판은 `doc_type_gate.EXTRA_DOCS` 멤버십만 봤고 `01_project_control/` 문서 **6건**
+    #       (`00_BRIEF`·`31_코드군`·`32_컬럼개명표`·`40_입고대기`·`91_사고사례집`·`92_실측필요`)을 위반으로 냈다.
+    #     🔴 그런데 `doc_type_gate` 는 `DOC_DIR = 01_project_control/` 를 **순회**하므로 그 폴더 문서는 **이미 분모 안**이고,
+    #       `EXTRA_DOCS` 는 주석이 스스로 적듯 *"분모를 `01_project_control/` 밖으로 넓힌다"* = **폴더 밖 전용 보충 목록**이다.
+    #     ⇒ 🟢 **정정 판정식 = 「그 도구의 유효 분모」로 대조한다**(등재 목록 ≠ 분모).
+    #       `doc_type_gate` 유효 분모 = `01_project_control/` 순회 **∪** `EXTRA_DOCS`.
+    #     🔴 이것이 O165 `D5`(*"처방을 문면대로 구현하면 오탐 100%"*)와 **같은 형태의 재발**이다 —
+    #       `R1-6-18 ④` 가 「4곳」이라고 **목록으로** 적었기 때문에 목록 멤버십으로 구현하게 된다.
+    hubs = {h for h, _ in FAMILIES}
+    try:
+        import doc_heading_gate as HG
+        import doc_type_gate as TG
+        base = [d for d in HG.DOCS if d not in hubs]
+        canon = set(covered_canon())
+        singles = set(SINGLES)
+        extra = set(TG.EXTRA_DOCS)
+        for doc in base:
+            missing = []
+            # ㉠ doc_type_gate = `01_project_control/` 순회 ∪ EXTRA_DOCS
+            if not doc.startswith('01_project_control/') and doc not in extra:
+                missing.append('doc_type_gate.EXTRA_DOCS')
+            # ㉡ doc_line_length_gate.CANON = 미분할 정본 명시 목록(순회 없음)
+            if doc not in canon:
+                missing.append('doc_line_length_gate.CANON')
+            # ㉢ doc_census.SINGLES = 미분할 상시 독해 문서 명시 목록(순회 없음)
+            if doc not in singles:
+                missing.append('doc_census.SINGLES')
+            if missing:
+                fails.append(
+                    '%s — 미분할 정본이 `doc_heading_gate.DOCS` 에만 있고 %d곳의 분모 밖이다: %s '
+                    '⇒ `R1-6-18 ④` 대로 전건 편입하라(제목 축만 지켜지면 줄길이·상한·stale 이 침묵한다)'
+                    % (doc, len(missing), ' · '.join(missing)))
+    except Exception as e:                                   # pragma: no cover
+        fails.append('축㉣ 미분할 분모 대조 실패: %s' % e)
+    return fails
+
+
+def covered_canon():
+    """`doc_line_length_gate.CANON`(미분할 정본 목록)만 반환한다.
+
+    🔴 `expand_globs()` 를 쓰지 않는다 — 그것은 `CANON_GLOB` 까지 펼쳐 **조각 경로**를 섞으므로
+      「미분할 문서가 CANON 에 등재됐는가」와 **다른 것을 재게 된다**(`R3-9 ㉡`).
+    """
+    import doc_line_length_gate as LL
+    return list(LL.CANON)
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--strict', action='store_true', help='stale 1건이라도 있으면 exit 1')
+    ap.add_argument('--json', action='store_true', help='기계 판독 출력')
+    ap.add_argument('--read-budget', action='store_true', help='독해 예산만 출력')
+    a = ap.parse_args()
+
+    inv = census()
+    stale = stale_check(inv)
+    budget = read_budget(inv)
+
+    if a.json:
+        print(json.dumps({'inventory': inv, 'stale': stale, 'budget': budget},
+                         ensure_ascii=False, indent=2))
+        return 1 if (a.strict and stale) else 0
+
+    if a.read_budget:
+        print('[세션 시작 독해 예산]')
+        for rel, b, c in budget['must']:
+            print('  %-46s %9s B  %8s 자' % (rel, format(b, ','), format(c, ',')))
+        print('  %-46s %9s B  %8s 자' % ('계', format(budget['bytes'], ','),
+                                        format(budget['chars'], ',')))
+        print('  참고: 전 문서군 합계 = %s 자' % format(budget['all_chars'], ','))
+        return 0
+
+    print('[문서 인벤토리] 실측 %d분할문서 · %d미분할문서' %
+          (len(inv['families']), len(inv['singles'])))
+    print('  %-38s %-8s %5s %5s %10s %9s %9s' %
+          ('문서', '유형', '조각', '파일', '총 바이트', '감시 B', '여유 B'))
+    for f in inv['families']:
+        mark = '  🟠' if f['tight'] else ''
+        tail = ' ←꼬리' if f['kind'] == 'append형' else ''
+        print('  %-38s %-8s %5d %5d %10s %9s %9s%s%s' % (
+            f['stem'], f['kind'], f['chunks'], f['files'], format(f['bytes'], ','),
+            format(f['watch'], ','), format(f['free'], ','), mark, tail))
+    for s in inv['singles']:
+        print('  %-38s %-8s %5s %5d %10s %9s %9s%s' % (
+            s['stem'], s['kind'], '—', 1, format(s['bytes'], ','),
+            format(s['bytes'], ','), format(s['free'], ','),
+            '  🟠' if s['tight'] else ''))
+    tight = [f['stem'] for f in inv['families'] + inv['singles'] if f['tight']]
+    print('  🟠 여유 부족 %d건%s' % (len(tight),
+                                (' = ' + ', '.join(tight)) if tight else ''))
+
+    print('')
+    print('[세션 시작 독해 예산] %s 자 / %s B  (전 문서군 %s 자)' %
+          (format(budget['chars'], ','), format(budget['bytes'], ','),
+           format(budget['all_chars'], ',')))
+    for rel, b, c in budget['must']:
+        print('   · %-44s %8s 자' % (rel, format(c, ',')))
+
+    print('')
+    print('[stale 대조] 문서 기재 ↔ 실측 (축 = 조각수 · 바이트 · 미분할표기) : 불일치 %d건'
+          % len(stale))
+    for s in stale:
+        if s['axis'] == '미분할표기':
+            print('  🔴 %s:%d  [%s] %s — 「미분할」이라 적혀 있지만 **분할돼 있다**'
+                  % (s['file'], s['line'], s['axis'], s['doc']))
+        else:
+            print('  🔴 %s:%d  [%s] %s 기재 %s ↔ 실측 %s'
+                  % (s['file'], s['line'], s['axis'], s['doc'],
+                     format(s['written'], ','), format(s['actual'], ',')))
+        print('      %s' % s['text'])
+
+    print('')
+    dep = split_denominator_check()
+    print('[분할 분모 대조] 분할 문서가 타 도구 분모에서 「미분할」로 취급되는가 : 위반 %d건'
+          % len(dep))
+    for d in dep:
+        print('  🔴 %s' % d)
+    if not dep:
+        print('  ✅ 조각이 줄길이 분모에 전건 편입 · FLAT 오분류 0 · 조문 문서 0개 없음')
+
+    print('')
+    if stale or dep:
+        if stale:
+            print('🔴 stale %d건 — 숫자를 지우고 `doc_census.py` 포인터로 바꿔라' % len(stale))
+            print('   (`scripts/fix_stale_counts.py --apply` 가 자동 처리한다)')
+        if dep:
+            print('🔴 분할 분모 위반 %d건 — 🔴 **분할은 「분모 4곳」으로 끝나지 않는다**' % len(dep))
+            print('   정본 = `doc_census.split_denominator_check()` (축이 늘면 그 함수에 추가하라)')
+        return 1 if a.strict else 0
+    print('✅ stale 0건 · 분할 분모 위반 0건 — 문서 기재와 도구 분모가 실측과 일치한다')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

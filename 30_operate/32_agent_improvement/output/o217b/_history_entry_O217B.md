@@ -5,7 +5,7 @@
   재균형은 승인 범위였으나 「dry-run 이 쓴다」는 결함을 확인하지 않고 실행했다 ⇒ 인수인계 ▣ O217-B-2 에 도구 결함으로 등재.
 - 독해 기록(R1-3-7-b):
   · `00_guides/00_작업지침_세션운영규칙.md` 1~304 도착 · `R0-8-4` · `R4-4-4`.
-  · `99_NEXT_SESSION-O0217-A.md` 1~59 도착 · `O217-A-2` · `VERSION$5`.
+  · `_archive/O276_project_closure/99_NEXT_SESSION_조각/99_NEXT_SESSION-O0217-A.md` 1~59 도착 · `O217-A-2` · `VERSION$5`.
   · `90_provided_definition/agent 질의 피드백_2.csv` 1~45 도착 · `회원실,15` · `나눔마케팅,26`.
   · 라벨 파일 26개(O210-A~O217-A) = 서브에이전트 전량 독해 · 미독 0.
   · read 미반환 0 · 재호출 0.

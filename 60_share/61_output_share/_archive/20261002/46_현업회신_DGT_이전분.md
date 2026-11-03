@@ -4,7 +4,7 @@ doc_role: 현업 회신 요청 — 단일 항목(DGT 2026-06 이전분) · 40_�
 project: GN_DW (굿네이버스)
 created: 2026-09-30
 created_by: O191
-index: 20_issue/00_INDEX_이슈원장.md
+index: _archive/O276_project_closure/20_issue/00_INDEX_이슈원장.md
 END-METADATA -->
 
 # DGT 디지털 광고 원천 2026-06 이전분 — 재송부 요청 (1건)

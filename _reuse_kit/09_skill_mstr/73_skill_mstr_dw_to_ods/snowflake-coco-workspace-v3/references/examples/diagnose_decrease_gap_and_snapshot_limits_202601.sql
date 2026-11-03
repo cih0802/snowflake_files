@@ -1,0 +1,479 @@
+/*
+    목적
+      1) 202601 / I 감액 전체 차이(+1.5000)와 기존 회원별 상세 차이(+0.5000)
+         사이에서 누락된 1.0000을 NULL 안전 비교로 찾는다.
+      2) 감액 대표행의 ORDER BY 동률과 현재 ODS 마스터 변화 여부를 확인한다.
+      3) 활동 745건의 부서 차이가 어느 DEPT4 구간 이동인지 요약한다.
+
+    실행 방법
+      1) ods_fee_forecast_decrease_new_old_202601.sql을 먼저 실행한다.
+      2) 같은 SSMS 쿼리 창(같은 세션)에서 이 파일을 실행한다.
+
+    주의
+      - 읽기 전용 진단 SQL이다. 데이터 변경문은 없다.
+      - MSTR_DW와 MSTR_ODS를 함께 조회한다.
+*/
+
+SET NOCOUNT ON;
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+
+DECLARE @DIAG_STRD_MT    CHAR(6)     = '202601';
+DECLARE @DIAG_CPR_DIV_CD VARCHAR(10) = 'I';
+
+IF OBJECT_ID('tempdb..#ACTIVE_FACT') IS NULL
+   OR OBJECT_ID('tempdb..#DECREASE_FACT') IS NULL
+BEGIN
+    THROW 50021,
+          N'먼저 ods_fee_forecast_decrease_new_old_202601.sql을 같은 SSMS 쿼리 창에서 실행해야 합니다.',
+          1;
+END;
+
+IF DB_ID(N'MSTR_DW') IS NULL
+BEGIN
+    THROW 50022, N'MSTR_DW 데이터베이스를 찾을 수 없습니다.', 1;
+END;
+
+DROP TABLE IF EXISTS #DECREASE_DIFF_FIXED;
+
+/* -------------------------------------------------------------------------
+   결과 1~2. 감액 회원 비교를 NULL 안전 방식으로 다시 생성
+
+   기존 진단의 단순 비교
+       O.ODS_AMT_CNT <> W.DW_AMT_CNT
+   는 한쪽이 NULL이면 TRUE가 아니라 UNKNOWN이 되어 차이 행을 누락할 수 있다.
+   ------------------------------------------------------------------------- */
+;WITH ODS_DECREASE AS
+(
+    SELECT
+        D.MBER_NO,
+        COUNT_BIG(*) AS ODS_ROW_CNT,
+        SUM(CAST(D.SPNSR_AMT_CNT AS DECIMAL(38, 7))) AS ODS_AMT_CNT,
+        MIN(D.SPNSR_NO) AS ODS_SPNSR_NO,
+        MIN(D.SPNSR_BSNS_NO) AS ODS_SPNSR_BSNS_NO,
+        MIN(D.SPNSR_BSNS_ID) AS ODS_SPNSR_BSNS_ID,
+        MIN(D.DEPT4_ID) AS ODS_DEPT4_ID,
+        MIN(D.NEW_OLD_DIV_CD) AS ODS_NEW_OLD_DIV_CD
+    FROM #DECREASE_FACT D
+    WHERE D.STRD_MT = @DIAG_STRD_MT
+      AND D.CPR_DIV_CD = @DIAG_CPR_DIV_CD
+    GROUP BY D.MBER_NO
+),
+DW_DECREASE AS
+(
+    SELECT
+        F.MBER_NO,
+        COUNT_BIG(*) AS DW_ROW_CNT,
+        SUM(CAST(F.SPNSR_AMT_CNT AS DECIMAL(38, 7))) AS DW_AMT_CNT,
+        MIN(F.SPNSR_NO) AS DW_SPNSR_NO,
+        MIN(F.SPNSR_BSNS_NO) AS DW_SPNSR_BSNS_NO,
+        MIN(F.SPNSR_BSNS_ID) AS DW_SPNSR_BSNS_ID,
+        MIN(F.ACMSLT_DEPT4_CD) AS DW_DEPT4_ID,
+        MIN(F.NEW_OLD_DIV_CD) AS DW_NEW_OLD_DIV_CD
+    FROM MSTR_DW.mart.F_MM_SPNSR_ACT F
+    WHERE F.STRD_MT = @DIAG_STRD_MT
+      AND F.CPR_DIV_CD = @DIAG_CPR_DIV_CD
+      AND F.ACT_DSCNTC_DIV_CD = '4'
+    GROUP BY F.MBER_NO
+)
+SELECT
+    CASE
+        WHEN W.DW_ROW_CNT IS NULL THEN 'ODS_ONLY'
+        WHEN O.ODS_ROW_CNT IS NULL THEN 'DW_ONLY'
+        WHEN O.ODS_ROW_CNT <> W.DW_ROW_CNT THEN 'ROW_COUNT_DIFF'
+        WHEN O.ODS_AMT_CNT <> W.DW_AMT_CNT
+          OR (O.ODS_AMT_CNT IS NULL AND W.DW_AMT_CNT IS NOT NULL)
+          OR (O.ODS_AMT_CNT IS NOT NULL AND W.DW_AMT_CNT IS NULL)
+            THEN 'AMOUNT_DIFF'
+        ELSE 'KEY_OR_DIMENSION_DIFF'
+    END AS DIFF_TYPE,
+    COALESCE(O.MBER_NO, W.MBER_NO) AS MBER_NO,
+    O.ODS_ROW_CNT,
+    W.DW_ROW_CNT,
+    O.ODS_AMT_CNT,
+    W.DW_AMT_CNT,
+    ISNULL(O.ODS_AMT_CNT, 0) - ISNULL(W.DW_AMT_CNT, 0) AS SIGNED_AMT_DIFF_CNT,
+    ABS(ISNULL(O.ODS_AMT_CNT, 0)) - ABS(ISNULL(W.DW_AMT_CNT, 0)) AS ABS_AMT_DIFF_CNT,
+    O.ODS_SPNSR_NO,
+    W.DW_SPNSR_NO,
+    O.ODS_SPNSR_BSNS_NO,
+    W.DW_SPNSR_BSNS_NO,
+    O.ODS_SPNSR_BSNS_ID,
+    W.DW_SPNSR_BSNS_ID,
+    O.ODS_DEPT4_ID,
+    W.DW_DEPT4_ID,
+    O.ODS_NEW_OLD_DIV_CD,
+    W.DW_NEW_OLD_DIV_CD
+INTO #DECREASE_DIFF_FIXED
+FROM ODS_DECREASE O
+FULL OUTER JOIN DW_DECREASE W
+  ON O.MBER_NO = W.MBER_NO
+WHERE O.ODS_ROW_CNT IS NULL
+   OR W.DW_ROW_CNT IS NULL
+   OR O.ODS_ROW_CNT <> W.DW_ROW_CNT
+   OR O.ODS_AMT_CNT <> W.DW_AMT_CNT
+   OR (O.ODS_AMT_CNT IS NULL AND W.DW_AMT_CNT IS NOT NULL)
+   OR (O.ODS_AMT_CNT IS NOT NULL AND W.DW_AMT_CNT IS NULL)
+   OR ISNULL(CONVERT(VARCHAR(100), O.ODS_SPNSR_NO), '')
+      <> ISNULL(CONVERT(VARCHAR(100), W.DW_SPNSR_NO), '')
+   OR ISNULL(CONVERT(VARCHAR(100), O.ODS_SPNSR_BSNS_NO), '')
+      <> ISNULL(CONVERT(VARCHAR(100), W.DW_SPNSR_BSNS_NO), '')
+   OR ISNULL(O.ODS_SPNSR_BSNS_ID, '') <> ISNULL(W.DW_SPNSR_BSNS_ID, '')
+   OR ISNULL(O.ODS_DEPT4_ID, '') <> ISNULL(W.DW_DEPT4_ID, '')
+   OR ISNULL(O.ODS_NEW_OLD_DIV_CD, '') <> ISNULL(W.DW_NEW_OLD_DIV_CD, '');
+
+/* 결과 1. 전체 합계 차이와 회원별 차이 포착 합계가 같아야 한다. */
+;WITH TOTALS AS
+(
+    SELECT
+        (SELECT COUNT_BIG(*)
+           FROM #DECREASE_FACT D
+          WHERE D.STRD_MT = @DIAG_STRD_MT
+            AND D.CPR_DIV_CD = @DIAG_CPR_DIV_CD) AS ODS_ROW_CNT,
+        (SELECT COUNT_BIG(*)
+           FROM MSTR_DW.mart.F_MM_SPNSR_ACT F
+          WHERE F.STRD_MT = @DIAG_STRD_MT
+            AND F.CPR_DIV_CD = @DIAG_CPR_DIV_CD
+            AND F.ACT_DSCNTC_DIV_CD = '4') AS DW_ROW_CNT,
+        (SELECT SUM(ABS(CAST(D.SPNSR_AMT_CNT AS DECIMAL(38, 7))))
+           FROM #DECREASE_FACT D
+          WHERE D.STRD_MT = @DIAG_STRD_MT
+            AND D.CPR_DIV_CD = @DIAG_CPR_DIV_CD) AS ODS_ABS_AMT_CNT,
+        (SELECT SUM(ABS(CAST(F.SPNSR_AMT_CNT AS DECIMAL(38, 7))))
+           FROM MSTR_DW.mart.F_MM_SPNSR_ACT F
+          WHERE F.STRD_MT = @DIAG_STRD_MT
+            AND F.CPR_DIV_CD = @DIAG_CPR_DIV_CD
+            AND F.ACT_DSCNTC_DIV_CD = '4') AS DW_ABS_AMT_CNT,
+        (SELECT SUM(ABS_AMT_DIFF_CNT)
+           FROM #DECREASE_DIFF_FIXED) AS CAPTURED_ABS_AMT_DIFF_CNT
+)
+SELECT
+    ODS_ROW_CNT,
+    DW_ROW_CNT,
+    ODS_ROW_CNT - DW_ROW_CNT AS ROW_DIFF_CNT,
+    ODS_ABS_AMT_CNT,
+    DW_ABS_AMT_CNT,
+    ODS_ABS_AMT_CNT - DW_ABS_AMT_CNT AS TOTAL_ABS_AMT_DIFF_CNT,
+    CAPTURED_ABS_AMT_DIFF_CNT,
+    (ODS_ABS_AMT_CNT - DW_ABS_AMT_CNT)
+        - ISNULL(CAPTURED_ABS_AMT_DIFF_CNT, 0) AS UNCAPTURED_AMT_DIFF_CNT
+FROM TOTALS;
+
+/* 결과 2. NULL 안전 방식으로 잡힌 전체 감액 차이 상세 */
+SELECT *
+FROM #DECREASE_DIFF_FIXED
+ORDER BY
+    CASE DIFF_TYPE
+        WHEN 'AMOUNT_DIFF' THEN 1
+        WHEN 'ODS_ONLY' THEN 2
+        WHEN 'DW_ONLY' THEN 3
+        ELSE 4
+    END,
+    ABS(ABS_AMT_DIFF_CNT) DESC,
+    MBER_NO;
+
+/* -------------------------------------------------------------------------
+   결과 3. SPNSR_AMT_CNT가 NULL인 감액 팩트
+      결과 1의 미포착 1.0000이 NULL 비교 문제라면 이 결과에 대상이 나타난다.
+   ------------------------------------------------------------------------- */
+SELECT
+    'ODS' AS DATA_SIDE,
+    D.MBER_NO,
+    D.SPNSR_NO,
+    D.SPNSR_BSNS_NO,
+    D.SPNSR_BSNS_ID,
+    D.CPR_DIV_CD,
+    D.DEPT4_ID,
+    D.NEW_OLD_DIV_CD,
+    CAST(D.SPNSR_AMT AS DECIMAL(38, 4)) AS SPNSR_AMT,
+    CAST(D.SPNSR_AMT_CNT AS DECIMAL(38, 7)) AS SPNSR_AMT_CNT
+FROM #DECREASE_FACT D
+WHERE D.STRD_MT = @DIAG_STRD_MT
+  AND D.CPR_DIV_CD = @DIAG_CPR_DIV_CD
+  AND D.SPNSR_AMT_CNT IS NULL
+
+UNION ALL
+
+SELECT
+    'DW' AS DATA_SIDE,
+    F.MBER_NO,
+    F.SPNSR_NO,
+    F.SPNSR_BSNS_NO,
+    F.SPNSR_BSNS_ID,
+    F.CPR_DIV_CD,
+    F.ACMSLT_DEPT4_CD,
+    F.NEW_OLD_DIV_CD,
+    CAST(F.SPNSR_AMT AS DECIMAL(38, 4)) AS SPNSR_AMT,
+    CAST(F.SPNSR_AMT_CNT AS DECIMAL(38, 7)) AS SPNSR_AMT_CNT
+FROM MSTR_DW.mart.F_MM_SPNSR_ACT F
+WHERE F.STRD_MT = @DIAG_STRD_MT
+  AND F.CPR_DIV_CD = @DIAG_CPR_DIV_CD
+  AND F.ACT_DSCNTC_DIV_CD = '4'
+  AND F.SPNSR_AMT_CNT IS NULL
+ORDER BY DATA_SIDE, MBER_NO;
+
+/* -------------------------------------------------------------------------
+   결과 4. I에서만 사라진 것인지 다른 법인 구분으로 이동한 것인지 확인
+   ------------------------------------------------------------------------- */
+;WITH ONLY_MEMBERS AS
+(
+    SELECT MBER_NO
+    FROM #DECREASE_DIFF_FIXED
+    WHERE DIFF_TYPE IN ('ODS_ONLY', 'DW_ONLY')
+)
+SELECT
+    'ODS' AS DATA_SIDE,
+    D.MBER_NO,
+    D.CPR_DIV_CD,
+    D.SPNSR_NO,
+    D.SPNSR_BSNS_NO,
+    D.SPNSR_BSNS_ID,
+    D.DEPT4_ID,
+    D.NEW_OLD_DIV_CD,
+    CAST(D.SPNSR_AMT_CNT AS DECIMAL(38, 7)) AS SPNSR_AMT_CNT
+FROM #DECREASE_FACT D
+JOIN ONLY_MEMBERS M
+  ON D.MBER_NO = M.MBER_NO
+WHERE D.STRD_MT = @DIAG_STRD_MT
+
+UNION ALL
+
+SELECT
+    'DW' AS DATA_SIDE,
+    F.MBER_NO,
+    F.CPR_DIV_CD,
+    F.SPNSR_NO,
+    F.SPNSR_BSNS_NO,
+    F.SPNSR_BSNS_ID,
+    F.ACMSLT_DEPT4_CD,
+    F.NEW_OLD_DIV_CD,
+    CAST(F.SPNSR_AMT_CNT AS DECIMAL(38, 7)) AS SPNSR_AMT_CNT
+FROM MSTR_DW.mart.F_MM_SPNSR_ACT F
+JOIN ONLY_MEMBERS M
+  ON F.MBER_NO = M.MBER_NO
+WHERE F.STRD_MT = @DIAG_STRD_MT
+  AND F.ACT_DSCNTC_DIV_CD = '4'
+ORDER BY MBER_NO, DATA_SIDE, CPR_DIV_CD;
+
+/* -------------------------------------------------------------------------
+   결과 5. ODS_ONLY / DW_ONLY 회원의 현재 ODS 마스터 존재 여부
+      원천 개발행이 동일해도 회원 또는 후원 마스터가 현재 추가/삭제되면
+      INNER JOIN 통과 여부가 월마감 당시와 달라질 수 있다.
+   ------------------------------------------------------------------------- */
+;WITH ONLY_MEMBERS AS
+(
+    SELECT
+        MBER_NO,
+        ODS_SPNSR_NO,
+        DW_SPNSR_NO
+    FROM #DECREASE_DIFF_FIXED
+    WHERE DIFF_TYPE IN ('ODS_ONLY', 'DW_ONLY')
+),
+CANDIDATE_SPONSOR AS
+(
+    SELECT DISTINCT
+        M.MBER_NO,
+        V.SPNSR_NO
+    FROM ONLY_MEMBERS M
+    CROSS APPLY
+    (
+        VALUES (M.ODS_SPNSR_NO), (M.DW_SPNSR_NO)
+    ) V (SPNSR_NO)
+    WHERE V.SPNSR_NO IS NOT NULL
+),
+SOURCE_MONTH AS
+(
+    SELECT
+        A.MBER_NO,
+        COUNT_BIG(*) AS SOURCE_ROW_CNT,
+        SUM(CAST(A.SPNSR_AMT AS DECIMAL(38, 4))) AS MEMBER_MONTH_AMT,
+        MAX(A.SPNSR_NO) AS MAX_SPNSR_NO
+    FROM MSTR_ODS.dbo.TM_MM_FDRM_MBER_DVLP_AMT A
+    JOIN ONLY_MEMBERS M
+      ON A.MBER_NO = M.MBER_NO
+    WHERE LEFT(A.OCCRRNC_DE, 6) = @DIAG_STRD_MT
+      AND A.DVLP_DIV_CD IN ('2', '3')
+    GROUP BY A.MBER_NO
+)
+SELECT
+    M.MBER_NO,
+    C.SPNSR_NO AS COMPARED_SPNSR_NO,
+    CASE WHEN I.MBER_NO IS NULL THEN 'N' ELSE 'Y' END AS CURRENT_MEMBER_EXISTS_YN,
+    I.FRST_REGIST_DT AS CURRENT_MEMBER_FRST_REGIST_DT,
+    CASE WHEN S.SPNSR_NO IS NULL THEN 'N' ELSE 'Y' END AS CURRENT_SPONSOR_EXISTS_YN,
+    S.FRST_REGIST_DT AS CURRENT_SPONSOR_FRST_REGIST_DT,
+    S.ACMSLT_DEPT_CD AS CURRENT_SPONSOR_ACMSLT_DEPT_CD,
+    X.SOURCE_ROW_CNT,
+    X.MEMBER_MONTH_AMT,
+    X.MAX_SPNSR_NO
+FROM ONLY_MEMBERS M
+LEFT JOIN CANDIDATE_SPONSOR C
+  ON M.MBER_NO = C.MBER_NO
+LEFT JOIN MSTR_ODS.dbo.TM_MM_FDRM_MBER_INFO I
+  ON M.MBER_NO = I.MBER_NO
+LEFT JOIN MSTR_ODS.dbo.TM_MM_FDRM_MBER_SPNSR S
+  ON C.MBER_NO = S.MBER_NO
+ AND C.SPNSR_NO = S.SPNSR_NO
+LEFT JOIN SOURCE_MONTH X
+  ON M.MBER_NO = X.MBER_NO
+ORDER BY M.MBER_NO, C.SPNSR_NO;
+
+/* -------------------------------------------------------------------------
+   결과 6. 감액 대표행 동률 후보
+
+   원본 함수의 대표행 정렬은 SPNSR_NO DESC뿐이다.
+   같은 최대 SPNSR_NO에 여러 행이 있으면 SPNSR_BSNS_NO 선택은 비결정적이다.
+   ------------------------------------------------------------------------- */
+;WITH KEY_DIFF_MEMBERS AS
+(
+    SELECT
+        MBER_NO,
+        ODS_SPNSR_NO,
+        DW_SPNSR_NO,
+        ODS_SPNSR_BSNS_NO,
+        DW_SPNSR_BSNS_NO,
+        ODS_SPNSR_BSNS_ID,
+        DW_SPNSR_BSNS_ID
+    FROM #DECREASE_DIFF_FIXED
+    WHERE DIFF_TYPE = 'KEY_OR_DIMENSION_DIFF'
+      AND ISNULL(CONVERT(VARCHAR(100), ODS_SPNSR_BSNS_NO), '')
+          <> ISNULL(CONVERT(VARCHAR(100), DW_SPNSR_BSNS_NO), '')
+),
+SOURCE_WITH_MAX AS
+(
+    SELECT
+        A.MBER_NO,
+        A.OCCRRNC_DE,
+        A.SPNSR_NO,
+        A.SPNSR_BSNS_NO,
+        A.SER_NO,
+        A.DVLP_DIV_CD,
+        A.SPNSR_BSNS_ID,
+        A.ACMSLT_DEPT_CD,
+        CAST(A.SPNSR_AMT AS DECIMAL(38, 4)) AS SPNSR_AMT,
+        MAX(A.SPNSR_NO) OVER
+        (
+            PARTITION BY A.MBER_NO, LEFT(A.OCCRRNC_DE, 6)
+        ) AS MAX_SPNSR_NO
+    FROM MSTR_ODS.dbo.TM_MM_FDRM_MBER_DVLP_AMT A
+    JOIN KEY_DIFF_MEMBERS K
+      ON A.MBER_NO = K.MBER_NO
+    WHERE LEFT(A.OCCRRNC_DE, 6) = @DIAG_STRD_MT
+      AND A.DVLP_DIV_CD IN ('2', '3')
+)
+SELECT
+    S.MBER_NO,
+    COUNT_BIG(*) OVER (PARTITION BY S.MBER_NO, S.MAX_SPNSR_NO) AS MAX_SPNSR_TIE_ROW_CNT,
+    K.ODS_SPNSR_NO,
+    K.DW_SPNSR_NO,
+    K.ODS_SPNSR_BSNS_NO,
+    K.DW_SPNSR_BSNS_NO,
+    K.ODS_SPNSR_BSNS_ID,
+    K.DW_SPNSR_BSNS_ID,
+    S.OCCRRNC_DE,
+    S.SPNSR_NO AS SOURCE_SPNSR_NO,
+    S.SPNSR_BSNS_NO AS SOURCE_SPNSR_BSNS_NO,
+    S.SER_NO,
+    S.DVLP_DIV_CD,
+    S.SPNSR_BSNS_ID AS SOURCE_SPNSR_BSNS_ID,
+    S.ACMSLT_DEPT_CD,
+    S.SPNSR_AMT
+FROM SOURCE_WITH_MAX S
+JOIN KEY_DIFF_MEMBERS K
+  ON S.MBER_NO = K.MBER_NO
+WHERE S.SPNSR_NO = S.MAX_SPNSR_NO
+ORDER BY S.MBER_NO, S.SPNSR_BSNS_NO, S.OCCRRNC_DE, S.SER_NO;
+
+/* -------------------------------------------------------------------------
+   결과 7. 활동 부서 차이 이동 요약
+      현재 관찰값은 ZB000007 -> ZB000002, 745개 키, 금액건수 1,545.0이다.
+   ------------------------------------------------------------------------- */
+;WITH ODS_ACTIVE AS
+(
+    SELECT
+        A.MBER_NO,
+        A.SPNSR_NO,
+        A.SPNSR_BSNS_NO,
+        SUM(CAST(A.SPNSR_AMT_CNT AS DECIMAL(38, 7))) AS ODS_AMT_CNT,
+        MIN(A.DEPT4_ID) AS ODS_DEPT4_ID
+    FROM #ACTIVE_FACT A
+    WHERE A.STRD_MT = @DIAG_STRD_MT
+      AND A.CPR_DIV_CD = @DIAG_CPR_DIV_CD
+    GROUP BY A.MBER_NO, A.SPNSR_NO, A.SPNSR_BSNS_NO
+),
+DW_ACTIVE AS
+(
+    SELECT
+        F.MBER_NO,
+        F.SPNSR_NO,
+        F.SPNSR_BSNS_NO,
+        SUM(CAST(F.SPNSR_AMT_CNT AS DECIMAL(38, 7))) AS DW_AMT_CNT,
+        MIN(F.ACMSLT_DEPT4_CD) AS DW_DEPT4_ID
+    FROM MSTR_DW.mart.F_MM_SPNSR_ACT F
+    WHERE F.STRD_MT = @DIAG_STRD_MT
+      AND F.CPR_DIV_CD = @DIAG_CPR_DIV_CD
+      AND F.ACT_DSCNTC_DIV_CD = '1'
+    GROUP BY F.MBER_NO, F.SPNSR_NO, F.SPNSR_BSNS_NO
+)
+SELECT
+    O.ODS_DEPT4_ID,
+    W.DW_DEPT4_ID,
+    COUNT_BIG(*) AS MOVED_KEY_CNT,
+    COUNT(DISTINCT O.MBER_NO) AS MOVED_MBER_CNT,
+    SUM(O.ODS_AMT_CNT) AS MOVED_AMT_CNT
+FROM ODS_ACTIVE O
+JOIN DW_ACTIVE W
+  ON O.MBER_NO = W.MBER_NO
+ AND O.SPNSR_NO = W.SPNSR_NO
+ AND O.SPNSR_BSNS_NO = W.SPNSR_BSNS_NO
+WHERE O.ODS_AMT_CNT = W.DW_AMT_CNT
+  AND ISNULL(O.ODS_DEPT4_ID, '') <> ISNULL(W.DW_DEPT4_ID, '')
+GROUP BY O.ODS_DEPT4_ID, W.DW_DEPT4_ID
+ORDER BY MOVED_KEY_CNT DESC, O.ODS_DEPT4_ID, W.DW_DEPT4_ID;
+
+/* -------------------------------------------------------------------------
+   결과 8. 과거 상태 복원에 활용할 수 있는 시간/이력 관련 컬럼과 후보 테이블
+   ------------------------------------------------------------------------- */
+SELECT
+    OBJECT_SCHEMA_NAME(C.object_id, DB_ID(N'MSTR_ODS')) AS SCHEMA_NAME,
+    OBJECT_NAME(C.object_id, DB_ID(N'MSTR_ODS')) AS TABLE_NAME,
+    C.column_id,
+    C.name AS COLUMN_NAME,
+    T.name AS DATA_TYPE,
+    C.max_length,
+    C.precision,
+    C.scale
+FROM MSTR_ODS.sys.columns C
+JOIN MSTR_ODS.sys.types T
+  ON C.user_type_id = T.user_type_id
+WHERE C.object_id IN
+      (
+          OBJECT_ID(N'MSTR_ODS.dbo.TM_MM_FDRM_MBER_DVLP_AMT'),
+          OBJECT_ID(N'MSTR_ODS.dbo.TM_MM_FDRM_MBER_INFO'),
+          OBJECT_ID(N'MSTR_ODS.dbo.TM_MM_FDRM_MBER_SPNSR')
+      )
+  AND
+  (
+      C.name LIKE '%REGIST%'
+      OR C.name LIKE '%UPDT%'
+      OR C.name LIKE '%WORK%'
+      OR C.name LIKE '%HIST%'
+      OR C.name LIKE '%DATE%'
+      OR C.name LIKE '%\_DT' ESCAPE '\'
+      OR C.name LIKE '%\_DE' ESCAPE '\'
+  )
+ORDER BY TABLE_NAME, C.column_id;
+
+SELECT
+    S.name AS SCHEMA_NAME,
+    T.name AS POSSIBLE_HISTORY_TABLE
+FROM MSTR_ODS.sys.tables T
+JOIN MSTR_ODS.sys.schemas S
+  ON T.schema_id = S.schema_id
+WHERE
+       T.name LIKE '%FDRM%MBER%DVLP%HIST%'
+    OR T.name LIKE '%FDRM%MBER%SPNSR%HIST%'
+    OR T.name LIKE '%FDRM%MBER%INFO%HIST%'
+    OR T.name LIKE '%FDRM%MBER%DVLP%HST%'
+    OR T.name LIKE '%FDRM%MBER%SPNSR%HST%'
+    OR T.name LIKE '%FDRM%MBER%INFO%HST%'
+ORDER BY S.name, T.name;

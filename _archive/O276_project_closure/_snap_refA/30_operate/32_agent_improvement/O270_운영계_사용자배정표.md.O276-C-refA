@@ -1,0 +1,53 @@
+<!-- LLM-METADATA
+doc_id: O270_PROD_USER_ASSIGN
+doc_role: 운영계(ZL50263) 사용자 → 기능 역할 배정표 초안(🔴 「확정」 열 = 사용자 기입 전용)
+project: GN_DW (굿네이버스)
+created: 2026-10-30
+created_by: O271-A
+index: 20_issue/00_INDEX_이슈원장.md
+END-METADATA -->
+
+# O270 운영계 사용자 배정표(초안)
+
+> 근거 = 운영계 R97 Q01·Q02·Q04·Q05 결과(2026-10-30 · 사용자 제공 요약) · 원 CSV = `85_실제 인수인계 문서/_ENV/ZL50263/R97_*`.
+> 🔴 「제안 기능 역할」은 비워 두었다 — 부서·직무를 추측하지 않는다. **「확정」 열은 사용자만 채운다.**
+> 🔴 운영계 단계 7 은 「확정」 열이 채워진 행만 실행한다.
+> 기능 역할 = `GN_DW_FR_MARKETING` · `GN_DW_FR_MEMBER` · `GN_DW_FR_EXEC` · `GN_DW_FR_LEAD` 중 1개(1인 1역할 · C1).
+
+## 1. 배정표
+
+| 사용자 | 현 역할(Q01·Q02) | 최근 30일 사용(Q04·Q05) | 제안 기능 역할 | 근거 | 확정 |
+|---|---|---|---|---|---|
+| ANALYST_01 | GN_DW_ANALYST | Q04 활발(건수 = CSV) | (미정) | Q01 보유 | |
+| CHOIH | GN_DW_ANALYST · GN_DW_VIEWER 외 · GN_DW 역할 3 · 보조 역할 `[]` | Q04(건수 = CSV) | (미정) | Q02 다역할 · USER$CHOIH Streamlit 3 소유(Q03) | 제외 — 개발자(GN_DW_ADMIN·LOADER 계열 관리 · 사용자 결정 2026-10-30 O271-B) |
+| G2010009 | GN_DW_ANALYST | Q04(건수 = CSV) | (미정) | Q01 보유 | |
+| G2011032 | GN_DW_ANALYST | Q04(건수 = CSV) | (미정) | Q01 보유 | |
+| GN00710 | GN_DW_ANALYST | Q05 AGENCY·ERP 조회 실적 | (미정) | AGENCY·ERP 조회 실적 | |
+| GN00963 | GN_DW_ANALYST | Q04(건수 = CSV) | (미정) | Q01 보유 | |
+| GN01121 | GN_DW_ANALYST | Q05 AGENCY·ERP 조회 실적 | (미정) | AGENCY·ERP 조회 실적 | |
+| GN01445 | GN_DW_ANALYST | Q05 AGENCY·ERP 조회 실적 | (미정) | AGENCY·ERP 조회 실적 | |
+| GN02248 | GN_DW_ANALYST | Q04(건수 = CSV) | (미정) | Q01 보유 | |
+| SWLEE | GN_DW_ANALYST 외 · GN_DW 역할 2 | Q04(건수 = CSV) | (미정) | Q02 다역할 | 제외 — 개발자(GN_DW_ADMIN·LOADER 계열 관리 · 사용자 결정 2026-10-30 O271-B) |
+| VIEWER_01 | GN_DW_VIEWER | Q04(건수 = CSV) | (미정) | Q01 보유 | |
+| LEESH | GN_DW_SERVICE 외 · GN_DW 역할 2 | Q04(건수 = CSV) | (미정) | Q02 다역할 · 서비스 역할 보유 | 제외 — 개발자(GN_DW_ADMIN·LOADER 계열 관리 · 사용자 결정 2026-10-30 O271-B) |
+| CRM_ETL | GN_DW 역할 2 | (CSV 확인) | (미정) | Q02 다역할 | 제외 — 개발자(GN_DW_ADMIN·LOADER 계열 관리 · 사용자 결정 2026-10-30 O271-B) |
+| (Streamlit 서비스 계정) | GN_DW_ANALYST(앱 소유자 권한 실행) | Q04·Q05 활발 | 배정 대상 아님(후보) | Q03 앱 8개 소유자 = GN_DW_ANALYST | |
+
+🔴 「현 역할」 셀의 「외」 = 요약에 역할명 전체가 없다 ⇒ Q02 CSV 의 `GN_DW_ROLES` 열로 채운다(추측 금지).
+
+## 2. 사용자 결정(O271-B · 2026-10-30)
+
+- 다역할 4명 = **사람 · 개발자** ⇒ 기능 역할 배정 대상 아님(개발 역할 유지 · 보조 역할 정책도 분석가와 별도).
+- 분석가 보조 역할 = `DEFAULT_SECONDARY_ROLES = ()` 적용 **승인**.
+
+## 3. 사용자에게 묻는 것(남은 것)
+
+1. 다역할 4명(CHOIH · CRM_ETL · LEESH · SWLEE)은 **사람인가 서비스 계정인가**?
+   서비스 계정이면 1인 1기능역할 원칙 밖 = 별도 서비스 역할(기능 역할 배정 대상 아님)로 둘 수 있다.
+2. Streamlit 서비스 계정을 배정표에서 빼는 것이 맞는가(앱은 소유자 역할 권한으로 실행 · `O270_W8_운영계_실행카드.md` §3).
+3. 🔴 `DEFAULT_SECONDARY_ROLES = ()` 적용 영향 — 지금 9명 이상이 `[ALL]` 이다.
+   보조 역할로 **GN_DW 밖 DB·창고**(예: 다른 DB 를 읽는 역할 · 개인 창고 역할)를 쓰던 사람이 있는가?
+   있으면 그 사람은 적용 후 `USE SECONDARY ROLES` 또는 역할 전환이 필요하다(업무 공지 대상).
+4. AGENCY·ERP 조회 실적 3명(GN00710 · GN01121 · GN01445)이 회원·경영 역할로 배정되면 그 조회가 끊긴다 — 공지 순서 확인.
+
+_Co-authored with CoCo_

@@ -12,7 +12,7 @@ description: "MSTR(MicroStrategy · 구 SQL Server mart) 리포트를 GN_DW.MSTR
 
 - 대상 = `GN_DW.MSTR`(원천 `GN_DW.BRONZE_CRM`) · 서빙뷰·SV = `GN_DW.SERVING`(MSTR 매니페스트 대상 아님).
 - 🔴 **라이브 DDL 은 반드시 `GN_DW_ADMIN` 역할로** 실행한다 — ACCOUNTADMIN 이면 owner 가 어긋나 재배포가 막힌다
-  (사고 = `20_issue/10_진단_원인분석_조각/10_진단_원인분석-015.md:57` · O200-C 재발).
+  (사고 = `_archive/O276_project_closure/20_issue/10_진단_원인분석_조각/10_진단_원인분석-015.md:57` · O200-C 재발).
 - dbt 와 무관하다(MSTR 은 Snowflake Scripting SP) — dbt 정지점 대상이 아니다.
 
 ## Workflow
@@ -49,7 +49,7 @@ python3 mstr_pipeline.py manifests/<batch>.json --steps deploy,run,verify --ym <
 
 ### Step 6. SV · Agent 배선
 - 서빙뷰 + SV DDL = `20_build/23_sv_agent/_archive/23_MSTR_SV_DDL.sql` 형식(파일 단독 실행 · 🔴 `USE ROLE GN_DW_ADMIN` 부터).
-- 도구 추가 = `20_build/28_cortex_project/agents/AGENT_{MEMBER,MARKETING,EXECUTIVE}/agent_spec.yaml` → `20_build/23_sv_agent/09_2_AGENT_버전업.sql` [0]·[0-B]·[2]·[3] · 패치 예 = `tmp/o207_agent_patch.py`.
+- 도구 추가 = `20_build/28_cortex_project/agents/AGENT_{MEMBER,MARKETING,EXECUTIVE}/agent_spec.yaml` → `20_build/23_sv_agent/09_2_AGENT_버전업.sql` [0]·[0-B]·[2]·[3] · 패치 예 = `_archive/O276_project_closure/tmp/o207_agent_patch.py`.
 - 🟢 [O207 · 2026-10-07 · 사용자 결정 C안 → O207-C AGENT_MSTR 은퇴] MSTR 도구(analyst_mstr_spnsr_dvlp · SV_MSTR_SPNSR_DVLP)는 AGENT_MEMBER·AGENT_MARKETING·AGENT_EXECUTIVE 에 배선돼 있고 개발 실적·목표·연도말 전망의 정본이다. AGENT_MSTR 는 DROP 됐다(스펙 사본 = _archive/agent_spec.yaml.O207-C-retire-agent-mstr).
 - Agent 정의 = `20_build/23_sv_agent/09_0_AGENT_정의서.md`.
 - ~~🔴 **[O203 · 사용자 결정 2026-10-06] 다른 Agent 배선은 A안(붙이지 않음)이 현행이다.**~~ ➔ 폐기(O207) — 아래 3줄의 질문은 더 하지 않는다. MSTR 도구는 AGENT_MSTR 에만 있고 AGENT_MEMBER·AGENT_EXECUTIVE·AGENT_MARKETING 에는 배선되지 않았다.
